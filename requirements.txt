@@ -1,1 +1,6 @@
 ipykernel
+pylint
+jupyter
+#pymssql --no-binary=pymssql
+pyodbc
+psycopg[binary]
