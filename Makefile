@@ -3,9 +3,9 @@
 #
 db_host ?= tools
 db_port ?= 5432
-db_name ?= baseball_db
 db_user ?= baseball_app
 db_password ?= baseball123
+db_name ?= baseball_db
 db_connection_string ?= "postgresql://$(db_user):$(db_password)@$(db_host)/$(db_name)"
 db_dba_user ?= postgres
 db_dba_password ?= r3dh@t123

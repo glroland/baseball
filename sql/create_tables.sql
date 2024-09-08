@@ -1,3 +1,23 @@
+create table temp_load
+(
+    col0 varchar(250),
+    col1 varchar(250),
+    col2 varchar(250),
+    col3 varchar(250),
+    col4 varchar(250),
+    col5 varchar(250),
+    col6 varchar(250),
+    col7 varchar(250),
+    col8 varchar(250),
+    col9 varchar(250),
+    col10 varchar(250),
+    col11 varchar(250),
+    col12 varchar(250),
+    col13 varchar(250),
+    col14 varchar(250),
+    col15 varchar(250)
+);
+
 create table teams
 (
     season_year int not null,
@@ -20,5 +40,5 @@ create table rosters
     team_code char(3) not null,
     position varchar(5) not null,
 
-    constraint pk_roster primary key (season_year, player_code)
+    constraint pk_roster primary key (season_year, player_code, team_code, position)
 );

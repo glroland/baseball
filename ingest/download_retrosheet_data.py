@@ -13,7 +13,7 @@ RETROSHEET_URL = "https://www.retrosheet.org"
 RETROSHEET_EVENTS_URL = RETROSHEET_URL + "/events/"
 
 RETROSHEET_SEASON_FILE_SUFFIX = "seve.zip"
-RETROSHEET_SEASON_START_YEAR = 1910
+RETROSHEET_SEASON_START_YEAR = 2000     #oldest available - 1910
 
 
 def download_retrosheet_decade_file(decade, location):
