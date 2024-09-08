@@ -42,3 +42,33 @@ create table rosters
 
     constraint pk_roster primary key (season_year, player_code, team_code, position)
 );
+
+create table games
+(
+    game_date date not null,
+    game_time time not null,
+    game_number_that_day int not null,
+    team_visiting varchar(3) not null,
+    team_home varchar(3) not null,
+    game_site varchar(25) not null,
+    night_flag boolean not null,
+    ump_home varchar(20) not null,
+    ump_1b varchar(20) not null,
+    ump_2b varchar(20) not null,
+    ump_3b varchar(20) not null,
+    official_scorer varchar(20) not null,
+    pitch_count int not null,
+    temperature int not null,
+    wind_direction varchar(10) not null,
+    wind_speed int not null,
+    field_condition varchar(50),
+    precipitation varchar(50),
+    sky varchar(50) not null,
+    game_length int not null,
+    attendance int not null,
+
+    usedh boolean,
+    wp varchar(20),
+    lp varchar(20),
+    save_code varchar(20)
+);

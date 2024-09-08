@@ -46,8 +46,9 @@ def raw_file_import(connection_string, data_file, columns_str):
     
     """
     logger.debug("Doing bulk data load of CSV file into temp table.  File<%s>", data_file)
-    
+
     # Execute bulk load command
+    # pylint: disable=anomalous-backslash-in-string
     copy_sql = f"\copy temp_load ( {columns_str} ) from '{data_file}' delimiter ',' csv"
     subprocess.run(["psql", connection_string, "-c", copy_sql], check=True)
     logger.debug("Imported data file. %s", data_file)
@@ -61,19 +62,23 @@ def migrate_load_to_table(sql_connection, table_name, sql_columns_str, preval, t
         table_name - name of destination table
         sql_columns_mapping - array of columns correlating to each load column
     """
-    sql = f"insert into {table_name} ( {sql_columns_str} ) select {preval}, {temp_columns_str} from temp_load"
+    sql = f"insert into {table_name} ( {sql_columns_str} ) " \
+          f"select {preval}, {temp_columns_str} from temp_load"
     logger.debug("Copying data from load to prod.  SQL<%s>", sql)
     with sql_connection.cursor() as sql_cursor:
         sql_cursor.execute(sql)
     sql_connection.commit()
 
 
-def bulk_import_csv_file(data_file, table_name, sql_columns_mapping, file_identifier_col, file_identifier):
+def bulk_import_csv_file(data_file, table_name, sql_columns_mapping,
+                         file_identifier_col, file_identifier):
     """ Bulk imports the provided CSV file into the specified table and columns.
     
         data_file - csv file
         table_name - name of table
-        columns_str - typical column list separated by comman
+        sql_columns_mapping - list of columns in the destination table
+        file_identifier_col - supplemental/dynamic column name
+        file_identifier - supplemental field value
         """
     logger.info("Bulk Importing Data File <%s> into Table <%s>", data_file, table_name)
 
@@ -89,6 +94,7 @@ def bulk_import_csv_file(data_file, table_name, sql_columns_mapping, file_identi
     # Create columns list string
     load_columns_str = ""
     sql_columns_str = ""
+    # pylint: disable=consider-using-enumerate
     for i in range(len(sql_columns_mapping)):
         if i > 0:
             load_columns_str = load_columns_str + ", "
@@ -100,10 +106,10 @@ def bulk_import_csv_file(data_file, table_name, sql_columns_mapping, file_identi
     raw_file_import(connection_string, data_file, load_columns_str)
 
     # Migrate the temp table to the destination
-    migrate_load_to_table(sql_connection, 
+    migrate_load_to_table(sql_connection,
                           table_name,
-                          file_identifier_col + ", " + sql_columns_str, 
-                          file_identifier, 
+                          file_identifier_col + ", " + sql_columns_str,
+                          file_identifier,
                           load_columns_str)
 
     logger.debug ("Completed Bulk Import of File: %s", data_file)
