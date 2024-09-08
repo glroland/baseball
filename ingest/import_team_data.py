@@ -16,9 +16,9 @@ def insert_team_record(sql_cursor, year, team_code, league, team_location, team_
 
     select_sql = "select count(*) " \
                  "from Teams " \
-                 "where season_year=%s and code = %s"
+                 "where season_year=%s and team_code = %s"
 
-    insert_sql = "insert into Teams (season_year, code, league, team_location, team_name)" \
+    insert_sql = "insert into Teams (season_year, team_code, league, team_location, team_name)" \
                  "values (%s, %s, %s, %s, %s)"
 
     sql_cursor.execute(select_sql,
@@ -67,6 +67,9 @@ def import_team_data_file(file, directory):
                 insert_team_record(sql_cursor, year, team_code, league, team_location, team_name)
 
     sql_connection.commit()
+
+    logger.debug("Deleting file after successful processing: %s", data_file)
+    os.remove(data_file)
 
 
 def import_all_team_data_files(directory):
