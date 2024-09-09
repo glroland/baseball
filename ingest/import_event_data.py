@@ -11,6 +11,10 @@ import csv
 
 logger = logging.getLogger(__name__)
 
+ROSTER_FILE_EXTENSION_AMERICAN = ".EVA"
+ROSTER_FILE_EXTENSION_NATIONAL = ".EVN"
+
+# pylint: disable=too-few-public-methods
 class Starter:
     """ Starter Entry Fields """
     player_code = None
@@ -20,13 +24,18 @@ class Starter:
     fielding_position = None
 
     def __str__(self) -> str:
-        return f"""{{ "player_code": "{self.player_code}", "player_name": "{self.player_name}", """ \
-               f""""home_team_flag": {self.home_team_flag}, "batting_order": {self.batting_order}, """ \
-               f""""fielding_position": {self.fielding_position} }}"""
+        return f"""{{ "player_code": "{self.player_code}", "player_name": """ \
+               f""""{self.player_name}", "home_team_flag": {self.home_team_flag}, """ \
+               f""""batting_order": {self.batting_order}, "fielding_position": """ \
+               f"""{self.fielding_position} }}"""
 
+# pylint: disable=too-few-public-methods
 class GamePlay:
+    """ Base Class of Game Play Types """
+    # pylint: disable=unnecessary-pass
     pass
 
+# pylint: disable=too-few-public-methods
 class GameAtBat(GamePlay):
     """ At Bat Record for a Game """
     inning = None
@@ -38,10 +47,12 @@ class GameAtBat(GamePlay):
 
     def __str__(self) -> str:
         return f"""{{ "play_type": "AtBat", "inning": "{self.inning}", """ \
-               f""""home_team_flag": {self.home_team_flag}, "player_code": "{self.player_code}", """ \
-               f""""count": {self.count}, "pitches": "{self.pitches}", "game_event": "{self.game_event}" }}"""
+               f""""home_team_flag": {self.home_team_flag}, "player_code": """ \
+               f""""{self.player_code}", "count": {self.count}, "pitches": """ \
+               f""""{self.pitches}", "game_event": "{self.game_event}" }}"""
 
 
+# pylint: disable=too-few-public-methods
 class GameSubstitution(GamePlay):
     """ Player Substitution Event """
     player_code = None
@@ -52,8 +63,9 @@ class GameSubstitution(GamePlay):
 
     def __str__(self) -> str:
         return f"""{{ "play_type": "Substitution", "player_code": "{self.player_code}", """ \
-               f""""player_name": "{self.player_name}", "home_team_flag": {self.home_team_flag}, """ \
-               f""""batting_order": {self.batting_order}, "fielding_position": {self.fielding_position} }}"""
+               f""""player_name": "{self.player_name}", "home_team_flag": """ \
+               f"""{self.home_team_flag}, "batting_order": {self.batting_order}, """ \
+               f""""fielding_position": {self.fielding_position} }}"""
 
 
 # pylint: disable=too-few-public-methods
@@ -86,9 +98,11 @@ def save_game(game):
     
         game - game to save 
     """
+    # pylint: disable=unnecessary-pass
     pass
 
 
+# pylint: disable=too-many-statements
 def import_event_file(file, directory):
     """ Imports the specified event file.
     
@@ -121,6 +135,7 @@ def import_event_file(file, directory):
                     game.id = row[1]
                     game_chunks.append(game)
                 elif row[0] == "version":
+                    # pylint: disable=unnecessary-pass
                     pass
                 elif row[0] == "info":
                     game.info_attributes[row[1]] = row[2]
@@ -128,14 +143,14 @@ def import_event_file(file, directory):
                     starter = Starter()
                     starter.player_code = row[1]
                     starter.player_name = row[2]
-                    starter.home_team_flag = (row[3] == "1")
+                    starter.home_team_flag = row[3] == "1"
                     starter.batting_order = int(row[4])
                     starter.fielding_position = int(row[5])
                     game.starters.append(starter)
                 elif row[0] == "play":
                     game_at_bat = GameAtBat()
                     game_at_bat.inning = row[1]
-                    game_at_bat.home_team_flag = (row[2] == "1")
+                    game_at_bat.home_team_flag = row[2] == "1"
                     game_at_bat.player_code = row[3]
                     game_at_bat.count = row[4]
                     game_at_bat.pitches = row[5]
@@ -145,7 +160,7 @@ def import_event_file(file, directory):
                     game_subst = GameSubstitution()
                     game_subst.player_code = row[1]
                     game_subst.player_name = row[2]
-                    game_subst.home_team_flag = (row[3] == "1")
+                    game_subst.home_team_flag = row[3] == "1"
                     game_subst.batting_order = row[4]
                     game_subst.fielding_position = row[5]
                     game.game_plays.append(game_subst)
@@ -163,6 +178,22 @@ def import_event_file(file, directory):
     print ("# of games: ", len(game_chunks))
     #print (game_chunks[0].info_attributes)
     #print (game)
+
+
+def import_all_event_data_files(directory):
+    """ Imports all event data files stored in the specified directory.
+    
+        directory - directory to import roster files from
+    """
+    logger.info("Importing Roster Data Files from Directory: %s", directory)
+    for file in os.listdir(directory):
+        if file.endswith(ROSTER_FILE_EXTENSION_AMERICAN) or \
+           file.endswith(ROSTER_FILE_EXTENSION_NATIONAL):
+            import_event_file(file, directory)
+
+            logger.debug("Deleting file after successful processing: %s", file)
+            os.remove(file)
+    logger.debug("All files imported")
 
 
 if __name__ == "__main__":
