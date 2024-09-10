@@ -8,6 +8,8 @@ that we can more easily use to build training data for the models.
 import logging
 import os
 import csv
+import psycopg
+from db_utils import connect_to_db
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +27,7 @@ class Starter:
 
     def __str__(self) -> str:
         return f"""{{ "player_code": "{self.player_code}", "player_name": """ \
-               f""""{self.player_name}", "home_team_flag": {self.home_team_flag}, """ \
+               f""""{self.player_name}", "home_team_flag": {str(self.home_team_flag).lower()}, """ \
                f""""batting_order": {self.batting_order}, "fielding_position": """ \
                f"""{self.fielding_position} }}"""
 
@@ -47,7 +49,7 @@ class GameAtBat(GamePlay):
 
     def __str__(self) -> str:
         return f"""{{ "play_type": "AtBat", "inning": "{self.inning}", """ \
-               f""""home_team_flag": {self.home_team_flag}, "player_code": """ \
+               f""""home_team_flag": {str(self.home_team_flag).lower()}, "player_code": """ \
                f""""{self.player_code}", "count": {self.count}, "pitches": """ \
                f""""{self.pitches}", "game_event": "{self.game_event}" }}"""
 
@@ -64,7 +66,7 @@ class GameSubstitution(GamePlay):
     def __str__(self) -> str:
         return f"""{{ "play_type": "Substitution", "player_code": "{self.player_code}", """ \
                f""""player_name": "{self.player_name}", "home_team_flag": """ \
-               f"""{self.home_team_flag}, "batting_order": {self.batting_order}, """ \
+               f"""{str(self.home_team_flag).lower()}, "batting_order": {self.batting_order}, """ \
                f""""fielding_position": {self.fielding_position} }}"""
 
 
@@ -92,42 +94,155 @@ class Game:
     data = []
 
     def __str__(self) -> str:
-        response = f"""{{ "id": "{self.id}", "info_attributes": "{self.info_attributes}", """
-        response += """"starters": {{ """
+        response = f"""{{ "id": "{self.id}", "info_attributes": {self.info_attributes}, """
+        response += """"starters": [ """
         c = 0
         for starter in self.starters:
             if c > 0:
                 response += ", "
             response += str(starter)
             c += 1
-        response += " } "
-        response += """"game_plays": {{ """
+        response += " ], "
+        response += """"game_plays": [ """
         c = 0
         for play in self.game_plays:
             if c > 0:
                 response += ", "
             response += str(play)
             c += 1
-        response += " } "
-        response += """"data": {{ """
+        response += " ], "
+        response += """"data": [ """
         c = 0
         for d in self.data:
             if c > 0:
                 response += ", "
             response += str(d)
             c += 1
-        response += " } "
+        response += " ] "
         response += "}"
         return response
 
 
-def save_game(game):
+def save_game_base_record(sql_connection, game):
+    """ Save the provided game base record to the database.
+    
+        sql_connection - sql connection to use for the tx
+        game - game record to save 
+    """
+    logger.debug("Saving Base Game Record!  ID=%s", game.id)
+
+    # Save Game
+    sql = f"""
+        insert into games 
+        (
+            id,
+            game_date,
+            game_time,
+            game_number_that_day,
+            team_visiting,
+            team_home,
+            game_site,
+            night_flag,
+            ump_home,
+            ump_1b,
+            ump_2b,
+            ump_3b,
+            official_scorer,
+            temperature,
+            wind_direction,
+            wind_speed,
+            field_condition,
+            precipitation,
+            sky,
+            game_length,
+            attendance,
+            usedh,
+            wp,
+            lp,
+            save_code
+        )
+        values 
+        (
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+        )
+           """
+    with sql_connection.cursor() as sql_cursor:
+        sql_cursor.execute(sql,
+            [
+                game.id,
+                game.info_attributes["date"],
+                game.info_attributes["starttime"],
+                game.info_attributes["number"],
+                game.info_attributes["visteam"],
+                game.info_attributes["hometeam"],
+                game.info_attributes["site"],
+                game.info_attributes["daynight"] == "night",
+                game.info_attributes["umphome"],
+                game.info_attributes["ump1b"],
+                game.info_attributes["ump2b"],
+                game.info_attributes["ump3b"],
+                game.info_attributes["oscorer"],
+                game.info_attributes["temp"],
+                game.info_attributes["winddir"],
+                game.info_attributes["windspeed"],
+                game.info_attributes["fieldcond"],
+                game.info_attributes["precip"],
+                game.info_attributes["sky"],
+                game.info_attributes["timeofgame"],
+                game.info_attributes["attendance"],
+                game.info_attributes["usedh"],
+                game.info_attributes["wp"],
+                game.info_attributes["lp"],
+                game.info_attributes["save"]
+            ]
+        )
+
+
+def save_game_data(sql_connection, id, data):
+    """ Save the Game Data Entry.
+    
+        sql_connection - sql connection to use for transaction
+        data - game data record
+    """
+    logger.debug("Saving Data Record!  ID=%s, Type=", id, data.data_type)
+
+    # Save Data
+    sql = f"""
+        insert into GameDatas 
+        (
+            id, data_type, pitcher_player_code, quantity
+        )
+        values 
+        (
+            %s, %s, %s, %s
+        )
+           """
+    with sql_connection.cursor() as sql_cursor:
+        sql_cursor.execute(sql,
+            [
+                id,
+                data.data_type,
+                data.pitcher_player_code,
+                data.quantity
+            ]
+        )
+
+
+def save_game(sql_connection, game):
     """ Save the provided game chunk to the database.
     
+        sql_connection - sql connection to use for tx
         game - game to save 
     """
-    # pylint: disable=unnecessary-pass
-    pass
+    logger.info("Saving Game Record!  ID=%s", game.id)
+    try:
+        save_game_base_record(sql_connection, game)
+        for data in game.data:
+            save_game_data(sql_connection, game.id, data)
+    except psycopg.Error as e:
+        logger.error("Unable to save Record due to SQL error (%s):  Object=<%s>", e, str(game))
+        raise e
 
 
 # pylint: disable=too-many-statements
@@ -154,10 +269,6 @@ def import_event_file(file, directory):
         for row in reader:
             if len(row) > 0:
                 if row[0] == "id":
-                    # Save running game
-                    logger.info("Saving Game")
-                    save_game(game)
-
                     # Creating new Game
                     game = Game()
                     game.id = row[1]
@@ -203,13 +314,17 @@ def import_event_file(file, directory):
                 else:
                     logger.error("Unknown Row Type!  %s", row[0])
 
-        # Save running game
-        logger.info("Saving Game")
-        save_game(game)
-
-    print ("# of games: ", len(game_chunks))
-    #print (game_chunks[0].info_attributes)
-    print (game)
+    # Save Games List
+    logger.info("Saving Games.  List is %s games long.", len(game_chunks))
+    sql_connection = connect_to_db()
+    try:
+        for game in game_chunks:
+            save_game(sql_connection, game)
+    except psycopg.Error as e:
+        sql_connection.rollback()
+        logger.error("Unable to save games due to SQL error (%s)", e)
+        raise e
+    sql_connection.commit()
 
 
 def import_all_event_data_files(directory):

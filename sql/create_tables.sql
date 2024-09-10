@@ -45,6 +45,7 @@ create table rosters
 
 create table games
 (
+    id varchar(12) not null,
     game_date date not null,
     game_time time not null,
     game_number_that_day int not null,
@@ -57,7 +58,6 @@ create table games
     ump_2b varchar(20) not null,
     ump_3b varchar(20) not null,
     official_scorer varchar(20) not null,
-    pitch_count int not null,
     temperature int not null,
     wind_direction varchar(10) not null,
     wind_speed int not null,
@@ -70,5 +70,17 @@ create table games
     usedh boolean,
     wp varchar(20),
     lp varchar(20),
-    save_code varchar(20)
+    save_code varchar(20),
+
+    constraint pk_game primary key (id)
+);
+
+create table GameDatas
+(
+    id varchar(12) not null,
+    data_type varchar(2) not null,
+    pitcher_player_code varchar(20) not null,
+    quantity int not null,
+
+    constraint pk_game_data primary key (id, data_type, pitcher_player_code)
 );
