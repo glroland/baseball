@@ -17,7 +17,7 @@ def import_team_data_file(file, directory):
     year = int(file.replace(TEAM_FILE_PREFIX, ""))
     logger.debug("Data File <%s> is mapping to Year <%s>", file, year)
 
-    sql_table = "teams"
+    sql_table = "team"
     sql_columns_mapping = ["team_code",
                            "league",
                            "team_location",

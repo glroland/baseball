@@ -18,7 +18,7 @@ create table temp_load
     col15 varchar(250)
 );
 
-create table teams
+create table team
 (
     season_year int not null,
     team_code char(3) not null,
@@ -29,7 +29,7 @@ create table teams
     constraint pk_teams primary key (season_year, team_code)
 );
 
-create table rosters
+create table roster
 (
     season_year int not null,
     player_code varchar(20) not null,
@@ -43,7 +43,7 @@ create table rosters
     constraint pk_roster primary key (season_year, player_code, team_code, position)
 );
 
-create table games
+create table game
 (
     id varchar(12) not null,
     game_date date not null,
@@ -72,15 +72,88 @@ create table games
     lp varchar(20),
     save_code varchar(20),
 
-    constraint pk_game primary key (id)
+    constraint pk_game 
+            primary key (id)
 );
 
-create table GameDatas
+create table game_data
 (
     id varchar(12) not null,
     data_type varchar(2) not null,
     pitcher_player_code varchar(20) not null,
     quantity int not null,
 
-    constraint pk_game_data primary key (id, data_type, pitcher_player_code)
+    constraint pk_game_data 
+            primary key (id, data_type, pitcher_player_code),
+
+    constraint fk_game
+            foreign key (id) 
+            references game (id)
+);
+
+create table game_starter
+(
+    id varchar(12) not null,
+    player_code varchar(20) not null,
+    player_name varchar(200) not null,
+    home_team_flag boolean not null,
+    batting_order int not null,
+    fielding_position int not null,
+
+    constraint pk_game_starter 
+            primary key (id, player_code),
+
+    constraint fk_game
+            foreign key (id) 
+            references game (id)
+);
+
+create table game_play
+(
+    id varchar(12) not null,
+    play_index int not null,
+
+    constraint pk_game_play
+            primary key (id, play_index),
+
+    constraint fk_game
+            foreign key (id) 
+            references game (id)
+);
+
+create table game_play_atbat
+(
+    id varchar(12) not null,
+    play_index int not null,
+    inning int not null,
+    home_team_flag boolean not null,
+    player_code varchar(20) not null,
+    count int not null,
+    pitches varchar(100) not null,
+    game_event varchar(100) not null,
+
+    constraint pk_game_play_atbat 
+            primary key (id, play_index),
+
+    constraint fk_game_play
+            foreign key (id, play_index) 
+            references game_play (id, play_index)
+);
+
+create table game_play_sub
+(
+    id varchar(12) not null,
+    play_index int not null,
+    player_code varchar(20) not null,
+    player_name varchar(200) not null,
+    home_team_flag boolean not null,
+    batting_order int not null,
+    fielding_position int not null,
+
+    constraint pk_game_play_sub 
+            primary key (id, play_index),
+
+    constraint fk_game_play 
+            foreign key (id, play_index) 
+            references game_play (id, play_index)
 );

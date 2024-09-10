@@ -97,14 +97,14 @@ class Game:
     """
 
     def __init__(self):
-        self.id = None
+        self.game_id = None
         self.info_attributes = {}
         self.starters = []
         self.game_plays = []
         self.data = []
 
     def __str__(self) -> str:
-        response = f"""{{ "id": "{self.id}", "info_attributes": {self.info_attributes}, """
+        response = f"""{{ "id": "{self.game_id}", "info_attributes": {self.info_attributes}, """
         response += """"starters": [ """
         c = 0
         for starter in self.starters:
@@ -139,11 +139,11 @@ def save_game_base_record(sql_connection, game):
         sql_connection - sql connection to use for the tx
         game - game record to save 
     """
-    logger.debug("Saving Base Game Record!  ID=%s", game.id)
+    logger.debug("Saving Base Game Record!  ID=%s", game.game_id)
 
     # Save Game
-    sql = f"""
-        insert into games 
+    sql = """
+        insert into game
         (
             id,
             game_date,
@@ -180,7 +180,7 @@ def save_game_base_record(sql_connection, game):
     with sql_connection.cursor() as sql_cursor:
         sql_cursor.execute(sql,
             [
-                game.id,
+                game.game_id,
                 game.info_attributes["date"],
                 game.info_attributes["starttime"],
                 game.info_attributes["number"],
@@ -209,17 +209,51 @@ def save_game_base_record(sql_connection, game):
         )
 
 
-def save_game_data(sql_connection, id, data):
+def save_game_starter(sql_connection, game_id, starter):
+    """ Save the Game Starters.
+    
+        sql_connection - sql connection to use for transaction
+        game_id - associated game id
+        data - game data record
+    """
+    logger.debug("Saving Game Starter!  ID=%s, Starter=%s", game_id, starter)
+
+    # Save Game Starter
+    sql = """
+        insert into game_starter
+        (
+            id, player_code, player_name, home_team_flag, batting_order, fielding_position
+        )
+        values 
+        (
+            %s, %s, %s, %s, %s, %s
+        )
+           """
+    with sql_connection.cursor() as sql_cursor:
+        sql_cursor.execute(sql,
+            [
+                game_id,
+                starter.player_code,
+                starter.player_name,
+                starter.home_team_flag,
+                starter.batting_order,
+                starter.fielding_position
+            ]
+        )
+
+
+def save_game_data(sql_connection, game_id, data):
     """ Save the Game Data Entry.
     
         sql_connection - sql connection to use for transaction
+        game_id - game id
         data - game data record
     """
-    logger.debug("Saving Data Record!  ID=%s, Type=", id, data.data_type)
+    logger.debug("Saving Data Record!  ID=%s, Type=%s", game_id, data.data_type)
 
     # Save Data
-    sql = f"""
-        insert into GameDatas 
+    sql = """
+        insert into game_data 
         (
             id, data_type, pitcher_player_code, quantity
         )
@@ -231,10 +265,110 @@ def save_game_data(sql_connection, id, data):
     with sql_connection.cursor() as sql_cursor:
         sql_cursor.execute(sql,
             [
-                id,
+                game_id,
                 data.data_type,
                 data.pitcher_player_code,
                 data.quantity
+            ]
+        )
+
+
+def save_game_play(sql_connection, game_id, index):
+    """ Save the Game Play record.
+    
+        sql_connection - sql connection to use for transaction
+        game_id - associated game id
+        index - game play index
+    """
+    logger.debug("Saving Game Play!  ID=%s, Index=%s", game_id, index)
+
+    # Save Game Play
+    sql = """
+        insert into game_play
+        (
+            id, play_index
+        )
+        values 
+        (
+            %s, %s
+        )
+           """
+    with sql_connection.cursor() as sql_cursor:
+        sql_cursor.execute(sql,
+            [
+                game_id,
+                index
+            ]
+        )
+
+
+def save_game_play_atbat(sql_connection, game_id, index, atbat):
+    """ Save the Game Play record.
+    
+        sql_connection - sql connection to use for transaction
+        game_id - associated game id
+        index - game play index
+        atbat - at bat record
+    """
+    logger.debug("Saving At Bat!  ID=%s, Index=%s, AtBat=%s", game_id, index, atbat)
+
+    # Save Game Play
+    sql = """
+        insert into game_play_atbat
+        (
+            id, play_index, inning, home_team_flag, player_code, count, pitches, game_event
+        )
+        values 
+        (
+            %s, %s, %s, %s, %s, %s, %s, %s
+        )
+           """
+    with sql_connection.cursor() as sql_cursor:
+        sql_cursor.execute(sql,
+            [
+                game_id,
+                index,
+                atbat.inning,
+                atbat.home_team_flag,
+                atbat.player_code,
+                atbat.count,
+                atbat.pitches,
+                atbat.game_event
+            ]
+        )
+
+
+def save_game_play_sub(sql_connection, game_id, index, sub):
+    """ Save the Game Play record.
+    
+        sql_connection - sql connection to use for transaction
+        game_id - associated game id
+        index - game play index
+        sub - substitution record
+    """
+    logger.debug("Saving Substitution!  ID=%s, Index=%s, Sub=%s", game_id, index, sub)
+
+    # Save Game Play
+    sql = """
+        insert into game_play_sub
+        (
+            id, play_index, player_code, player_name, home_team_flag, batting_order, fielding_position
+        )
+        values 
+        (
+            %s, %s, %s, %s, %s, %s, %s
+        )
+           """
+    with sql_connection.cursor() as sql_cursor:
+        sql_cursor.execute(sql,
+            [
+                game_id,
+                index,
+                sub.player_code,
+                sub.player_name,
+                sub.home_team_flag,
+                sub.batting_order,
+                sub.fielding_position
             ]
         )
 
@@ -245,17 +379,31 @@ def save_game(sql_connection, game):
         sql_connection - sql connection to use for tx
         game - game to save 
     """
-    logger.info("Saving Game Record!  ID=%s", game.id)
+    logger.info("Saving Game Record!  ID=%s", game.game_id)
     try:
         save_game_base_record(sql_connection, game)
+        for starter in game.starters:
+            save_game_starter(sql_connection, game.game_id, starter)
         for data in game.data:
-            save_game_data(sql_connection, game.id, data)
+            save_game_data(sql_connection, game.game_id, data)
+        game_play_index = 0
+        for game_play in game.game_plays:
+            game_play_index += 1
+            save_game_play(sql_connection, game.game_id, game_play_index)
+            if isinstance(game_play, GameAtBat):
+                save_game_play_atbat(sql_connection, game.game_id, game_play_index, game_play)
+            elif isinstance(game_play, GameSubstitution):
+                save_game_play_sub(sql_connection, game.game_id, game_play_index, game_play)
+            else:
+                logger.error("Unknown game play type.  Type=%s", type(game_play))
+                raise ValueError("Unknown game play record type.")
     except psycopg.Error as e:
         logger.error("Unable to save Record due to SQL error (%s):  Object=<%s>", e, str(game))
         raise e
 
 
 # pylint: disable=too-many-statements
+# pylint: disable=too-many-branches
 def import_event_file(file, directory):
     """ Imports the specified event file.
     
@@ -281,7 +429,7 @@ def import_event_file(file, directory):
                 if row[0] == "id":
                     # Creating new Game
                     game = Game()
-                    game.id = row[1]
+                    game.game_id = row[1]
                     game_chunks.append(game)
                 elif row[0] == "version":
                     # pylint: disable=unnecessary-pass
@@ -354,4 +502,9 @@ def import_all_event_data_files(directory):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG,
+    handlers=[
+        # no need - logging.FileHandler("baseball-ingest.log"),
+        logging.StreamHandler()
+    ])
     import_event_file("2000ANA.EVA", "data/raw/")

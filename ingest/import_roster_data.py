@@ -18,7 +18,7 @@ def import_roster_data_file(file, directory):
     year = int(file[3:7])
     logger.debug("Data File <%s> is mapping to Year <%s>", file, year)
 
-    sql_table = "rosters"
+    sql_table = "roster"
     sql_columns_mapping = ["player_code",
                            "last_name",
                            "first_name",
