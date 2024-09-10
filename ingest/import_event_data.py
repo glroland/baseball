@@ -69,6 +69,18 @@ class GameSubstitution(GamePlay):
 
 
 # pylint: disable=too-few-public-methods
+class Data:
+    """ Represents the end of game data records, such as earned runs. """
+    data_type = None
+    pitcher_player_code = None
+    quantity = None
+
+    def __str__(self) -> str:
+        return f"""{{ "data_type": "{self.data_type}", "pitcher_player_code": """ + \
+               f""""{self.pitcher_player_code}", "quantity": {self.quantity} }}"""
+
+
+# pylint: disable=too-few-public-methods
 class Game:
     """ Data Structure for a game chunk that is incrementally assembled as 
     the file is parsed.
@@ -77,11 +89,18 @@ class Game:
     info_attributes = {}
     starters = []
     game_plays = []
-    data_list = []
+    data = []
 
     def __str__(self) -> str:
-        response = f"""{{ "id": "{self.id}", "info_attributes": "{self.info_attributes}", """ \
-                   f""""starters": "{self.starters}", "data_list": {self.data_list}, """
+        response = f"""{{ "id": "{self.id}", "info_attributes": "{self.info_attributes}", """
+        response += """"starters": {{ """
+        c = 0
+        for starter in self.starters:
+            if c > 0:
+                response += ", "
+            response += str(starter)
+            c += 1
+        response += " } "
         response += """"game_plays": {{ """
         c = 0
         for play in self.game_plays:
@@ -89,7 +108,16 @@ class Game:
                 response += ", "
             response += str(play)
             c += 1
-        response += "} }"
+        response += " } "
+        response += """"data": {{ """
+        c = 0
+        for d in self.data:
+            if c > 0:
+                response += ", "
+            response += str(d)
+            c += 1
+        response += " } "
+        response += "}"
         return response
 
 
@@ -165,7 +193,11 @@ def import_event_file(file, directory):
                     game_subst.fielding_position = row[5]
                     game.game_plays.append(game_subst)
                 elif row[0] == "data":
-                    game.data_list.append(row)
+                    data = Data()
+                    data.data_type = row[1]
+                    data.pitcher_player_code = row[2]
+                    data.quantity = int(row[3])
+                    game.data.append(data)
                 elif row[0] == "com":
                     logger.debug("Comment: %s", row[1])
                 else:
@@ -177,7 +209,7 @@ def import_event_file(file, directory):
 
     print ("# of games: ", len(game_chunks))
     #print (game_chunks[0].info_attributes)
-    #print (game)
+    print (game)
 
 
 def import_all_event_data_files(directory):
