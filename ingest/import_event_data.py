@@ -19,11 +19,13 @@ ROSTER_FILE_EXTENSION_NATIONAL = ".EVN"
 # pylint: disable=too-few-public-methods
 class Starter:
     """ Starter Entry Fields """
-    player_code = None
-    player_name = None
-    home_team_flag = None
-    batting_order = None
-    fielding_position = None
+
+    def __init__(self):
+        self.player_code = None
+        self.player_name = None
+        self.home_team_flag = None
+        self.batting_order = None
+        self.fielding_position = None
 
     def __str__(self) -> str:
         return f"""{{ "player_code": "{self.player_code}", "player_name": """ \
@@ -40,12 +42,14 @@ class GamePlay:
 # pylint: disable=too-few-public-methods
 class GameAtBat(GamePlay):
     """ At Bat Record for a Game """
-    inning = None
-    home_team_flag = None
-    player_code = None
-    count = None
-    pitches = None
-    game_event = None
+
+    def __init__(self):
+        self.inning = None
+        self.home_team_flag = None
+        self.player_code = None
+        self.count = None
+        self.pitches = None
+        self.game_event = None
 
     def __str__(self) -> str:
         return f"""{{ "play_type": "AtBat", "inning": "{self.inning}", """ \
@@ -57,11 +61,13 @@ class GameAtBat(GamePlay):
 # pylint: disable=too-few-public-methods
 class GameSubstitution(GamePlay):
     """ Player Substitution Event """
-    player_code = None
-    player_name = None
-    home_team_flag = None
-    batting_order = None
-    fielding_position = None
+
+    def __init__(self):
+        self.player_code = None
+        self.player_name = None
+        self.home_team_flag = None
+        self.batting_order = None
+        self.fielding_position = None
 
     def __str__(self) -> str:
         return f"""{{ "play_type": "Substitution", "player_code": "{self.player_code}", """ \
@@ -73,9 +79,11 @@ class GameSubstitution(GamePlay):
 # pylint: disable=too-few-public-methods
 class Data:
     """ Represents the end of game data records, such as earned runs. """
-    data_type = None
-    pitcher_player_code = None
-    quantity = None
+
+    def __init__(self):
+        self.data_type = None
+        self.pitcher_player_code = None
+        self.quantity = None
 
     def __str__(self) -> str:
         return f"""{{ "data_type": "{self.data_type}", "pitcher_player_code": """ + \
@@ -87,11 +95,13 @@ class Game:
     """ Data Structure for a game chunk that is incrementally assembled as 
     the file is parsed.
     """
-    id = None
-    info_attributes = {}
-    starters = []
-    game_plays = []
-    data = []
+
+    def __init__(self):
+        self.id = None
+        self.info_attributes = {}
+        self.starters = []
+        self.game_plays = []
+        self.data = []
 
     def __str__(self) -> str:
         response = f"""{{ "id": "{self.id}", "info_attributes": {self.info_attributes}, """
