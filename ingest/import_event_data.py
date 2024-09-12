@@ -9,7 +9,7 @@ import logging
 import os
 import csv
 import psycopg
-from db_utils import connect_to_db
+from db_utils import connect_to_db, truncate_table
 
 logger = logging.getLogger(__name__)
 
@@ -302,6 +302,36 @@ def save_game_play(sql_connection, game_id, index):
         )
 
 
+def extract_and_save_pitches(sql_cursor, game_id, play_index, game_play):
+    """ Extract the pitch strings and save as standalone events.  
+    
+        sql_cursor - sql cursor to use for tx
+        game_id - associated game id
+        play_index - game play index
+        atbat - at bat record
+    """
+    pitches = game_play.pitches
+    logger.debug("Saving At Bat Pitch!  ID=%s, PlayIndex=%s, Pitches=%s",
+                     game_id, play_index, pitches)
+    sql = """
+            insert into game_play_atbat_pitch (id, play_index, pitch_index, pitch_type_cd)
+            values(%s, %s, %s, %s)
+          """
+    pitch_index = 0
+    for pitch_type_cd in pitches:
+        pitch_index += 1
+        logger.debug("Saving At Bat Pitch!  ID=%s, PlayIndex=%s, Pitches=%s, Pitch=%s",
+                     game_id, play_index, pitches, pitch_type_cd)
+        sql_cursor.execute(sql,
+            [
+                game_id,
+                play_index,
+                pitch_index,
+                pitch_type_cd
+            ]
+        )
+
+
 def save_game_play_atbat(sql_connection, game_id, index, atbat):
     """ Save the Game Play record.
     
@@ -336,6 +366,7 @@ def save_game_play_atbat(sql_connection, game_id, index, atbat):
                 atbat.game_event
             ]
         )
+        extract_and_save_pitches(sql_cursor, game_id, index, atbat)
 
 
 def save_game_play_sub(sql_connection, game_id, index, sub):
@@ -507,4 +538,6 @@ if __name__ == "__main__":
         # no need - logging.FileHandler("baseball-ingest.log"),
         logging.StreamHandler()
     ])
+
+    truncate_table(connect_to_db(), "game", True)
     import_event_file("2000ANA.EVA", "data/raw/")

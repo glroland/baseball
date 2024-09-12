@@ -157,3 +157,59 @@ create table game_play_sub
             foreign key (id, play_index) 
             references game_play (id, play_index)
 );
+
+create table pitch_type
+(
+    pitch_type_cd char(1) not null,
+    pitch_type_desc varchar(150) not null,
+
+    constraint pk_pitch_type
+            primary key (pitch_type_cd)
+);
+
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('+', 'following pickoff throw by the catcher');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('*', 'indicates the following pitch was blocked by the catcher');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('.', 'marker for play not involving the batter');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('1', 'pickoff throw to first');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('2', 'pickoff throw to second');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('3', 'pickoff throw to third');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('>', 'Indicates a runner going on the pitch');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('A', 'automatic strike, usually for pitch timer violation');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('B', 'ball');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('C', 'called strike');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('F', 'foul');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('H', 'hit batter');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('I', 'intentional ball');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('K', 'strike (unknown type)');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('L', 'foul bunt');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('M', 'missed bunt attempt');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('N', 'no pitch (on balks and interference calls)');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('O', 'foul tip on bunt');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('P', 'pitchout');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('Q', 'swinging on pitchout');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('R', 'foul ball on pitchout');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('S', 'swinging strike');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('T', 'foul tip');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('U', 'unknown or missed pitch');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('V', 'called ball because pitcher went to his mouth or automatic ball on intentional walk or pitch timer violation');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('X', 'ball put into play by batter');
+insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('Y', 'ball put into play on pitchout');
+
+create table game_play_atbat_pitch
+(
+    id varchar(12) not null,
+    play_index int not null,
+    pitch_index int not null,
+    pitch_type_cd char(1) not null,
+
+    constraint pk_game_play_atbat_pitch
+            primary key (id, play_index, pitch_index),
+
+    constraint fk_game_play_atbat
+            foreign key (id, play_index) 
+            references game_play_atbat (id, play_index),
+
+    constraint fk_pitch_type
+            foreign key (pitch_type_cd) 
+            references pitch_type (pitch_type_cd)
+);

@@ -30,15 +30,29 @@ def connect_to_db():
     return connect_to_db_with_conn_str(connection_string)
 
 
+def truncate_table(sql_connection, table_name, cascade_flag = False):
+    """ Truncates the specified table.
+    
+        sql_connection - SQL Connection
+        table_name - table name to truncate
+        casecade_flag - whether or not to cascade the truncation
+    """
+    sql = "truncate " + table_name
+    if cascade_flag is True:
+        sql += " cascade"
+    logger.debug("Truncating Table.  SQL=%s", sql)
+    with sql_connection.cursor() as sql_cursor:
+        sql_cursor.execute(sql)
+    sql_connection.commit()
+
+
 def truncate_load_table(sql_connection):
     """ Truncates the temperary load table.
     
-        sql_cursor - SQL Cursor
+        sql_connection - SQL Connection
     """
     logger.debug("Truncating Load Table")
-    with sql_connection.cursor() as sql_cursor:
-        sql_cursor.execute("truncate temp_load")
-    sql_connection.commit()
+    truncate_table(sql_connection, "temp_load")
 
 
 def raw_file_import(connection_string, data_file, columns_str):
