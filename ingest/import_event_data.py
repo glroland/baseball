@@ -302,16 +302,15 @@ def save_game_play(sql_connection, game_id, index):
         )
 
 
-def extract_and_save_pitches(sql_cursor, game_id, play_index, game_play):
+def extract_and_save_pitches(sql_cursor, game_id, play_index, pitches):
     """ Extract the pitch strings and save as standalone events.  
     
         sql_cursor - sql cursor to use for tx
         game_id - associated game id
         play_index - game play index
-        atbat - at bat record
+        pitches - pitches string
     """
-    pitches = game_play.pitches
-    logger.debug("Saving At Bat Pitch!  ID=%s, PlayIndex=%s, Pitches=%s",
+    logger.debug("Saving At Bat Pitch Events!  ID=%s, PlayIndex=%s, Pitches=%s",
                      game_id, play_index, pitches)
     sql = """
             insert into game_play_atbat_pitch (id, play_index, pitch_index, pitch_type_cd)
@@ -330,6 +329,34 @@ def extract_and_save_pitches(sql_cursor, game_id, play_index, game_play):
                 pitch_type_cd
             ]
         )
+
+
+def extract_and_save_batter_events(sql_cursor, game_id, play_index, batter_events):
+    """ Extract the batter event strings and save as standalone events.  
+    
+        sql_cursor - sql cursor to use for tx
+        game_id - associated game id
+        play_index - game play index
+        atbat - at bat record
+    """
+    logger.debug("Saving At Batter Events!  ID=%s, PlayIndex=%s, Events=%s",
+                     game_id, play_index, batter_events)
+
+    # split batter events into chunks
+    dot_index = batter_events.find(".")
+    basic_play_w_mods = batter_events
+    advance = None
+    if dot_index != -1 and dot_index < len(batter_events):
+        advance = batter_events[(dot_index+1):]
+        basic_play_w_mods = batter_events[0:dot_index]
+    l = basic_play_w_mods.split("/")
+    basic_play = l.pop(0)
+    modifiers = l
+
+    # log the individual chunks
+    logger.info("Extracted Batter Events. Str=<%s> Play=<%s> Modifier=<%s> Advance=<%s>",
+                    batter_events, basic_play, modifiers, advance)
+
 
 
 def save_game_play_atbat(sql_connection, game_id, index, atbat):
@@ -366,7 +393,9 @@ def save_game_play_atbat(sql_connection, game_id, index, atbat):
                 atbat.game_event
             ]
         )
-        extract_and_save_pitches(sql_cursor, game_id, index, atbat)
+        extract_and_save_pitches(sql_cursor, game_id, index, atbat.pitches)
+        extract_and_save_batter_events(sql_cursor, game_id, index, atbat.game_event)
+
 
 
 def save_game_play_sub(sql_connection, game_id, index, sub):
@@ -533,7 +562,7 @@ def import_all_event_data_files(directory):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG,
+    logging.basicConfig(level=logging.INFO,
     handlers=[
         # no need - logging.FileHandler("baseball-ingest.log"),
         logging.StreamHandler()
