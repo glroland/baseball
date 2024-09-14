@@ -137,7 +137,7 @@ create table game_starter
     batting_order int not null,
     fielding_position int not null,
 
-    unique (id, batting_order),
+    unique (id, home_team_flag, batting_order),
 
     constraint pk_game_starter 
             primary key (id, player_code),
@@ -155,6 +155,8 @@ create table game_play
 (
     id varchar(12) not null,
     play_index int not null,
+
+    check (play_index > 0),
 
     constraint pk_game_play
             primary key (id, play_index),
