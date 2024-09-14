@@ -175,7 +175,6 @@ create table game_play_atbat
     player_code varchar(20) not null,
     count int not null,
     pitches varchar(100) not null,
-    game_event varchar(100) not null,
 
     constraint pk_game_play_atbat 
             primary key (id, play_index),
