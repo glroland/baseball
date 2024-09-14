@@ -18,6 +18,39 @@ create table temp_load
     col15 varchar(250)
 );
 
+create table field_pos
+(
+    field_pos_cd varchar(2) not null,
+    field_pos_num int,
+    field_pos_desc varchar(100) not null,
+
+    unique (field_pos_num),
+
+    constraint pk_field_pos primary key (field_pos_cd)
+);
+
+insert into field_pos (field_pos_cd, field_pos_num, field_pos_desc) values ('P', 1, 'Pitcher');
+insert into field_pos (field_pos_cd, field_pos_num, field_pos_desc) values ('C', 2, 'Catcher');
+insert into field_pos (field_pos_cd, field_pos_num, field_pos_desc) values ('1B', 3, 'First Base');
+insert into field_pos (field_pos_cd, field_pos_num, field_pos_desc) values ('2B', 4, 'Second Base');
+insert into field_pos (field_pos_cd, field_pos_num, field_pos_desc) values ('3B', 5, 'Third Base');
+insert into field_pos (field_pos_cd, field_pos_num, field_pos_desc) values ('SS', 6, 'Shortstop');
+insert into field_pos (field_pos_cd, field_pos_num, field_pos_desc) values ('LF', 7, 'Left Field');
+insert into field_pos (field_pos_cd, field_pos_num, field_pos_desc) values ('CF', 8, 'Center Field');
+insert into field_pos (field_pos_cd, field_pos_num, field_pos_desc) values ('RF', 9, 'Right Field');
+-- TODO - What is the X Player Code in the Retrosheet data file?
+insert into field_pos (field_pos_cd, field_pos_num, field_pos_desc) values ('X', null, 'UNKNOWN (???)');
+-- TODO - Not confident that 12 is PR
+insert into field_pos (field_pos_cd, field_pos_num, field_pos_desc) values ('PR', 12, 'Pinch Runner');
+insert into field_pos (field_pos_cd, field_pos_num, field_pos_desc) values ('IF', null, 'Infield');
+-- TODO - Not confident that 10 is DH
+insert into field_pos (field_pos_cd, field_pos_num, field_pos_desc) values ('DH', 10, 'Designated Hitter');
+insert into field_pos (field_pos_cd, field_pos_num, field_pos_desc) values ('OF', null, 'Outfield');
+-- TODO - What is the A Player Code in the Retrosheet data file?
+insert into field_pos (field_pos_cd, field_pos_num, field_pos_desc) values ('A', null, 'UNKNOWN (ACE?)');
+-- TODO - Not confident that 11 is PH
+insert into field_pos (field_pos_cd, field_pos_num, field_pos_desc) values ('PH', 11, 'Pinch Hitter');
+
 create table team
 (
     season_year int not null,
@@ -38,9 +71,13 @@ create table roster
     throw_hand char(1) not null,
     batting_hand char(1) not null,
     team_code char(3) not null,
-    position varchar(5) not null,
+    position varchar(2) not null,
 
-    constraint pk_roster primary key (season_year, player_code, team_code, position)
+    constraint pk_roster primary key (season_year, player_code, team_code, position),
+
+    constraint field_pos
+            foreign key (position) 
+            references field_pos (field_pos_cd)
 );
 
 create table game
@@ -100,12 +137,18 @@ create table game_starter
     batting_order int not null,
     fielding_position int not null,
 
+    unique (id, batting_order),
+
     constraint pk_game_starter 
             primary key (id, player_code),
 
     constraint fk_game
             foreign key (id) 
-            references game (id)
+            references game (id),
+
+    constraint field_pos
+            foreign key (fielding_position) 
+            references field_pos (field_pos_num)
 );
 
 create table game_play
@@ -155,7 +198,11 @@ create table game_play_sub
 
     constraint fk_game_play 
             foreign key (id, play_index) 
-            references game_play (id, play_index)
+            references game_play (id, play_index),
+
+    constraint field_pos
+            foreign key (fielding_position) 
+            references field_pos (field_pos_num)
 );
 
 create table pitch_type
@@ -212,4 +259,18 @@ create table game_play_atbat_pitch
     constraint fk_pitch_type
             foreign key (pitch_type_cd) 
             references pitch_type (pitch_type_cd)
+);
+
+create table game_play_atbat_field_event
+(
+    id varchar(12) not null,
+    play_index int not null,
+    pitch_index int not null,
+
+    constraint pk_game_play_atbat_field_event
+            primary key (id, play_index, pitch_index),
+
+    constraint fk_game_play_atbat
+            foreign key (id, play_index) 
+            references game_play_atbat (id, play_index)
 );

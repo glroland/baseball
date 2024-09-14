@@ -72,9 +72,11 @@ def migrate_load_to_table(sql_connection, table_name, sql_columns_str, preval, t
     """ Perform an in-database migration of data from the loading table
         to the destination table.
 
-        sql_cursor - cursor to use
+        sql_connection - connection to use
         table_name - name of destination table
-        sql_columns_mapping - array of columns correlating to each load column
+        sql_columns_str - target table column names
+        preval - overriding value (probably a key) applied to leading column
+        temp_columns_str - string containing columns to pull from load table
     """
     sql = f"insert into {table_name} ( {sql_columns_str} ) " \
           f"select {preval}, {temp_columns_str} from temp_load"
@@ -108,12 +110,15 @@ def bulk_import_csv_file(data_file, table_name, sql_columns_mapping,
     # Create columns list string
     load_columns_str = ""
     sql_columns_str = ""
+    trimmed_load_columns_str = ""
     # pylint: disable=consider-using-enumerate
     for i in range(len(sql_columns_mapping)):
         if i > 0:
             load_columns_str = load_columns_str + ", "
+            trimmed_load_columns_str = trimmed_load_columns_str + ", "
             sql_columns_str = sql_columns_str + ", "
         load_columns_str = load_columns_str + "col" + str(i)
+        trimmed_load_columns_str = trimmed_load_columns_str + "trim(col" + str(i) + ")"
         sql_columns_str = sql_columns_str + sql_columns_mapping[i]
 
     # Load the datafile
@@ -124,6 +129,6 @@ def bulk_import_csv_file(data_file, table_name, sql_columns_mapping,
                           table_name,
                           file_identifier_col + ", " + sql_columns_str,
                           file_identifier,
-                          load_columns_str)
+                          trimmed_load_columns_str)
 
     logger.debug ("Completed Bulk Import of File: %s", data_file)

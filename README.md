@@ -10,4 +10,9 @@ brew install freetds
                         f"uid={db_user};" \
                         f"pwd={db_password};" \
                         "Trusted_Connection=no;"
-                        
+
+Field Positions Reference:
+https://en.wikipedia.org/wiki/Baseball_positions
+
+Play by Play Data File Formats:
+https://www.retrosheet.org/game.htm
