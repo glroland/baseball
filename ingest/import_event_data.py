@@ -331,6 +331,35 @@ def extract_and_save_pitches(sql_cursor, game_id, play_index, pitches):
         )
 
 
+def save_batter_event(sql_cursor, game_id, play_index, basic_play, modifiers, advance):
+    """ Save the provided batter event.
+    
+        sql_cursor - cursor to use for tx
+        game_id - baseball game id
+        play_index - game play index
+        basic_play - core play details
+        modifiers - list of modifiers attached to the basic play
+        advance - runner advancement details
+    """
+    logger.debug("Saving Batter Fielding Events!  ID=%s, PlayIndex=%s, BasicPlay=%s, " +
+                 "Modifiers=<%s>, Advance=<%s>", game_id, play_index, basic_play,
+                 modifiers, advance)
+    sql = """
+            insert into game_play_atbat_field_event (id, play_index, basic_play,
+                                                     modifiers, advance)
+            values(%s, %s, %s, %s, %s)
+          """
+    sql_cursor.execute(sql,
+        [
+            game_id,
+            play_index,
+            basic_play,
+            modifiers,
+            advance
+        ]
+    )
+
+
 def extract_and_save_batter_events(sql_cursor, game_id, play_index, batter_events):
     """ Extract the batter event strings and save as standalone events.  
     
@@ -353,10 +382,10 @@ def extract_and_save_batter_events(sql_cursor, game_id, play_index, batter_event
     basic_play = l.pop(0)
     modifiers = l
 
-    # log the individual chunks
-    logger.info("Extracted Batter Events. Str=<%s> Play=<%s> Modifier=<%s> Advance=<%s>",
+    # log and save the individual chunks
+    logger.info("Extracted Batter Events. Str=<%s> Play=<%s> Modifiers=<%s> Advance=<%s>",
                     batter_events, basic_play, modifiers, advance)
-
+    save_batter_event(sql_cursor, game_id, play_index, basic_play, modifiers, advance)
 
 
 def save_game_play_atbat(sql_connection, game_id, index, atbat):

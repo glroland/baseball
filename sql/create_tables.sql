@@ -156,7 +156,7 @@ create table game_play
     id varchar(12) not null,
     play_index int not null,
 
-    check (play_index > 0),
+    check (play_index >= 1),
 
     constraint pk_game_play
             primary key (id, play_index),
@@ -251,6 +251,8 @@ create table game_play_atbat_pitch
     pitch_index int not null,
     pitch_type_cd char(1) not null,
 
+    check (pitch_index >= 1),
+
     constraint pk_game_play_atbat_pitch
             primary key (id, play_index, pitch_index),
 
@@ -267,10 +269,12 @@ create table game_play_atbat_field_event
 (
     id varchar(12) not null,
     play_index int not null,
-    pitch_index int not null,
-
+    basic_play varchar(20) not null,
+    modifiers varchar(20),
+    advance varchar(50),
+    
     constraint pk_game_play_atbat_field_event
-            primary key (id, play_index, pitch_index),
+            primary key (id, play_index),
 
     constraint fk_game_play_atbat
             foreign key (id, play_index) 
