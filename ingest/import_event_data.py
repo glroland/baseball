@@ -164,7 +164,7 @@ def import_all_event_data_files(directory):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG,
+    logging.basicConfig(level=logging.INFO,
     handlers=[
         # no need - logging.FileHandler("baseball-ingest.log"),
         logging.StreamHandler()
