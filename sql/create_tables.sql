@@ -103,8 +103,8 @@ create table game
     sky varchar(50) not null,
     game_length int not null,
     attendance int not null,
+    used_dh_rule_flag boolean,
 
-    usedh boolean,
     wp varchar(20),
     lp varchar(20),
     save_code varchar(20),

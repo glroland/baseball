@@ -166,7 +166,7 @@ def save_game_base_record(sql_connection, game):
             sky,
             game_length,
             attendance,
-            usedh,
+            used_dh_rule_flag,
             wp,
             lp,
             save_code
