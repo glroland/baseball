@@ -175,6 +175,15 @@ create table game_play_atbat
     player_code varchar(20) not null,
     count int not null,
     pitches varchar(100) not null,
+    basic_play varchar(20) not null,
+    modifiers varchar(20),
+    advance varchar(50),
+    outs int not null,
+    runner_on_1b boolean not null,
+    runner_on_2b boolean not null,
+    runner_on_3b boolean not null,
+    score_home int not null,
+    score_visitor int not null,
 
     constraint pk_game_play_atbat 
             primary key (id, play_index),
@@ -268,9 +277,6 @@ create table game_play_atbat_field_event
 (
     id varchar(12) not null,
     play_index int not null,
-    basic_play varchar(20) not null,
-    modifiers varchar(20),
-    advance varchar(50),
     
     constraint pk_game_play_atbat_field_event
             primary key (id, play_index),
