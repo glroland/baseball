@@ -12,6 +12,7 @@ import psycopg
 from db_utils import connect_to_db, truncate_table
 from baseball_data import Game, Starter, GameAtBat, GameSubstitution, Data
 from save_event_data import save_game
+from game_events import interpret_game_at_bat_event
 
 logger = logging.getLogger(__name__)
 
@@ -45,50 +46,43 @@ def extract_batter_events(game_id, batter_events, game_at_bat):
     game_at_bat.advance = advance
 
 
-def interpret_game_at_bat_event(game_at_bat):
-    """ Interpret the game at bat event details to determine outs, runners on base, runs,
-    etc.
+def on_game_end(game):
+    """ Validate that the results of the game matches  the play by play data.
     
-    game_at_bat - game at bat record
+        game - game record
     """
-    game_at_bat.outs = 0
-    game_at_bat.runner_on_1b = False
-    game_at_bat.runner_on_2b = False
-    game_at_bat.runner_on_3b = False
-    game_at_bat.score_home = 0
-    game_at_bat.score_visitor = 0
+    logger.info("Game Ended!  ID=%s Score=%-%", game.game_id,
+                game.info_attributes[""],
+                game.info_attributes[""])
     pass
 
 
-# pylint: disable=too-many-statements
-# pylint: disable=too-many-branches
-def import_event_file(file, directory):
-    """ Imports the specified event file.
-    
-        file - file to import
-        directory - location of file
-    """
-    file_with_path = directory + file
-    logger.info("Importing Event File: %s", file_with_path)
-
-    # Ensure file exists
-    if not os.path.isfile(file_with_path):
-        logger.error("Input file does not exist!  %s", file_with_path)
-        raise ValueError("Cannot load file because it does not exist!")
-
-    # Load CSV
+def process_event_file_rows(file_with_path, game_limit):
     game_chunks = []
+
     with open(file_with_path, newline='', encoding="utf-8") as csvfile:
         game = None
+        game_counter = 0
 
         reader = csv.reader(csvfile, delimiter=',', quotechar='"')
         for row in reader:
             if len(row) > 0:
                 if row[0] == "id":
+                    # Reached game counter?
+                    if game_limit > 0 and game_counter >= game_limit:
+                        logger.warning("Game Limit Reached!  Aborting...  %s", game_counter)
+                        return game_chunks
+
+                    # Validate prior game
+                    if game is not None:
+                        on_game_end(game)
+
                     # Creating new Game
+                    logger.info("New Game Record in Data File.  Index # %s", game_counter)
                     game = Game()
                     game.game_id = row[1]
                     game_chunks.append(game)
+                    game_counter += 1
                 elif row[0] == "version":
                     # pylint: disable=unnecessary-pass
                     pass
@@ -103,14 +97,13 @@ def import_event_file(file, directory):
                     starter.fielding_position = int(row[5])
                     game.starters.append(starter)
                 elif row[0] == "play":
-                    game_at_bat = GameAtBat()
-                    game_at_bat.inning = row[1]
-                    game_at_bat.home_team_flag = row[2] == "1"
-                    game_at_bat.player_code = row[3]
-                    game_at_bat.count = row[4]
-                    game_at_bat.pitches = row[5]
-                    game_at_bat.game_event = row[6]
-                    game.game_plays.append(game_at_bat)
+                    game_at_bat = game.new_at_bat(
+                                inning = row[1],
+                                home_team_flag = row[2] == "1",
+                                player_code = row[3],
+                                count = row[4],
+                                pitches = row[5],
+                                game_event = row[6])
 
                     # Process batter event
                     extract_batter_events(game.game_id, game_at_bat.game_event, game_at_bat)
@@ -133,6 +126,31 @@ def import_event_file(file, directory):
                     logger.debug("Comment: %s", row[1])
                 else:
                     logger.error("Unknown Row Type!  %s", row[0])
+
+        # Validate prior game
+        if game is not None:
+            on_game_end(game)
+
+    return game_chunks
+
+
+def import_event_file(file, directory, game_limit = -1):
+    """ Imports the specified event file.
+    
+        file - file to import
+        directory - location of file
+        game_limit - optionally limit the number of games loaded
+    """
+    file_with_path = directory + file
+    logger.info("Importing Event File: %s", file_with_path)
+
+    # Ensure file exists
+    if not os.path.isfile(file_with_path):
+        logger.error("Input file does not exist!  %s", file_with_path)
+        raise ValueError("Cannot load file because it does not exist!")
+
+    # Load CSV
+    game_chunks = process_event_file_rows(file_with_path, game_limit)
 
     # Save Games List
     logger.info("Saving Games.  List is %s games long.", len(game_chunks))
@@ -164,11 +182,11 @@ def import_all_event_data_files(directory):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO,
+    logging.basicConfig(level=logging.DEBUG,
     handlers=[
         # no need - logging.FileHandler("baseball-ingest.log"),
         logging.StreamHandler()
     ])
 
     truncate_table(connect_to_db(), "game", True)
-    import_event_file("2000ANA.EVA", "data/raw/")
+    import_event_file("2000ANA.EVA", "data/raw/", 1)

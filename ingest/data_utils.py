@@ -3,8 +3,15 @@
 Utility functions to help simplify data manipulation.
 """
 import logging
+import re
 
 logger = logging.getLogger(__name__)
+
+def regex_split(regex, str):
+    return list(filter(None, re.split(regex, str)))
+
+def split_leading_num(str):
+    return regex_split("^([0-9]+)(.*)", str)
 
 def split_string(s, token_list):
     """ Splits a string into a list of strings using the list of tokens.
