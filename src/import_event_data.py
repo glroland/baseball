@@ -9,8 +9,11 @@ import logging
 import os
 import csv
 import psycopg
-from db_utils import connect_to_db, truncate_table
-from baseball_data import Game, Starter, GameAtBat, GameSubstitution, Data
+from utils.db import connect_to_db, truncate_table
+from model.game import Game
+from model.game_substitution import GameSubstitution
+from model.starter import Starter
+from model.data import Data
 from save_event_data import save_game
 from game_events import interpret_game_at_bat_event
 

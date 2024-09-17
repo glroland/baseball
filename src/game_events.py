@@ -4,7 +4,7 @@ Apply game events to game at bat event data.
 """
 import logging
 import re
-from data_utils import regex_split, split_leading_num
+from utils.data import regex_split, split_leading_num
 
 logger = logging.getLogger(__name__)
 
@@ -281,7 +281,9 @@ def defensive_play(game_at_bat, play_list):
             due_to = "Due to Ground Ball"
     logger.info ("Batter out after hit.  Out credited to pos %s %s", game_at_bat.fielded_by, due_to)
     if len(db_event_list) > 0:
-        logger.warning("Unhandled Fielded By Metadata.  %s", db_event_list)
+        msg = f"Unhandled Fielded By Metadata.  {db_event_list}"
+        logger.warning(msg)
+        raise ValueError(msg)
 
     handle_advances(game_at_bat)
 

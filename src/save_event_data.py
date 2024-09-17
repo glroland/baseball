@@ -4,7 +4,8 @@ Persists the game data hierarchy of classes to a SQL database.
 """
 import logging
 import psycopg
-from baseball_data import GameAtBat, GameSubstitution
+from model.game_at_bat import GameAtBat
+from model.game_substitution import GameSubstitution
 
 logger = logging.getLogger(__name__)
 
