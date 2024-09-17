@@ -26,3 +26,6 @@ else
 endif
 	PGPASSWORD=$(db_password) psql -v ON_ERROR_STOP=1 -h $(db_host) -p $(db_port) -U $(db_user) -d $(db_name) -w -f sql/create_tables.sql
 	cd src && jupyter nbconvert --to python ingest_retrosheet_data.ipynb --stdout  | BASEBALL_DB_CONN_STRING=$(db_connection_string) python
+
+etest:
+	BASEBALL_DB_CONN_STRING=$(db_connection_string) python src/import_event_data.py
