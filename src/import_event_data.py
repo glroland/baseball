@@ -15,7 +15,7 @@ from model.game_substitution import GameSubstitution
 from model.starter import Starter
 from model.data import Data
 from save_event_data import save_game
-from game_events import interpret_game_at_bat_event
+from events.event_factory import EventFactory
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +110,7 @@ def process_event_file_rows(file_with_path, game_limit):
 
                     # Process batter event
                     extract_batter_events(game.game_id, game_at_bat.game_event, game_at_bat)
-                    interpret_game_at_bat_event(game_at_bat)
+                    event = EventFactory.create(game_at_bat)
                 elif row[0] == "sub":
                     game_subst = GameSubstitution()
                     game_subst.player_code = row[1]
