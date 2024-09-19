@@ -1,7 +1,7 @@
 """ Import Team Roster Data """
 import logging
 import os
-from db_utils import bulk_import_csv_file
+from utils.db import bulk_import_csv_file
 
 logger = logging.getLogger(__name__)
 
