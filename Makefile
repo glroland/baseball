@@ -25,7 +25,13 @@ else
 	psql -v ON_ERROR_STOP=1 -h $(db_host) -p $(db_port) -w -f sql/create_db.sql
 endif
 	PGPASSWORD=$(db_password) psql -v ON_ERROR_STOP=1 -h $(db_host) -p $(db_port) -U $(db_user) -d $(db_name) -w -f sql/create_tables.sql
-	cd src && jupyter nbconvert --to python ingest_retrosheet_data.ipynb --stdout  | BASEBALL_DB_CONN_STRING=$(db_connection_string) python
+	cd src && jupyter nbconvert --to python ingest/ingest_retrosheet_data.ipynb --stdout  | BASEBALL_DB_CONN_STRING=$(db_connection_string) python
+
+run:
+	cd src && BASEBALL_DB_CONN_STRING=$(db_connection_string) python import_events_app.py
+
+help:
+	cd src && BASEBALL_DB_CONN_STRING=$(db_connection_string) python import_events_app.py --help
 
 etest:
-	BASEBALL_DB_CONN_STRING=$(db_connection_string) python src/import_event_data.py
+	cd src && BASEBALL_DB_CONN_STRING=$(db_connection_string) python import_events_app.py --limit 1 ../data/raw/2000ANA.EVA

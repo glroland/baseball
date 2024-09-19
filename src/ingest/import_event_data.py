@@ -14,7 +14,7 @@ from model.game import Game
 from model.game_substitution import GameSubstitution
 from model.starter import Starter
 from model.data import Data
-from save_event_data import save_game
+from ingest.save_event_data import save_game
 from events.event_factory import EventFactory
 
 logger = logging.getLogger(__name__)
@@ -137,14 +137,12 @@ def process_event_file_rows(file_with_path, game_limit):
     return game_chunks
 
 
-def import_event_file(file, directory, game_limit = -1):
+def import_event_file(file_with_path, game_limit = -1):
     """ Imports the specified event file.
     
-        file - file to import
-        directory - location of file
+        file_with_path - file to import
         game_limit - optionally limit the number of games loaded
     """
-    file_with_path = directory + file
     logger.info("Importing Event File: %s", file_with_path)
 
     # Ensure file exists
@@ -177,19 +175,9 @@ def import_all_event_data_files(directory):
     for file in os.listdir(directory):
         if file.endswith(ROSTER_FILE_EXTENSION_AMERICAN) or \
            file.endswith(ROSTER_FILE_EXTENSION_NATIONAL):
-            import_event_file(file, directory)
+            file_with_path = directory + file
+            import_event_file(file_with_path)
 
             logger.debug("Deleting file after successful processing: %s", file)
             os.remove(file)
     logger.debug("All files imported")
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG,
-    handlers=[
-        # no need - logging.FileHandler("baseball-ingest.log"),
-        logging.StreamHandler()
-    ])
-
-    truncate_table(connect_to_db(), "game", True)
-    import_event_file("2000ANA.EVA", "data/raw/", 1)
