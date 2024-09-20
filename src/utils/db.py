@@ -13,7 +13,7 @@ DEFAULT_DB_CONN_STRING = "postgresql://baseball_app:baseball123@tools/baseball_d
 
 def connect_to_db_with_conn_str(connection_string):
     """ Connects to the baseball database """
-    logger.debug("Connecting to database.")
+    logger.debug(f"Connecting to database.  ConnectionString={connection_string}")
 
     #return pyodbc.connect(connection_string)
     return psycopg.connect(connection_string)
@@ -26,6 +26,9 @@ def connect_to_db():
     connection_string = DEFAULT_DB_CONN_STRING
     if ENV_BASEBALL_DB_CONN_STRING in os.environ:
         connection_string = os.environ[ENV_BASEBALL_DB_CONN_STRING]
+        logger.info("Using Database Connection String from Environment Variable.")
+    else:
+        logger.warning("No DB Connection Info provided.  Using Default Connection String!!!")
 
     return connect_to_db_with_conn_str(connection_string)
 
