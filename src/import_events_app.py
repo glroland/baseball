@@ -6,6 +6,8 @@ import click
 from utils.db import truncate_table, connect_to_db
 from ingest.import_event_data import import_event_file, import_all_event_data_files
 
+logger = logging.getLogger(__name__)
+
 class ColorOutputFormatter(logging.Formatter):
     """ Add colors to stdout logging output to simplify text.
         Thank you to https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output.

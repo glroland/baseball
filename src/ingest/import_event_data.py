@@ -70,6 +70,8 @@ def process_event_file_rows(file_with_path, game_limit):
         reader = csv.reader(csvfile, delimiter=',', quotechar='"')
         for row in reader:
             if len(row) > 0:
+                logger.warning("TEMP <ROW> -- %s", row)
+
                 if row[0] == "id":
                     # Reached game counter?
                     if game_limit > 0 and game_counter >= game_limit:

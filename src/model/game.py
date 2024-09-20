@@ -51,7 +51,7 @@ class Game:
         """
         game_at_bat = GameAtBat()
         last_at_bat = self.get_last_at_bat()
-        if last_at_bat != None:
+        if last_at_bat is not None:
             game_at_bat.outs = last_at_bat.outs
             game_at_bat.runner_on_1b = last_at_bat.runner_on_1b
             game_at_bat.runner_on_2b = last_at_bat.runner_on_2b
@@ -67,6 +67,9 @@ class Game:
                     raise ValueError(msg)
 
                 game_at_bat.outs = 0
+                game_at_bat.runner_on_1b = False
+                game_at_bat.runner_on_2b = False
+                game_at_bat.runner_on_3b = False
 
         game_at_bat.inning = inning
         game_at_bat.home_team_flag = home_team_flag
@@ -76,6 +79,13 @@ class Game:
         game_at_bat.game_event = game_event
 
         self.game_plays.append(game_at_bat)
+
+        # log status of inning change
+        if last_at_bat is None or last_at_bat.inning != game_at_bat.inning:
+            logger.info(f"Inning {inning} / Top - Visiting Team at Bat")
+        elif last_at_bat is not None and last_at_bat.home_team_flag != game_at_bat.home_team_flag:
+            logger.info(f"Inning {inning} / Bottom - Home Team at Bat")
+
         return game_at_bat
 
     def __str__(self) -> str:

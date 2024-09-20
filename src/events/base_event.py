@@ -3,6 +3,7 @@
 Base logic for game events.
 """
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 

@@ -5,7 +5,7 @@ Apply game events to game at bat event data.
 import logging
 import re
 import importlib
-from utils.data import regex_split
+from utils.data import regex_split, split_num_paren_chunks
 from events.constants import EventCodes
 
 logger = logging.getLogger(__name__)
@@ -25,7 +25,8 @@ class EventFactory:
         EventCodes.CAUGHT_STEALING: { EVENT_MODULE: "events.caught_stealing", EVENT_CLASS: "CaughtStealingEvent" },
         EventCodes.STRIKEOUT: { EVENT_MODULE: "events.strikeout", EVENT_CLASS: "StrikeoutEvent" },
         EventCodes.HOMERUN: { EVENT_MODULE: "events.homerun", EVENT_CLASS: "HomerunEvent" },
-        EventCodes.ERROR: { EVENT_MODULE: "events.defensiveerror", EVENT_CLASS: "DefensiveErrorEvent" }
+        EventCodes.ERROR: { EVENT_MODULE: "events.defensive_error", EVENT_CLASS: "DefensiveErrorEvent" },
+        EventCodes.NO_PLAY_SUB_COMING: { EVENT_MODULE: "events.no_play", EVENT_CLASS: "NoPlayEvent" }
     }
 
     def __instantiate_class(module_name, class_name):
@@ -67,7 +68,7 @@ class EventFactory:
         # Analyze Defensive Play
         regex = "(^[0-9]+)"
         if re.search(regex, game_at_bat.basic_play):
-            play_list = regex_split(regex, game_at_bat.basic_play)
+            play_list = split_num_paren_chunks(game_at_bat.basic_play)
             event = EventFactory.__create_event_by_name(EventFactory.MAPPING_DEFENSIVE, game_at_bat, play_list)
 
         # Analyze Offensive Play
