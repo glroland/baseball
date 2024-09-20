@@ -50,17 +50,6 @@ def extract_batter_events(game_id, batter_events, game_at_bat):
     game_at_bat.advance = advance
 
 
-def on_game_end(game):
-    """ Validate that the results of the game matches  the play by play data.
-    
-        game - game record
-    """
-    logger.info("Game Ended!  ID=%s Score=%-%", game.game_id,
-                game.info_attributes[""],
-                game.info_attributes[""])
-    pass
-
-
 def process_event_file_rows(file_with_path, game_limit):
     game_chunks = []
 
@@ -82,7 +71,7 @@ def process_event_file_rows(file_with_path, game_limit):
 
                     # Validate prior game
                     if game is not None:
-                        on_game_end(game)
+                        game.game_end()
 
                     # Creating new Game
                     game_counter += 1
@@ -138,7 +127,7 @@ def process_event_file_rows(file_with_path, game_limit):
 
         # Validate prior game
         if game is not None:
-            on_game_end(game)
+            game.game_end()
 
     return game_chunks
 

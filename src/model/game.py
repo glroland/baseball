@@ -159,3 +159,30 @@ class Game:
         response += " ] "
         response += "}"
         return response
+
+    def score(self):
+        """ Get the current score of the game.
+        
+        Returns a tuple where visitor is first, home is second.
+        """
+        last_at_bat = self.get_last_at_bat()
+        if last_at_bat is None:
+            return [0, 0]
+        v = last_at_bat.score_visitor
+        if v is None:
+            v = 0
+        h = last_at_bat.score_home
+        if h is None:
+            h = 0        
+        return [v, h]
+
+    def game_end(self):
+        """ Validate that the results of the game matches  the play by play data.
+        
+            game - game record
+        """
+        score_tuple = self.score()
+        logger.info("Game Ended!  ID=%s Score=%s-%s",
+                    self.game_id,
+                    score_tuple[0],
+                    score_tuple[1])
