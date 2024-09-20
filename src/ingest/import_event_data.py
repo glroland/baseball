@@ -81,11 +81,11 @@ def process_event_file_rows(file_with_path, game_limit):
                         on_game_end(game)
 
                     # Creating new Game
+                    game_counter += 1
                     logger.info("New Game Record in Data File.  Index # %s", game_counter)
                     game = Game()
                     game.game_id = row[1]
                     game_chunks.append(game)
-                    game_counter += 1
                 elif row[0] == "version":
                     # pylint: disable=unnecessary-pass
                     pass
