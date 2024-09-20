@@ -14,7 +14,7 @@ install:
 	pip install -r requirements.txt
 
 lint:
-	pylint src/*.py
+	pylint --recursive y src
 
 db:
 ifneq "$(db_dba_password)" "" 
