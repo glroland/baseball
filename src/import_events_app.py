@@ -6,6 +6,31 @@ import click
 from utils.db import truncate_table, connect_to_db
 from ingest.import_event_data import import_event_file, import_all_event_data_files
 
+class ColorOutputFormatter(logging.Formatter):
+    """ Add colors to stdout logging output to simplify text.
+        Thank you to https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output.
+    """
+
+    grey = "\x1b[38;20m"
+    yellow = "\x1b[33;20m"
+    red = "\x1b[31;20m"
+    bold_red = "\x1b[31;1m"
+    reset = "\x1b[0m"
+    format = '%(name)-13s: %(message)s'
+
+    FORMATS = {
+        logging.DEBUG: grey + format + reset,
+        logging.INFO: grey + format + reset,
+        logging.WARNING: yellow + format + reset,
+        logging.ERROR: red + format + reset,
+        logging.CRITICAL: bold_red + format + reset
+    }
+
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(record)
+
 @click.command()
 @click.argument('event_file_or_dir')
 @click.option('--limit', '-l', default=-1,
@@ -25,7 +50,7 @@ def cli(event_file_or_dir, limit, truncate, log_file):
     # Log info and higher to the console
     console = logging.StreamHandler(sys.stdout)
     console.setLevel(logging.INFO)
-    console.setFormatter(logging.Formatter('%(name)-13s: %(message)s'))
+    console.setFormatter(ColorOutputFormatter())
     logging.getLogger().addHandler(console)
 
     # Log debug and higher to a file
