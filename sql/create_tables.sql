@@ -197,9 +197,9 @@ create table game_play_sub
 (
     id varchar(12) not null,
     play_index int not null,
-    player_code varchar(20) not null,
-    player_name varchar(200) not null,
-    home_team_flag boolean not null,
+    player_from varchar(20) not null,
+    player_to varchar(20) not null,
+    players_team_home_flag boolean not null,
     batting_order int not null,
     fielding_position int not null,
 

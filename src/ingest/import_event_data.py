@@ -16,6 +16,7 @@ from model.starter import Starter
 from model.data import Data
 from ingest.save_event_data import save_game
 from events.event_factory import EventFactory
+from events.constants import EventCodes
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +67,7 @@ def process_event_file_rows(file_with_path, game_limit):
     with open(file_with_path, newline='', encoding="utf-8") as csvfile:
         game = None
         game_counter = 0
+        no_play_sub_player = None
 
         reader = csv.reader(csvfile, delimiter=',', quotechar='"')
         for row in reader:
@@ -101,6 +103,8 @@ def process_event_file_rows(file_with_path, game_limit):
                     starter.batting_order = int(row[4])
                     starter.fielding_position = int(row[5])
                     game.starters.append(starter)
+                elif row[0] == "play" and row[6] == EventCodes.NO_PLAY_SUB_COMING:
+                    no_play_sub_player = row[3]
                 elif row[0] == "play":
                     game_at_bat = game.new_at_bat(
                                 inning = row[1],
@@ -114,13 +118,13 @@ def process_event_file_rows(file_with_path, game_limit):
                     extract_batter_events(game.game_id, game_at_bat.game_event, game_at_bat)
                     event = EventFactory.create(game_at_bat)
                 elif row[0] == "sub":
-                    game_subst = GameSubstitution()
-                    game_subst.player_code = row[1]
-                    game_subst.player_name = row[2]
-                    game_subst.home_team_flag = row[3] == "1"
-                    game_subst.batting_order = row[4]
-                    game_subst.fielding_position = row[5]
-                    game.game_plays.append(game_subst)
+                    game.new_substitution(player_to=no_play_sub_player,
+                                          player_from=row[1],
+                                          home_team_flag=row[3] == "1",
+                                          batting_order=row[4],
+                                          fielding_position=row[5])
+                    # ignoring player name row[2]
+                    no_play_sub_player = None
                 elif row[0] == "data":
                     data = Data()
                     data.data_type = row[1]

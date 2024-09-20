@@ -294,7 +294,13 @@ def save_game_play_sub(sql_connection, game_id, index, sub):
     sql = """
         insert into game_play_sub
         (
-            id, play_index, player_code, player_name, home_team_flag, batting_order, fielding_position
+            id,
+            play_index,
+            player_from,
+            player_to,
+            players_team_home_flag,
+            batting_order, 
+            fielding_position
         )
         values 
         (
@@ -306,9 +312,9 @@ def save_game_play_sub(sql_connection, game_id, index, sub):
             [
                 game_id,
                 index,
-                sub.player_code,
-                sub.player_name,
-                sub.home_team_flag,
+                sub.player_from,
+                sub.player_to,
+                sub.players_team_home_flag,
                 sub.batting_order,
                 sub.fielding_position
             ]

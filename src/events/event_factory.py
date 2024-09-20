@@ -25,8 +25,7 @@ class EventFactory:
         EventCodes.CAUGHT_STEALING: { EVENT_MODULE: "events.caught_stealing", EVENT_CLASS: "CaughtStealingEvent" },
         EventCodes.STRIKEOUT: { EVENT_MODULE: "events.strikeout", EVENT_CLASS: "StrikeoutEvent" },
         EventCodes.HOMERUN: { EVENT_MODULE: "events.homerun", EVENT_CLASS: "HomerunEvent" },
-        EventCodes.ERROR: { EVENT_MODULE: "events.defensive_error", EVENT_CLASS: "DefensiveErrorEvent" },
-        EventCodes.NO_PLAY_SUB_COMING: { EVENT_MODULE: "events.no_play", EVENT_CLASS: "NoPlayEvent" }
+        EventCodes.ERROR: { EVENT_MODULE: "events.defensive_error", EVENT_CLASS: "DefensiveErrorEvent" }
     }
 
     def __instantiate_class(module_name, class_name):

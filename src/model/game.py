@@ -5,6 +5,7 @@ Baseball data structures used throughout the application.
 import logging
 from model.game_play import GamePlay
 from model.game_at_bat import GameAtBat
+from model.game_substitution import GameSubstitution
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,40 @@ class Game:
                 i -= 1
         return None
 
+    def propogate_game_stats(self, current_play, force_overwrite_team_flag = False):
+        """ Copies the running outs, runs, players on base, etc from the last batting
+            event to the current one.
+            
+            current_play - current play object to receive attribute values
+        """
+        last_at_bat = self.get_last_at_bat()
+        if last_at_bat is not None:
+            current_play.outs = last_at_bat.outs
+            current_play.runner_on_1b = last_at_bat.runner_on_1b
+            current_play.runner_on_2b = last_at_bat.runner_on_2b
+            current_play.runner_on_3b = last_at_bat.runner_on_3b
+            current_play.score_home = last_at_bat.score_home
+            current_play.score_visitor = last_at_bat.score_visitor
+
+            if force_overwrite_team_flag:
+                current_play.home_team_flag = last_at_bat.home_team_flag
+
+            if last_at_bat.home_team_flag != current_play.home_team_flag:
+                # validate outs
+                if last_at_bat.outs != 3:
+                    msg = f"Outs out of alignment at top/bottom of inning.  Outs={last_at_bat.outs} " +\
+                          f"LastHTFlag={last_at_bat.home_team_flag} ThisHTFlag={current_play.home_team_flag} " +\
+                          f"LastInning={last_at_bat.inning} ThisInning={current_play.inning}"
+                    logger.error(msg)
+                    raise ValueError(msg)
+
+                current_play.outs = 0
+                current_play.runner_on_1b = False
+                current_play.runner_on_2b = False
+                current_play.runner_on_3b = False
+
+        return last_at_bat
+
     def new_at_bat(self,
                    inning,
                    home_team_flag,
@@ -50,34 +85,13 @@ class Game:
             game_event - game event string
         """
         game_at_bat = GameAtBat()
-        last_at_bat = self.get_last_at_bat()
-        if last_at_bat is not None:
-            game_at_bat.outs = last_at_bat.outs
-            game_at_bat.runner_on_1b = last_at_bat.runner_on_1b
-            game_at_bat.runner_on_2b = last_at_bat.runner_on_2b
-            game_at_bat.runner_on_3b = last_at_bat.runner_on_3b
-            game_at_bat.score_home = last_at_bat.score_home
-            game_at_bat.score_visitor = last_at_bat.score_visitor
-
-            if last_at_bat.home_team_flag != home_team_flag:
-                # validate outs
-                if last_at_bat.outs != 3:
-                    msg = f"Outs out of alignment at top/bottom of inning.  {last_at_bat.outs}"
-                    logger.error(msg)
-                    raise ValueError(msg)
-
-                game_at_bat.outs = 0
-                game_at_bat.runner_on_1b = False
-                game_at_bat.runner_on_2b = False
-                game_at_bat.runner_on_3b = False
-
         game_at_bat.inning = inning
         game_at_bat.home_team_flag = home_team_flag
         game_at_bat.player_code = player_code
         game_at_bat.count = count
         game_at_bat.pitches = pitches
         game_at_bat.game_event = game_event
-
+        last_at_bat = self.propogate_game_stats(game_at_bat)
         self.game_plays.append(game_at_bat)
 
         # log status of inning change
@@ -87,6 +101,35 @@ class Game:
             logger.info(f"Inning {inning} / Bottom - Home Team at Bat")
 
         return game_at_bat
+
+    def new_substitution(self,
+                   player_to,
+                   player_from,
+                   home_team_flag,
+                   batting_order,
+                   fielding_position):
+        """ Generate a new at bat record, prepopulated with the latest game
+            details for incrementing.
+
+            inning - inning
+            home_team_flag - true for home, false for visitor
+            player_code - player code
+            count - count
+            pitches - pitches string
+            game_event - game event string
+        """
+        game_subst = GameSubstitution()
+        game_subst.player_to = player_to
+        game_subst.player_from = player_from
+        game_subst.players_team_home_flag = home_team_flag
+        game_subst.batting_order = batting_order
+        game_subst.fielding_position = fielding_position
+        self.propogate_game_stats(game_subst, force_overwrite_team_flag=True)
+        self.game_plays.append(game_subst)
+
+        logger.info("Player <%s> substituted with <%s>", game_subst.player_from,
+                    game_subst.player_to)
+        return game_subst
 
     def __str__(self) -> str:
         response = f"""{{ "id": "{self.game_id}", "info_attributes": {self.info_attributes}, """

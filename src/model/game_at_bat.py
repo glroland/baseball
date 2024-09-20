@@ -11,25 +11,15 @@ logger = logging.getLogger(__name__)
 # pylint: disable=too-many-instance-attributes
 class GameAtBat(GamePlay):
     """ At Bat Record for a Game """
-
-    def __init__(self):
-        self.inning = None
-        self.home_team_flag = None
-        self.player_code = None
-        self.count = None
-        self.pitches = None
-        self.game_event = None
-        self.basic_play = None
-        self.modifiers = None
-        self.advance = None
-        self.outs = 0
-        self.runner_on_1b = False
-        self.runner_on_2b = False
-        self.runner_on_3b = False
-        self.score_home = 0
-        self.score_visitor = 0
-        self.hit_to_location = None
-        self.fielded_by = None
+    player_code : str = None
+    count : int = None
+    pitches : int = None
+    game_event : str = None
+    basic_play : str = None
+    modifiers : str = None
+    advance : str = None
+    hit_to_location : int = None
+    fielded_by : str = None
 
     def __str__(self) -> str:
         return f"""{{ "play_type": "AtBat", "inning": "{self.inning}", """ \
