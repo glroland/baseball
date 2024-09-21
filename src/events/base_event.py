@@ -3,6 +3,7 @@
 Base logic for game events.
 """
 import logging
+import re
 from events.constants import Parameters
 
 logger = logging.getLogger(__name__)
@@ -119,6 +120,8 @@ class BaseEvent(object):
                 extra_text = "Credited with RBI"
             elif parameter == Parameters.RBI_NOT_CREDITED_1 or parameter == Parameters.RBI_NOT_CREDITED_2:
                 extra_text = "RBI NOT Credited"
+            elif re.match("^\([0-9]+\)$", parameter) is not None:
+                extra_text = "{parameter} are credited with the out"
             else:
                 self.fail(f"Unknown advancement parameter = {parameter}")
             logger.info("Base Runner OUT while progressing from %s to %s.  %s", base_from, base_to, extra_text)
