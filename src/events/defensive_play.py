@@ -22,14 +22,19 @@ class DefensivePlayEvent(BaseEvent):
         logger.debug("Defensive Play.  Play_List<%s>", play_list)
 
         # First fielding event after hit
-        logger.fatal("PLAY LIST??? %s", play_list)
         while len(play_list) > 0:
             play = play_list.pop(0)
-            logger.fatal("PLAY??? %s", play)
+            error = False
+            if re.match("^[0-9]+E[0-9]*$", play):
+                logger.debug("Defensive error overriding out")
+                error = True
+                game_at_bat.runner_on_1b = True
+
             db_event_list = split_leading_num(play)
             fielders = db_event_list.pop(0)
             game_at_bat.fielded_by = fielders[len(fielders) - 1]
-            game_at_bat.outs += 1
+            if not error:
+                game_at_bat.outs += 1
             due_to = ""
             while len(game_at_bat.modifiers) > 0:
                 modifier = game_at_bat.modifiers.pop(0)
@@ -76,7 +81,10 @@ class DefensivePlayEvent(BaseEvent):
                     logger.error(msg)
                     raise ValueError(msg)
 
-            logger.info ("Runner out after hit.  Out credited to pos %s. %s", game_at_bat.fielded_by, due_to)
+            if not error:
+                logger.info ("Runner out after hit.  Out credited to pos %s. %s", game_at_bat.fielded_by, due_to)
+            else:
+                logger.info("Runner safe on base after defensive error by %s. %s", game_at_bat.fielded_by, due_to)
             if len(db_event_list) > 0:
                 logger.debug(f"Unhandled Fielded By Metadata.  {db_event_list}")
 
