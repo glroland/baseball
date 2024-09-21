@@ -19,6 +19,8 @@ class EventFactory:
     mappings = {
         MAPPING_DEFENSIVE: { EVENT_MODULE: "events.defensive_play", EVENT_CLASS: "DefensivePlayEvent" },
         EventCodes.WALK: { EVENT_MODULE: "events.walk", EVENT_CLASS: "WalkEvent" },
+        EventCodes.INTENTIONAL_WALK_1: { EVENT_MODULE: "events.walk", EVENT_CLASS: "WalkEvent" },
+        EventCodes.INTENTIONAL_WALK_2: { EVENT_MODULE: "events.walk", EVENT_CLASS: "WalkEvent" },
         EventCodes.SINGLE: { EVENT_MODULE: "events.single", EVENT_CLASS: "SingleEvent" },
         EventCodes.DOUBLE: { EVENT_MODULE: "events.double", EVENT_CLASS: "DoubleEvent" },
         EventCodes.TRIPLE: { EVENT_MODULE: "events.triple", EVENT_CLASS: "TripleEvent" },

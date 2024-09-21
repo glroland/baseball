@@ -5,6 +5,8 @@ Constants related to game events in the Retrosheet data feed.
 class EventCodes:
 
     WALK = "W"
+    INTENTIONAL_WALK_1 = "IW"
+    INTENTIONAL_WALK_2 = "I"
     SINGLE = "S"
     DOUBLE = "D"
     TRIPLE = "T"
@@ -20,6 +22,8 @@ class Modifiers:
     CALLED_THIRD_STRIKE = "C"
     THROW = "TH"
     GROUNDER = "G"
+    GROUNDER_DOUBLE_PLAY = "GDP"
+    GROUNDER_TRIPLE_PLAY = "GTP"
     LINED_INTO_DOUBLE_PLAY = "LDP"
     LINED_INTO_TRIPLE_PLAY = "LTP"
     LINE_DRIVE = "L"
@@ -30,3 +34,4 @@ class Modifiers:
     FAN_INTERFERENCE = "FINT"
     POP_FLY = "P"
     RUNNER_PASSED_ANOTHER_RUNNER = "PASS"
+    

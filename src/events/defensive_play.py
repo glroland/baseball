@@ -34,6 +34,10 @@ class DefensivePlayEvent(BaseEvent):
                 modifier = game_at_bat.modifiers.pop(0)
                 if modifier == Modifiers.GROUNDER:
                     due_to = "Due to Ground Ball"
+                elif modifier == Modifiers.GROUNDER_DOUBLE_PLAY:
+                    due_to = "Due to Ground Ball - Double Play"
+                elif modifier == Modifiers.GROUNDER_TRIPLE_PLAY:
+                    due_to = "Due to Ground Ball - Triple Play"
                 elif modifier == Modifiers.LINED_INTO_DOUBLE_PLAY:
                     due_to = "Due to Lined Into Double Play"
                 elif modifier == Modifiers.LINED_INTO_TRIPLE_PLAY:
