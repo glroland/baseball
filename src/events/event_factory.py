@@ -34,6 +34,7 @@ class EventFactory:
         EventCodes.HOMERUN: { EVENT_MODULE: "events.homerun", EVENT_CLASS: "HomerunEvent" },
         EventCodes.ERROR: { EVENT_MODULE: "events.defensive_error", EVENT_CLASS: "DefensiveErrorEvent" },
         EventCodes.STOLEN_BASE: { EVENT_MODULE: "events.stolen_base", EVENT_CLASS: "StolenBaseEvent" },
+        EventCodes.DEFENSIVE_INDIFFERENCE: { EVENT_MODULE: "events.defensive_indifference", EVENT_CLASS: "DefensiveIndifferenceEvent" },
         EventCodes.BATTER_HIT_BY_PITCH: { EVENT_MODULE: "events.hit_by_pitch", EVENT_CLASS: "HitByPitchEvent" },
         EventCodes.FLY_BALL_ERROR: { EVENT_MODULE: "events.fly_ball_error", EVENT_CLASS: "FlyBallErrorEvent" }
     }

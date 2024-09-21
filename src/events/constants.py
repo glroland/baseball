@@ -23,6 +23,7 @@ class EventCodes:
     FIELDERS_CHOICE = "FC"
     PICKED_OFF = "PO"
     FLY_BALL_ERROR = "FLE"
+    DEFENSIVE_INDIFFERENCE = "DI"
 
 class Modifiers:
 
