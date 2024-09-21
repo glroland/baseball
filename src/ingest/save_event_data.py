@@ -17,6 +17,9 @@ def save_game_base_record(sql_connection, game):
     """
     logger.debug("Saving Base Game Record!  ID=%s", game.game_id)
 
+    # get game score
+    score_visitor, score_home = game.score()
+
     # Save Game
     sql = """
         insert into game
@@ -43,14 +46,16 @@ def save_game_base_record(sql_connection, game):
             game_length,
             attendance,
             used_dh_rule_flag,
+            score_visitor,
+            score_home,
             wp,
             lp,
             save_code
         )
         values 
         (
-            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
         )
            """
     with sql_connection.cursor() as sql_cursor:
@@ -78,6 +83,8 @@ def save_game_base_record(sql_connection, game):
                 game.info_attributes["timeofgame"],
                 game.info_attributes["attendance"],
                 game.info_attributes["usedh"],
+                score_visitor,
+                score_home,
                 game.info_attributes["wp"],
                 game.info_attributes["lp"],
                 game.info_attributes["save"]

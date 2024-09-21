@@ -104,6 +104,8 @@ create table game
     game_length int not null,
     attendance int not null,
     used_dh_rule_flag boolean,
+    score_visitor int not null,
+    score_home int not null,
 
     wp varchar(20),
     lp varchar(20),
