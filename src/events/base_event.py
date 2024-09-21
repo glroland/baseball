@@ -48,9 +48,7 @@ class BaseEvent(object):
             game_at_bat - game at bat
         """
         if game_at_bat.home_team_flag is None:
-            msg = "Unknown Home Team Flag Type!  Its unexpectedly None!"
-            logger.error(msg)
-            raise ValueError(msg)
+            self.fail("Unknown Home Team Flag Type!  Its unexpectedly None!")
         if game_at_bat.home_team_flag:
             game_at_bat.score_home += 1
             logger.info("Home Team Scored!")
@@ -64,9 +62,7 @@ class BaseEvent(object):
             game_at_bat.advance = ""
             for advance in advances:
                 if len(advance) != 3 or re.match("^\d[X-][H\d]$", advance) == None:
-                    msg = f"Advancement entry is invalid! {advance}"
-                    logger.error(msg)
-                    raise ValueError(msg)
+                    self.fail(f"Advancement entry is invalid! {advance}")
             
                 base_from = int(advance[0])
                 base_to = advance[2]
@@ -78,9 +74,7 @@ class BaseEvent(object):
                 elif base_from == 3:
                     game_at_bat.runner_on_3b = False
                 else:
-                    msg = f"Unexpected base_from value = {base_to}"
-                    logger.error(msg)
-                    raise ValueError(msg)
+                    self.fail(f"Unexpected base_from value = {base_to}")
                 
                 if advance[1] == "X":
                     logger.info("Base Runner OUT while progressing from %s to %s.", base_from, base_to)
@@ -96,11 +90,15 @@ class BaseEvent(object):
                     elif base_to == "H":
                         pass
                     else:
-                        msg = f"Unexpected base_to value = {base_to}"
-                        logger.error(msg)
-                        raise ValueError(msg)
+                        self.fail(f"Unexpected base_to value = {base_to}")
 
                 else:
-                    msg = f"Unexpected advance type = {advance[1]}"
-                    logger.error(msg)
-                    raise ValueError(msg)
+                    self.fail(f"Unexpected advance type = {advance[1]}")
+
+    def fail(self, msg):
+        """ Log and fail the application with the specified message.
+        
+            msg - message
+        """
+        logger.error(msg)
+        raise ValueError(msg)

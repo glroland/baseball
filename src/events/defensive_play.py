@@ -59,7 +59,7 @@ class DefensivePlayEvent(BaseEvent):
                     logger.error(msg)
                     raise ValueError(msg)
 
-            logger.info ("Runner out after hit.  Out credited to pos %s %s", game_at_bat.fielded_by, due_to)
+            logger.info ("Runner out after hit.  Out credited to pos %s. %s", game_at_bat.fielded_by, due_to)
             if len(db_event_list) > 0:
                 logger.debug(f"Unhandled Fielded By Metadata.  {db_event_list}")
 

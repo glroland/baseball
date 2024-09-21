@@ -13,6 +13,7 @@ class EventCodes:
     HOMERUN = "HR"
     ERROR = "E"
     NO_PLAY_SUB_COMING = "NP"
+    STOLEN_BASE = "SB"
 
 class Modifiers:
 
