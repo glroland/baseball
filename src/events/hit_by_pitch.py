@@ -1,6 +1,6 @@
-""" Walk Event
+""" Hit By Ptich Event
 
-Runner walked game event.
+Runner hit by pitch game event.
 """
 import logging
 from events.base_event import BaseEvent

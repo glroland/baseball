@@ -22,6 +22,7 @@ class EventCodes:
     BATTER_HIT_BY_PITCH = "HP"
     FIELDERS_CHOICE = "FC"
     PICKED_OFF = "PO"
+    FLY_BALL_ERROR = "FLE"
 
 class Modifiers:
 
@@ -46,6 +47,7 @@ class Modifiers:
     SACRIFICE_HIT_BUNT = "SH"
     BUNT_POPUP = "BP"
     PICKED_OFF = "PO"
+    GROUND_BALL_BUNT = "BG"
 
 class Parameters:
 

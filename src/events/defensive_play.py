@@ -63,6 +63,8 @@ class DefensivePlayEvent(BaseEvent):
                     due_to = "Due to Pop Fly"
                 elif modifier == Modifiers.SACRIFICE_HIT_BUNT:
                     due_to = "Due to Sacrifice Hit / Bunt"
+                elif modifier == Modifiers.GROUND_BALL_BUNT:
+                    due_to = "Due to Ground Ball Bunt"
                 elif re.match("^" + Modifiers.BUNT_POPUP + "[0-9]$", modifier):
                     due_to = "Due to Bunt Popup"
                 else:
