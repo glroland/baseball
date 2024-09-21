@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 class StrikeoutEvent(BaseEvent):
     """ Strikeout Event """
 
+    DROPPED_THIRD_STRIKE_PUTOUT = "23"  # K23
+
     def handle(self, game_at_bat, op_details):
         # attempt to grab play modifiers
         called = ""
@@ -27,14 +29,19 @@ class StrikeoutEvent(BaseEvent):
 
         # handle extra play events
         op_detail = None
+        was_dropped_third_strike_putout = False
         while len(op_details) > 0:
             op_detail = op_details.pop(0)
-            if op_detail[0] != "+":
+            if op_detail == self.DROPPED_THIRD_STRIKE_PUTOUT:
+                was_dropped_third_strike_putout = True
+            elif op_detail[0] != "+":
                 self.fail("Expected K+ but received something otherwise.")
     
             # handle extra play
             added_play = op_detail[1:]
-            if added_play[0:2] == EventCodes.STOLEN_BASE:
+            if was_dropped_third_strike_putout:
+                pass
+            elif added_play[0:2] == EventCodes.STOLEN_BASE:
                 base = added_play[2:]
                 added_event = StolenBaseEvent()
                 added_event.handle(game_at_bat, [base])
@@ -42,4 +49,7 @@ class StrikeoutEvent(BaseEvent):
                 self.fail(f"Unknown/Unhandled added play type: {added_play}")
 
         # log detail
-        logger.info("Player Striked Out.  %s", called)
+        if was_dropped_third_strike_putout:
+            logger.info("Third Strike Dropped but Player still out due to putout.  %s", called)
+        else:
+            logger.info("Player Striked Out.  %s", called)
