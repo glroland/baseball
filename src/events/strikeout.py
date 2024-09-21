@@ -21,6 +21,8 @@ class StrikeoutEvent(BaseEvent):
             called = game_at_bat.modifiers.pop(0)
             if called == Modifiers.CALLED_THIRD_STRIKE:
                 called = "CALLED THIRD STRIKE"
+            elif called == Modifiers.DOUBLE_PLAY:
+                called = "DOUBLE PLAY"
             else:
                 raise ValueError(f"Unknown modifier on strikeout! {called}")
 

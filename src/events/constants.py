@@ -28,6 +28,7 @@ class Modifiers:
     THROW = "TH"
     GROUNDER = "G"
     GROUNDER_UNKNOWN = "G#"
+    DOUBLE_PLAY = "DP"
     GROUNDER_DOUBLE_PLAY = "GDP"
     GROUNDER_TRIPLE_PLAY = "GTP"
     LINED_INTO_DOUBLE_PLAY = "LDP"
