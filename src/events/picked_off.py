@@ -20,8 +20,9 @@ class PickedOffEvent(BaseEvent):
         logger.info("Runnger Picked Off Base #%s", base)
         game_at_bat.outs += 1
         if base == 1:
-            if not game_at_bat.runner_on_1b:
-                self.fail("Encountered runner picked off event but no runner on first.")
+            # Not error checking this one because it can happen with a batter going to base
+            #if not game_at_bat.runner_on_1b:
+            #    self.fail("Encountered runner picked off event but no runner on first.")
             game_at_bat.runner_on_1b = False
         elif base == 2:
             if not game_at_bat.runner_on_2b:
