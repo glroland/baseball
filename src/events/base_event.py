@@ -120,7 +120,7 @@ class BaseEvent(object):
             elif parameter == Parameters.RBI_NOT_CREDITED_1 or parameter == Parameters.RBI_NOT_CREDITED_2:
                 extra_text = "RBI NOT Credited"
             else:
-                self.fail("Unknown advancement parameter = {parameter}")
+                self.fail(f"Unknown advancement parameter = {parameter}")
             logger.info("Base Runner OUT while progressing from %s to %s.  %s", base_from, base_to, extra_text)
             game_at_bat.outs += 1
         

@@ -54,6 +54,8 @@ class DefensivePlayEvent(BaseEvent):
                     due_to = "Due to Fly Ball Double Play"
                 elif modifier[0] == Modifiers.FLY:
                     due_to = "Due to Fly Ball"
+                elif modifier == Modifiers.SACRIFICE_FLY:
+                    due_to = "Due to Sacrifice Fly"
                 elif modifier == Modifiers.RUNNER_PASSED_ANOTHER_RUNNER:
                     due_to = "Due to Runner Passing Another Runner"
                 elif modifier[0] == Modifiers.POP_FLY:

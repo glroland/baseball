@@ -34,6 +34,7 @@ class Modifiers:
     FAN_INTERFERENCE = "FINT"
     POP_FLY = "P"
     RUNNER_PASSED_ANOTHER_RUNNER = "PASS"
+    SACRIFICE_FLY = "SF"
     
 class Parameters:
 
