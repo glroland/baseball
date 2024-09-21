@@ -6,6 +6,7 @@ import logging
 from events.base_event import BaseEvent
 from events.constants import Modifiers, EventCodes
 from events.stolen_base import StolenBaseEvent
+from events.caught_stealing import CaughtStealingEvent
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +47,10 @@ class StrikeoutEvent(BaseEvent):
             elif added_play[0:2] == EventCodes.STOLEN_BASE:
                 base = added_play[2:]
                 added_event = StolenBaseEvent()
+                added_event.handle(game_at_bat, [base])
+            elif added_play[0:2] == EventCodes.CAUGHT_STEALING:
+                base = added_play[2:]
+                added_event = CaughtStealingEvent()
                 added_event.handle(game_at_bat, [base])
             elif added_play[0:2] == EventCodes.WILD_PITCH:
                 logger.warning("Ignoring Wild Pitch adder to Strikeout Event!")
