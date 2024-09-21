@@ -28,7 +28,8 @@ class EventFactory:
         EventCodes.STRIKEOUT: { EVENT_MODULE: "events.strikeout", EVENT_CLASS: "StrikeoutEvent" },
         EventCodes.HOMERUN: { EVENT_MODULE: "events.homerun", EVENT_CLASS: "HomerunEvent" },
         EventCodes.ERROR: { EVENT_MODULE: "events.defensive_error", EVENT_CLASS: "DefensiveErrorEvent" },
-        EventCodes.STOLEN_BASE: { EVENT_MODULE: "events.stolen_base", EVENT_CLASS: "StolenBaseEvent" }
+        EventCodes.STOLEN_BASE: { EVENT_MODULE: "events.stolen_base", EVENT_CLASS: "StolenBaseEvent" },
+        EventCodes.BATTER_HIT_BY_PITCH: { EVENT_MODULE: "events.hit_by_pitch", EVENT_CLASS: "HitByPitchEvent" }
     }
 
     def __instantiate_class(module_name, class_name):

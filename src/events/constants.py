@@ -16,6 +16,7 @@ class EventCodes:
     ERROR = "E"
     NO_PLAY_SUB_COMING = "NP"
     STOLEN_BASE = "SB"
+    BATTER_HIT_BY_PITCH = "HP"
 
 class Modifiers:
 
