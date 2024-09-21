@@ -38,7 +38,7 @@ class EventFactory:
         class_ = getattr(module, class_name)
         return class_()
 
-    def __create_event_by_name(mapping, game_at_bat, play_list):
+    def __create_event_by_name(mapping, game_at_bat):
         """ Instantiates the provided python class via reflection
         
         mapping - string used to find the event handler
@@ -53,7 +53,6 @@ class EventFactory:
         instance = EventFactory.__instantiate_class(
                     EventFactory.mappings[mapping][EventFactory.EVENT_MODULE],
                     EventFactory.mappings[mapping][EventFactory.EVENT_CLASS])
-        instance.handle(game_at_bat, play_list)
         return instance
 
     def create(game_at_bat):
@@ -68,7 +67,9 @@ class EventFactory:
         regex = "(^[0-9]+)"
         if re.search(regex, game_at_bat.basic_play):
             play_list = split_num_paren_chunks(game_at_bat.basic_play)
-            event = EventFactory.__create_event_by_name(EventFactory.MAPPING_DEFENSIVE, game_at_bat, play_list)
+            event = EventFactory.__create_event_by_name(EventFactory.MAPPING_DEFENSIVE, game_at_bat)
+            event.handle_advances(game_at_bat)
+            event.handle(game_at_bat, play_list)
 
         # Analyze Offensive Play
         regex = "(^[A-Z]+)(.*)"
@@ -78,8 +79,9 @@ class EventFactory:
             for result in play_list:
                 logger.debug("Basic_Play Modifiers: - LEN=%s, RESULT = %s", len(play_list), result)
 
-            event = EventFactory.__create_event_by_name(op_event, game_at_bat, play_list)
+            event = EventFactory.__create_event_by_name(op_event, game_at_bat)
             event.handle_advances(game_at_bat)
+            event.handle(game_at_bat, play_list)
             event.debug_check_key_attributes_out(game_at_bat, play_list)
 
         if game_at_bat.modifiers is not None and len(game_at_bat.modifiers) > 0:

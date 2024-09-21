@@ -37,9 +37,7 @@ class BaseEvent(object):
                     game_at_bat.score_home, game_at_bat.outs, game_at_bat.runner_on_1b, 
                     game_at_bat.runner_on_2b, game_at_bat.runner_on_3b)
         if len(op_details) > 0:
-            msg = f"UNHANDLED DETAILS!!!  {op_details}"
-            logger.error(msg)
-            raise ValueError(msg)
+            self.fail(f"UNHANDLED DETAILS!!!  {op_details}")
 
 
     def score(self, game_at_bat):
@@ -56,6 +54,53 @@ class BaseEvent(object):
             game_at_bat.score_visitor += 1
             logger.info("Visiting Team Scored!")
 
+    def advance_runner(self, game_at_bat, base_from, base_to, advancement_type = "-"):
+        """ Advance runner from the specified from to the to base.
+        
+            game_at_bat - game at bat
+            base_from - starting base
+            base_to - ending base
+            advancement_type - advancement type character
+        """
+        if base_from == "1":
+            if not game_at_bat.runner_on_1b:
+                self.fail(f"Runner on 1st advancing to {base_to} but no runner is on base!")
+            game_at_bat.runner_on_1b = False
+        elif base_from == "2":
+            if not game_at_bat.runner_on_2b:
+                self.fail(f"Runner on 2nd advancing to {base_to} but no runner is on base!")
+            game_at_bat.runner_on_2b = False
+        elif base_from == "3":
+            if not game_at_bat.runner_on_3b:
+                self.fail(f"Runner on 3rd advancing to {base_to} but no runner is on base!")
+            game_at_bat.runner_on_3b = False
+        else:
+            self.fail(f"Unknown value for base_from: {base_from}")
+
+        if advancement_type == "X":
+            logger.info("Base Runner OUT while progressing from %s to %s.", base_from, base_to)
+            game_at_bat.outs += 1
+        
+        elif advancement_type == "-":
+            logger.info("Base Runner advanced from %s to %s.", base_from, base_to)
+
+            if base_to == "2":
+                if game_at_bat.runner_on_2b:
+                    self.advance_runner(game_at_bat, "2", "3")
+                game_at_bat.runner_on_2b = True
+            elif base_to == "3":
+                if game_at_bat.runner_on_3b:
+                    self.advance_runner(game_at_bat, "3", "H")
+                game_at_bat.runner_on_3b = True
+            elif base_to == "H":
+                self.score(game_at_bat)
+            else:
+                self.fail(f"Unexpected base_to value = {base_to}")
+
+        else:
+            self.fail(f"Unexpected advance type = {advancement_type}")
+
+
     def handle_advances(self, game_at_bat):
         if game_at_bat.advance is not None and len(game_at_bat.advance) > 0:
             advances = game_at_bat.advance.split(";")
@@ -64,36 +109,11 @@ class BaseEvent(object):
                 if len(advance) != 3 or re.match("^\d[X-][H\d]$", advance) == None:
                     self.fail(f"Advancement entry is invalid! {advance}")
             
-                base_from = int(advance[0])
+                base_from = advance[0]
                 base_to = advance[2]
 
-                if base_from == 1:
-                    game_at_bat.runner_on_1b = False
-                elif base_from == 2:
-                    game_at_bat.runner_on_2b = False
-                elif base_from == 3:
-                    game_at_bat.runner_on_3b = False
-                else:
-                    self.fail(f"Unexpected base_from value = {base_to}")
-                
-                if advance[1] == "X":
-                    logger.info("Base Runner OUT while progressing from %s to %s.", base_from, base_to)
-                    game_at_bat.outs += 1
-                
-                elif advance[1] == "-":
-                    logger.info("Base Runner advanced from %s to %s.", base_from, base_to)
+                self.advance_runner(game_at_bat, base_from, base_to, advance[1])
 
-                    if base_to == "2":
-                        pass
-                    elif base_to == "3":
-                        pass
-                    elif base_to == "H":
-                        pass
-                    else:
-                        self.fail(f"Unexpected base_to value = {base_to}")
-
-                else:
-                    self.fail(f"Unexpected advance type = {advance[1]}")
 
     def fail(self, msg):
         """ Log and fail the application with the specified message.
