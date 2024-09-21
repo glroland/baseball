@@ -5,6 +5,7 @@ Constants related to game events in the Retrosheet data feed.
 class EventCodes:
 
     WALK = "W"
+    WILD_PITCH = "WP"
     INTENTIONAL_WALK_1 = "IW"
     INTENTIONAL_WALK_2 = "I"
     SINGLE = "S"
