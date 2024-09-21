@@ -27,7 +27,8 @@ class EventFactory:
         EventCodes.CAUGHT_STEALING: { EVENT_MODULE: "events.caught_stealing", EVENT_CLASS: "CaughtStealingEvent" },
         EventCodes.STRIKEOUT: { EVENT_MODULE: "events.strikeout", EVENT_CLASS: "StrikeoutEvent" },
         EventCodes.HOMERUN: { EVENT_MODULE: "events.homerun", EVENT_CLASS: "HomerunEvent" },
-        EventCodes.ERROR: { EVENT_MODULE: "events.defensive_error", EVENT_CLASS: "DefensiveErrorEvent" }
+        EventCodes.ERROR: { EVENT_MODULE: "events.defensive_error", EVENT_CLASS: "DefensiveErrorEvent" },
+        EventCodes.STOLEN_BASE: { EVENT_MODULE: "events.stolen_base", EVENT_CLASS: "StolenBaseEvent" }
     }
 
     def __instantiate_class(module_name, class_name):
@@ -47,8 +48,22 @@ class EventFactory:
         class_name - name of class to instantiate
         game_at_bat - game at bat event
         """
-        if mapping not in EventFactory.mappings:
-            msg = f"Unknown Event Type!  EventCode=<{mapping}>, FullBasicPlayDetails=<{game_at_bat.basic_play}>", 
+        # Extract and Validate Code
+        code_list = regex_split("^([A-Z]+)[0-9]*$", mapping)
+        if len(code_list) == 0:
+            msg = f"Basic Play Code Not Found in Mapping: {mapping}"
+            logger.error(msg)
+            raise ValueError(msg)
+        if len(code_list) > 1:
+            msg = f"Too many basic play codes found in mapping: {mapping} - # Found {len(code_list)}"
+            logger.error(msg)
+            raise ValueError(msg)
+        code = code_list[0]
+
+        # Process Code
+        logger.debug(f"Basic Play Code '{code}' extracted from mapping: {mapping}")
+        if code not in EventFactory.mappings:
+            msg = f"Unknown Event Type!  EventCode=<{code}>, Mapping=<{mapping}>, FullBasicPlayDetails=<{game_at_bat.basic_play}>", 
             logger.error(msg)
             raise ValueError(msg)
 
