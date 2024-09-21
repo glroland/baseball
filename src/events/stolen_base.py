@@ -18,12 +18,12 @@ class StolenBaseEvent(BaseEvent):
             game_at_bat.runner_on_1b = False
             game_at_bat.runner_on_2b = True
         elif base == "3":
-            if not game_at_bat.runner_on_1b:
+            if not game_at_bat.runner_on_2b:
                 self.fail("Runner stealing 3rd but there was no runner on 2nd")
             game_at_bat.runner_on_2b = False
             game_at_bat.runner_on_3b = True
         elif base == "H":
-            if not game_at_bat.runner_on_1b:
+            if not game_at_bat.runner_on_3b:
                 self.fail("Runner stealing home but there was no runner on 3rd")
             game_at_bat.runner_on_3b = False
             game_at_bat.score()
