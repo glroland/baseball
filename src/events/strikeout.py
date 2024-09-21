@@ -18,12 +18,12 @@ class StrikeoutEvent(BaseEvent):
     def handle(self, game_at_bat, op_details):
         # attempt to grab play modifiers
         called = ""
-        if len(game_at_bat.modifiers) > 0:
+        while len(game_at_bat.modifiers) > 0:
             called = game_at_bat.modifiers.pop(0)
             if called == Modifiers.CALLED_THIRD_STRIKE:
-                called = "CALLED THIRD STRIKE"
+                called += "CALLED THIRD STRIKE "
             elif called == Modifiers.DOUBLE_PLAY:
-                called = "DOUBLE PLAY"
+                called += "DOUBLE PLAY "
             else:
                 raise ValueError(f"Unknown modifier on strikeout! {called}")
 
