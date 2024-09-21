@@ -22,4 +22,5 @@ class DefensiveErrorEvent(BaseEvent):
             if cause == Modifiers.THROW:
                 cause = "Due to Throw By "
         logger.info("Offensive Error Getting Batter on Base.  %s %s", cause, fb)
-        self.batter_progressed_runners(game_at_bat)
+
+        self.advance_runner(game_at_bat, "B", "1")

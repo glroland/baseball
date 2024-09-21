@@ -31,4 +31,4 @@ class FieldersChoiceEvent(BaseEvent):
 
         logger.info(f"Batter Walked due to Fielders Choice (Fielder = {fielder}).  {due_to} ")
 
-        self.batter_progressed_runners(game_at_bat)
+        self.advance_runner(game_at_bat, "B", "1")

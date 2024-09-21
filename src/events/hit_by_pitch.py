@@ -18,4 +18,4 @@ class HitByPitchEvent(BaseEvent):
         """
         logger.info("Batter Hit By Pitch")
             
-        self.batter_progressed_runners(game_at_bat)
+        self.advance_runner(game_at_bat, "B", "1")

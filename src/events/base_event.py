@@ -15,9 +15,6 @@ class BaseEvent(object):
         """ Each Game Event Class should implement this method."""
         raise NotImplementedError()
 
-    def batter_progressed_runners(self, game_at_bat):
-        self.advance_runner(game_at_bat, "B", "1", "-")
-
     def debug_check_key_attributes_in(self, game_at_bat, op_details):
         logger.info ("BasicPlay=<%s>, Modifiers=<%s>, Advance=<%s>, op_details=<%s>", game_at_bat.basic_play, game_at_bat.modifiers, game_at_bat.advance, op_details)
 

@@ -18,4 +18,4 @@ class WalkEvent(BaseEvent):
         """
         logger.info("Batter Walked")
             
-        self.batter_progressed_runners(game_at_bat)
+        self.advance_runner(game_at_bat, "B", "1")

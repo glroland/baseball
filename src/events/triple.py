@@ -19,9 +19,6 @@ class TripleEvent(BaseEvent):
             self.fail( f"Too many modifiers!  {game_at_bat.modifiers}")
         logger.info("Player Hit Triple to %s.  Fielded By %s.",
                     game_at_bat.hit_to_location, game_at_bat.fielded_by)
-        self.batter_progressed_runners(game_at_bat)
-        self.batter_progressed_runners(game_at_bat)
-        game_at_bat.runner_on_1b = False
-        self.batter_progressed_runners(game_at_bat)
-        game_at_bat.runner_on_1b = False
+
+        self.advance_runner(game_at_bat, "B", "3")
 
