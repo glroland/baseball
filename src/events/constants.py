@@ -21,6 +21,7 @@ class EventCodes:
     STOLEN_BASE = "SB"
     BATTER_HIT_BY_PITCH = "HP"
     FIELDERS_CHOICE = "FC"
+    PICKED_OFF = "PO"
 
 class Modifiers:
 
@@ -44,7 +45,8 @@ class Modifiers:
     SACRIFICE_FLY = "SF"
     SACRIFICE_HIT_BUNT = "SH"
     BUNT_POPUP = "BP"
-    
+    PICKED_OFF = "PO"
+
 class Parameters:
 
     UNEARNED_RUN = "UR"

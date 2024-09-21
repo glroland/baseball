@@ -29,6 +29,7 @@ class EventFactory:
         EventCodes.TRIPLE: { EVENT_MODULE: "events.triple", EVENT_CLASS: "TripleEvent" },
         EventCodes.CAUGHT_STEALING: { EVENT_MODULE: "events.caught_stealing", EVENT_CLASS: "CaughtStealingEvent" },
         EventCodes.PICKED_OFF_CAUGHT_STEALING: { EVENT_MODULE: "events.caught_stealing", EVENT_CLASS: "CaughtStealingEvent" },
+        EventCodes.PICKED_OFF: { EVENT_MODULE: "events.picked_off", EVENT_CLASS: "PickedOffEvent" },
         EventCodes.STRIKEOUT: { EVENT_MODULE: "events.strikeout", EVENT_CLASS: "StrikeoutEvent" },
         EventCodes.HOMERUN: { EVENT_MODULE: "events.homerun", EVENT_CLASS: "HomerunEvent" },
         EventCodes.ERROR: { EVENT_MODULE: "events.defensive_error", EVENT_CLASS: "DefensiveErrorEvent" },

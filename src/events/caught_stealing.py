@@ -20,9 +20,15 @@ class CaughtStealingEvent(BaseEvent):
         logger.info("Player Caught Stealing to Base #%s", base)
         game_at_bat.outs += 1
         if base == 2:
+            if not game_at_bat.runner_on_1b:
+                self.fail("Encountered caught stealing event but no runner on first.")
             game_at_bat.runner_on_1b = False
         elif base == 3:
+            if not game_at_bat.runner_on_2b:
+                self.fail("Encountered caught stealing event but no runner on second.")
             game_at_bat.runner_on_2b = False
         elif base == 4:
+            if not game_at_bat.runner_on_3b:
+                self.fail("Encountered caught stealing event but no runner on third.")
             game_at_bat.runner_on_3b = False
 
