@@ -35,3 +35,9 @@ class Modifiers:
     POP_FLY = "P"
     RUNNER_PASSED_ANOTHER_RUNNER = "PASS"
     
+class Parameters:
+
+    UNEARNED_RUN = "UR"
+    RBI_CREDITED = "RBI"
+    RBI_NOT_CREDITED_1 = "NR"
+    RBI_NOT_CREDITED_2 = "NORBI"

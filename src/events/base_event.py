@@ -3,7 +3,7 @@
 Base logic for game events.
 """
 import logging
-import re
+from events.constants import Parameters
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ class BaseEvent(object):
             game_at_bat.score_visitor += 1
             logger.info("Visiting Team Scored!")
 
-    def advance_runner(self, game_at_bat, base_from, base_to, advancement_type = "-"):
+    def advance_runner(self, game_at_bat, base_from, base_to, advancement_type = "-", parameter = ""):
         """ Advance runner from the specified from to the to base.
         
             game_at_bat - game at bat
@@ -110,7 +110,18 @@ class BaseEvent(object):
                 self.fail(f"Unknown value for current_base: {current_base}")
 
         if advancement_type == "X":
-            logger.info("Base Runner OUT while progressing from %s to %s.", base_from, base_to)
+            extra_text = ""
+            if parameter == None or len(parameter) == 0:
+                pass
+            if parameter == Parameters.UNEARNED_RUN:
+                extra_text = "Unearned Run"
+            elif parameter == Parameters.RBI_CREDITED:
+                extra_text = "Credited with RBI"
+            elif parameter == Parameters.RBI_NOT_CREDITED_1 or parameter == Parameters.RBI_NOT_CREDITED_2:
+                extra_text = "RBI NOT Credited"
+            else:
+                self.fail("Unknown advancement parameter = {parameter}")
+            logger.info("Base Runner OUT while progressing from %s to %s.  %s", base_from, base_to, extra_text)
             game_at_bat.outs += 1
         
         elif advancement_type == "-":
@@ -125,13 +136,15 @@ class BaseEvent(object):
             advances = game_at_bat.advance.split(";")
             game_at_bat.advance = ""
             for advance in advances:
-                if len(advance) != 3 or re.match("^[\dB][X-][H\d]$", advance) == None:
-                    self.fail(f"Advancement entry is invalid! {advance}")
-            
+                # gather first 3 characters - required for advance
+                if len(advance) < 3:
+                    self.fail(f"Advancement entry is invalid due to length! {advance}")            
                 base_from = advance[0]
+                safe_or_out = advance[1]
                 base_to = advance[2]
+                parameter = advance[3:]
 
-                self.advance_runner(game_at_bat, base_from, base_to, advance[1])
+                self.advance_runner(game_at_bat, base_from, base_to, safe_or_out, parameter)
 
 
     def fail(self, msg):
