@@ -45,6 +45,8 @@ class StrikeoutEvent(BaseEvent):
                 base = added_play[2:]
                 added_event = StolenBaseEvent()
                 added_event.handle(game_at_bat, [base])
+            elif added_play[0:2] == EventCodes.WILD_PITCH:
+                logger.warning("Ignoring Wild Pitch adder to Strikeout Event!")
             else:
                 self.fail(f"Unknown/Unhandled added play type: {added_play}")
 

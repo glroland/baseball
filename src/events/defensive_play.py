@@ -3,6 +3,7 @@
 After a hit, the defense made a successful play on the ball/runner.
 """
 import logging
+import re
 from events.base_event import BaseEvent
 from events.constants import Modifiers
 from utils.data import split_leading_num
@@ -62,6 +63,8 @@ class DefensivePlayEvent(BaseEvent):
                     due_to = "Due to Pop Fly"
                 elif modifier == Modifiers.SACRIFICE_HIT_BUNT:
                     due_to = "Due to Sacrifice Hit / Bunt"
+                elif re.match("^" + Modifiers.BUNT_POPUP + "[0-9]$", modifier):
+                    due_to = "Due to Bunt Popup"
                 else:
                     msg = f"Unhandled Modifier!  {modifier}"
                     logger.error(msg)

@@ -19,7 +19,9 @@ class EventFactory:
     mappings = {
         MAPPING_DEFENSIVE: { EVENT_MODULE: "events.defensive_play", EVENT_CLASS: "DefensivePlayEvent" },
         EventCodes.WALK: { EVENT_MODULE: "events.walk", EVENT_CLASS: "WalkEvent" },
+        EventCodes.BALK: { EVENT_MODULE: "events.walk", EVENT_CLASS: "WalkEvent" },
         EventCodes.WILD_PITCH: { EVENT_MODULE: "events.walk", EVENT_CLASS: "WalkEvent" },
+        EventCodes.FIELDERS_CHOICE: { EVENT_MODULE: "events.fielders_choice", EVENT_CLASS: "FieldersChoiceEvent" },
         EventCodes.INTENTIONAL_WALK_1: { EVENT_MODULE: "events.walk", EVENT_CLASS: "WalkEvent" },
         EventCodes.INTENTIONAL_WALK_2: { EVENT_MODULE: "events.walk", EVENT_CLASS: "WalkEvent" },
         EventCodes.SINGLE: { EVENT_MODULE: "events.single", EVENT_CLASS: "SingleEvent" },

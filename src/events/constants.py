@@ -5,6 +5,7 @@ Constants related to game events in the Retrosheet data feed.
 class EventCodes:
 
     WALK = "W"
+    BALK = "BK"
     WILD_PITCH = "WP"
     INTENTIONAL_WALK_1 = "IW"
     INTENTIONAL_WALK_2 = "I"
@@ -19,6 +20,7 @@ class EventCodes:
     NO_PLAY_SUB_COMING = "NP"
     STOLEN_BASE = "SB"
     BATTER_HIT_BY_PITCH = "HP"
+    FIELDERS_CHOICE = "FC"
 
 class Modifiers:
 
@@ -40,6 +42,7 @@ class Modifiers:
     RUNNER_PASSED_ANOTHER_RUNNER = "PASS"
     SACRIFICE_FLY = "SF"
     SACRIFICE_HIT_BUNT = "SH"
+    BUNT_POPUP = "BP"
     
 class Parameters:
 
