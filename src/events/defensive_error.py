@@ -17,10 +17,12 @@ class DefensiveErrorEvent(BaseEvent):
             game_at_bat.fielded_by = op_details.pop(0)
             fb = f"by {game_at_bat.fielded_by}"
         cause = ""
-        if len(game_at_bat.modifiers) > 0:
+        while len(game_at_bat.modifiers) > 0:
             cause = game_at_bat.modifiers.pop(0)
             if cause == Modifiers.THROW:
-                cause = "Due to Throw By "
-        logger.info("Offensive Error Getting Batter on Base.  %s %s", cause, fb)
+                cause += "Due to Bad Throw"
+            elif cause == Modifiers.SACRIFICE_HIT_BUNT:
+                cause += "Due to Sacrifice Hit / Bunt"
+        logger.info("Offensive Error by %s resulting in batter on base.  %s", cause, fb)
 
         self.advance_runner(game_at_bat, "B", "1")
