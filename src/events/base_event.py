@@ -15,19 +15,7 @@ class BaseEvent(object):
         raise NotImplementedError()
 
     def batter_progressed_runners(self, game_at_bat):
-        if game_at_bat.runner_on_1b:
-            logger.info("1st Base Runner Progressed")
-            if game_at_bat.runner_on_2b:
-                logger.info("2nd Base Runner Progressed")
-                if game_at_bat.runner_on_3b:
-                    logger.info("3rd Base Runner Progressed")
-                    self.score(game_at_bat)
-                    game_at_bat.runner_on_3b = False
-                game_at_bat.runner_on_3b = True
-                game_at_bat.runner_on_2b = False
-            game_at_bat.runner_on_2b = True
-            game_at_bat.runner_on_1b = False
-        game_at_bat.runner_on_1b = True
+        self.advance_runner(game_at_bat, "B", "1", "-")
 
     def debug_check_key_attributes_in(self, game_at_bat, op_details):
         logger.info ("BasicPlay=<%s>, Modifiers=<%s>, Advance=<%s>, op_details=<%s>", game_at_bat.basic_play, game_at_bat.modifiers, game_at_bat.advance, op_details)
@@ -62,20 +50,64 @@ class BaseEvent(object):
             base_to - ending base
             advancement_type - advancement type character
         """
-        if base_from == "1":
-            if not game_at_bat.runner_on_1b:
-                self.fail(f"Runner on 1st advancing to {base_to} but no runner is on base!")
-            game_at_bat.runner_on_1b = False
-        elif base_from == "2":
-            if not game_at_bat.runner_on_2b:
-                self.fail(f"Runner on 2nd advancing to {base_to} but no runner is on base!")
-            game_at_bat.runner_on_2b = False
-        elif base_from == "3":
-            if not game_at_bat.runner_on_3b:
-                self.fail(f"Runner on 3rd advancing to {base_to} but no runner is on base!")
-            game_at_bat.runner_on_3b = False
-        else:
-            self.fail(f"Unknown value for base_from: {base_from}")
+        current_base = base_from
+        while True:
+            # stop the progression once the runner reaches the target base
+            if current_base == base_to or current_base == "H":
+                break
+    
+            # advance one base
+            if current_base == "B":
+                if game_at_bat.runner_on_1b:
+                    logger.info("1st Base Runner Progressed")
+                    if game_at_bat.runner_on_2b:
+                        logger.info("2nd Base Runner Progressed")
+                        if game_at_bat.runner_on_3b:
+                            logger.info("3rd Base Runner Progressed")
+                            self.score(game_at_bat)
+                            game_at_bat.runner_on_3b = False
+                        game_at_bat.runner_on_3b = True
+                        game_at_bat.runner_on_2b = False
+                    game_at_bat.runner_on_2b = True
+                    game_at_bat.runner_on_1b = False
+                game_at_bat.runner_on_1b = True
+                current_base = "1"
+
+            elif current_base == "1":
+                if not game_at_bat.runner_on_1b:
+                    self.fail(f"Runner on 1st advancing to {base_to} but no runner is on base!")
+                if game_at_bat.runner_on_2b:
+                    logger.info("2nd Base Runner Progressed")
+                    if game_at_bat.runner_on_3b:
+                        logger.info("3rd Base Runner Progressed")
+                        self.score(game_at_bat)
+                        game_at_bat.runner_on_3b = False
+                    game_at_bat.runner_on_3b = True
+                    game_at_bat.runner_on_2b = False
+                game_at_bat.runner_on_2b = True
+                game_at_bat.runner_on_1b = False
+                current_base = "2"
+
+            elif current_base == "2":
+                if not game_at_bat.runner_on_2b:
+                    self.fail(f"Runner on 2nd advancing to {base_to} but no runner is on base!")
+                if game_at_bat.runner_on_3b:
+                    logger.info("3rd Base Runner Progressed")
+                    self.score(game_at_bat)
+                    game_at_bat.runner_on_3b = False
+                game_at_bat.runner_on_3b = True
+                game_at_bat.runner_on_2b = False
+                current_base = "3"
+
+            elif current_base == "3":
+                if not game_at_bat.runner_on_3b:
+                    self.fail(f"Runner on 3rd advancing to {base_to} but no runner is on base!")
+                self.score(game_at_bat)
+                game_at_bat.runner_on_3b = False
+                current_base = "H"
+
+            else:
+                self.fail(f"Unknown value for current_base: {current_base}")
 
         if advancement_type == "X":
             logger.info("Base Runner OUT while progressing from %s to %s.", base_from, base_to)
@@ -83,19 +115,6 @@ class BaseEvent(object):
         
         elif advancement_type == "-":
             logger.info("Base Runner advanced from %s to %s.", base_from, base_to)
-
-            if base_to == "2":
-                if game_at_bat.runner_on_2b:
-                    self.advance_runner(game_at_bat, "2", "3")
-                game_at_bat.runner_on_2b = True
-            elif base_to == "3":
-                if game_at_bat.runner_on_3b:
-                    self.advance_runner(game_at_bat, "3", "H")
-                game_at_bat.runner_on_3b = True
-            elif base_to == "H":
-                self.score(game_at_bat)
-            else:
-                self.fail(f"Unexpected base_to value = {base_to}")
 
         else:
             self.fail(f"Unexpected advance type = {advancement_type}")
@@ -106,7 +125,7 @@ class BaseEvent(object):
             advances = game_at_bat.advance.split(";")
             game_at_bat.advance = ""
             for advance in advances:
-                if len(advance) != 3 or re.match("^\d[X-][H\d]$", advance) == None:
+                if len(advance) != 3 or re.match("^[\dB][X-][H\d]$", advance) == None:
                     self.fail(f"Advancement entry is invalid! {advance}")
             
                 base_from = advance[0]
