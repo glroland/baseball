@@ -117,7 +117,7 @@ class BaseEvent(object):
                 extra_text = "Credited with RBI"
             elif parameter == Parameters.RBI_NOT_CREDITED_1 or parameter == Parameters.RBI_NOT_CREDITED_2:
                 extra_text = "RBI NOT Credited"
-            elif re.match("^\([0-9]+\)$", parameter) is not None:
+            elif re.match("^\([0-9]+\)#?$", parameter) is not None:
                 extra_text = f"{parameter} are credited with the out"
             else:
                 self.fail(f"Unknown advancement parameter = {parameter}")
