@@ -31,42 +31,46 @@ class DefensivePlayEvent(BaseEvent):
             game_at_bat.fielded_by = fielders[len(fielders) - 1]
             game_at_bat.outs += 1
             due_to = ""
-            if len(game_at_bat.modifiers) > 0:
+            while len(game_at_bat.modifiers) > 0:
                 modifier = game_at_bat.modifiers.pop(0)
                 if modifier == Modifiers.GROUNDER or modifier == Modifiers.GROUNDER_UNKNOWN:
-                    due_to = "Due to Ground Ball"
+                    due_to += "Due to Ground Ball"
                 elif modifier == Modifiers.GROUNDER_DOUBLE_PLAY:
-                    due_to = "Due to Ground Ball - Double Play"
+                    due_to += "Due to Ground Ball - Double Play"
                 elif modifier == Modifiers.GROUNDER_TRIPLE_PLAY:
-                    due_to = "Due to Ground Ball - Triple Play"
+                    due_to += "Due to Ground Ball - Triple Play"
                 elif modifier == Modifiers.LINED_INTO_DOUBLE_PLAY:
-                    due_to = "Due to Lined Into Double Play"
+                    due_to += "Due to Lined Into Double Play"
+                elif modifier == Modifiers.DOUBLE_PLAY:
+                    due_to += "Due to Double Play"
                 elif modifier == Modifiers.LINED_INTO_TRIPLE_PLAY:
-                    due_to = "Due to Lined Into Triple Play"
+                    due_to += "Due to Lined Into Triple Play"
+                elif modifier == Modifiers.TRIPLE_PLAY:
+                    due_to += "Due to Triple Play"
                 elif modifier[0] == Modifiers.LINE_DRIVE:
-                    due_to = "Due to Line Drive"
+                    due_to += "Due to Line Drive"
                 elif modifier == Modifiers.FORCE_OUT:
-                    due_to = "Due to Force Out"
+                    due_to += "Due to Force Out"
                 elif modifier == Modifiers.FOUL:
-                    due_to = "Due to Foul"
+                    due_to += "Due to Foul"
                 elif modifier == Modifiers.FAN_INTERFERENCE:
-                    due_to = "Due to Fan Interference"
+                    due_to += "Due to Fan Interference"
                 elif modifier == Modifiers.FLY_BALL_DOUBLE_PLAY:
-                    due_to = "Due to Fly Ball Double Play"
+                    due_to += "Due to Fly Ball Double Play"
                 elif modifier[0] == Modifiers.FLY:
-                    due_to = "Due to Fly Ball"
+                    due_to += "Due to Fly Ball"
                 elif modifier == Modifiers.SACRIFICE_FLY:
-                    due_to = "Due to Sacrifice Fly"
+                    due_to += "Due to Sacrifice Fly"
                 elif modifier == Modifiers.RUNNER_PASSED_ANOTHER_RUNNER:
-                    due_to = "Due to Runner Passing Another Runner"
+                    due_to += "Due to Runner Passing Another Runner"
                 elif modifier[0] == Modifiers.POP_FLY:
-                    due_to = "Due to Pop Fly"
+                    due_to += "Due to Pop Fly"
                 elif modifier == Modifiers.SACRIFICE_HIT_BUNT:
-                    due_to = "Due to Sacrifice Hit / Bunt"
+                    due_to += "Due to Sacrifice Hit / Bunt"
                 elif modifier == Modifiers.GROUND_BALL_BUNT:
-                    due_to = "Due to Ground Ball Bunt"
+                    due_to += "Due to Ground Ball Bunt"
                 elif re.match("^" + Modifiers.BUNT_POPUP + "[0-9]$", modifier):
-                    due_to = "Due to Bunt Popup"
+                    due_to += "Due to Bunt Popup"
                 else:
                     msg = f"Unhandled Modifier!  {modifier}"
                     logger.error(msg)
