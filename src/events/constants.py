@@ -36,6 +36,7 @@ class Modifiers:
     POP_FLY = "P"
     RUNNER_PASSED_ANOTHER_RUNNER = "PASS"
     SACRIFICE_FLY = "SF"
+    SACRIFICE_HIT_BUNT = "SH"
     
 class Parameters:
 

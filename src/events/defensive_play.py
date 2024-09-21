@@ -60,6 +60,8 @@ class DefensivePlayEvent(BaseEvent):
                     due_to = "Due to Runner Passing Another Runner"
                 elif modifier[0] == Modifiers.POP_FLY:
                     due_to = "Due to Pop Fly"
+                elif modifier == Modifiers.SACRIFICE_HIT_BUNT:
+                    due_to = "Due to Sacrifice Hit / Bunt"
                 else:
                     msg = f"Unhandled Modifier!  {modifier}"
                     logger.error(msg)
