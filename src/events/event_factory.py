@@ -96,6 +96,7 @@ class EventFactory:
             event = EventFactory.__create_event_by_name(EventFactory.MAPPING_DEFENSIVE, game_at_bat)
             event.handle_advances(game_at_bat)
             event.handle(game_at_bat, play_list)
+            event.debug_check_key_attributes_out(game_at_bat, play_list)
 
         # Analyze Offensive Play
         regex = "(^[A-Z]+)(.*)"
