@@ -4,26 +4,29 @@ Baseball data structures used throughout the application.
 """
 import logging
 from datetime import datetime, timedelta
+from typing import List, Dict
+from pydantic import BaseModel
 from pybaseball import statcast
 from model.game_play import GamePlay
 from model.game_at_bat import GameAtBat
 from model.game_substitution import GameSubstitution
+from model.starter import Starter
+from model.data import Data
+from model.game_play import GamePlay
 
 logger = logging.getLogger(__name__)
 
 # pylint: disable=too-few-public-methods
-class Game:
+class Game(BaseModel):
     """ Data Structure for a game chunk that is incrementally assembled as 
     the file is parsed.
     """
 
-    def __init__(self):
-        """ Default Constructor """
-        self.game_id = None
-        self.info_attributes = {}
-        self.starters = []
-        self.game_plays = []
-        self.data = []
+    game_id : str = None
+    info_attributes : Dict[str, str] = {}
+    starters : List[Starter] = []
+    game_plays : List[GamePlay] = []
+    data : List[Data] = []
 
     def get_last_at_bat(self):
         """ Locate and return the last at bat record.  """

@@ -3,18 +3,17 @@
 Baseball data structures used throughout the application. 
 """
 import logging
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
-
 # pylint: disable=too-few-public-methods
-class Data:
+class Data(BaseModel):
     """ Represents the end of game data records, such as earned runs. """
 
-    def __init__(self):
-        self.data_type = None
-        self.pitcher_player_code = None
-        self.quantity = None
+    data_type : str = None
+    pitcher_player_code : str = None
+    quantity : int = None
 
     def __str__(self) -> str:
         return f"""{{ "data_type": "{self.data_type}", "pitcher_player_code": """ + \

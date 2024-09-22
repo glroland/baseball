@@ -3,19 +3,19 @@
 Baseball data structures used throughout the application. 
 """
 import logging
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
 # pylint: disable=too-few-public-methods
-class Starter:
+class Starter(BaseModel):
     """ Starter Entry Fields """
 
-    def __init__(self):
-        self.player_code = None
-        self.player_name = None
-        self.home_team_flag = None
-        self.batting_order = None
-        self.fielding_position = None
+    player_code : str = None
+    player_name : str = None
+    home_team_flag : bool = None
+    batting_order : int = None
+    fielding_position : int = None
 
     def __str__(self) -> str:
         return f"""{{ "player_code": "{self.player_code}", "player_name": """ \

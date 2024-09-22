@@ -35,13 +35,11 @@ class ColorOutputFormatter(logging.Formatter):
 
 @click.command()
 @click.argument('event_file_or_dir')
-@click.option('--limit', '-l', default=-1,
-              help='max games to import')
 @click.option('--truncate', '-t', default=False, is_flag=True,
               help='whether or not to truncate all the game tables before import')
 @click.option('--debug', '-d', 'log_file', default=None,
               help='enable debug level logging or keep as info')
-def cli(event_file_or_dir, limit, truncate, log_file):
+def cli(event_file_or_dir, truncate, log_file):
     """ CLI utility for importing Retrosheet event files into the game
         history database.  This tool assumes that team and roster data
         has already been imported.
@@ -70,7 +68,7 @@ def cli(event_file_or_dir, limit, truncate, log_file):
 
     if os.path.isfile(event_file_or_dir):
         # Import event file
-        import_event_file(event_file_or_dir, limit)
+        import_event_file(event_file_or_dir)
     elif os.path.isdir(event_file_or_dir):
         # Import all files in directory
         import_all_event_data_files(event_file_or_dir)
