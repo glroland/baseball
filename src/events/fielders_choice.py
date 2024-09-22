@@ -11,16 +11,16 @@ logger = logging.getLogger(__name__)
 class FieldersChoiceEvent(BaseEvent):
     """ Fielders Choice Event """
 
-    def handle(self, game_at_bat, op_details):
+    def handle(self, game_at_bat, details):
         """ Walk the player
         
             game_at_bat - game at bat
-            op_details - offensive play details
+            details - offensive play details
         """
         # Identify due to
         fielder = ""
-        if len(op_details) > 0:
-            fielder = op_details.pop(0)
+        if len(details) > 0:
+            fielder = details.pop(0)
 
         # Check Modifiers
         due_to = ""
@@ -29,6 +29,6 @@ class FieldersChoiceEvent(BaseEvent):
             if modifier == Modifiers.DOUBLE_PLAY:
                 due_to = "Double Play"
 
-        logger.info(f"Batter Walked due to Fielders Choice (Fielder = {fielder}).  {due_to} ")
+        logger.info("Batter Walked due to Fielders Choice (Fielder = %s). %s ", fielder, due_to)
 
         self.advance_runner(game_at_bat, "B", "1")

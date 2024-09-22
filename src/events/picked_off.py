@@ -12,20 +12,20 @@ logger = logging.getLogger(__name__)
 class PickedOffEvent(BaseEvent):
     """ Picked Off Event """
 
-    def handle(self, game_at_bat, op_details):
-        details = op_details.pop()
-        details_list = split_leading_num(details)
-        logger.debug("Picked Off Base Details: %s", details_list)
+    def handle(self, game_at_bat, details):
+        d = details.pop()
+        details_list = split_leading_num(d)
+        logger.debug("Picked Off Base Details: %s", details)
         base = int(details_list.pop(0))
 
         # see if there was an error during the pick off
         override_po_due_to_error = False
         credited_to = ""
         if len(details_list) > 0:
-            d = details_list.pop(0)    
-            if re.match("^\(E[0-9]\)$", d):
+            d = details_list.pop(0)
+            if re.match("^\\(E[0-9]\\)$", d):
                 override_po_due_to_error = True
-            elif re.match("^\([0-9]+\)$", d):
+            elif re.match("^\\([0-9]+\\)$", d):
                 credited_to = d
             else:
                 self.fail(f"Unknown picked off detail: {d}")
@@ -51,4 +51,4 @@ class PickedOffEvent(BaseEvent):
                     self.fail("Encountered runner picked off event but no runner on third.")
                 game_at_bat.runner_on_3b = False
             else:
-                self.fail(f"Unknown base encountered when processing runner picked off event: {base}")
+                self.fail(f"Unknown base encountered with runner picked off event: {base}")
