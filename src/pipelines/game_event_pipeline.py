@@ -37,7 +37,7 @@ class GameEventPipeline(BasePipeline):
 
                 # Process batter event
                 self.extract_batter_events(self.game.game_id, game_at_bat.game_event, game_at_bat)
-                event = EventFactory.create(game_at_bat)
+                EventFactory.create(game_at_bat)
             elif record[0] == "sub":
                 self.game.new_substitution(player_to=self.no_play_sub_player,
                                     player_from=record[1],
@@ -50,7 +50,7 @@ class GameEventPipeline(BasePipeline):
                 logger.debug("Comment: %s", record[1])
             else:
                 logger.error("Unknown Row Type!  %s", record[0])
-            
+
             self.processed_records.append(record)
 
 

@@ -74,4 +74,4 @@ def cli(event_file_or_dir, truncate, log_file):
         import_all_event_data_files(event_file_or_dir)
 
 if __name__ == '__main__':
-    cli(None, None, None, None)
+    cli(None, None, None)

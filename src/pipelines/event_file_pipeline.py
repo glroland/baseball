@@ -3,8 +3,8 @@
 Data pipeline for event files.
 """
 import logging
-import psycopg
 from typing import List
+import psycopg
 from pipelines.base_pipeline import BasePipeline
 from pipelines.game_pipeline import GamePipeline
 from utils.db import connect_to_db
@@ -36,7 +36,7 @@ class EventFilePipeline(BasePipeline):
             pass
         else:
             # validate that a game is inflight to delegate to
-            if self.inflight == None:
+            if self.inflight is None:
                 msg = "Inflight Game is null, indicating that data is out of order!"
                 logger.fatal(msg)
                 raise ValueError(msg)

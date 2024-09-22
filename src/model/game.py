@@ -12,7 +12,6 @@ from model.game_at_bat import GameAtBat
 from model.game_substitution import GameSubstitution
 from model.starter import Starter
 from model.data import Data
-from model.game_play import GamePlay
 
 logger = logging.getLogger(__name__)
 

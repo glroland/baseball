@@ -32,6 +32,7 @@ class BasePipeline(BaseModel):
             # save record to pending records list
             self.staged_records.append(record)
 
+    # pylint: disable=unused-argument
     def optionally_redelegate_record(self, record : List[str]):
         """ If implemented by a subclass, this is its opportunity to re-delegate the record
             to another pipeline. 
@@ -42,7 +43,7 @@ class BasePipeline(BaseModel):
 
     def execute_pipeline(self):
         """ Orchestrate the end to end ingestion process associated with this pipeline. """
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def fail(self, msg):
         """ Fail with the specified error message.

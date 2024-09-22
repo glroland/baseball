@@ -76,9 +76,9 @@ class GamePipeline(BasePipeline):
                 self.game.data.append(data)
             else:
                 self.fail("Unknown Row Type!  {record[0]}")
-            
+
             self.processed_records.append(record)
-        
+
         # Process all the game events, in order
         for game_events_pipeline in self.game_events_pipelines:
             game_events_pipeline.execute_pipeline()
