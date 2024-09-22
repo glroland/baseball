@@ -6,3 +6,4 @@ pyodbc
 psycopg[binary]
 click
 pydantic
+pybaseball

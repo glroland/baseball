@@ -3,6 +3,8 @@
 Baseball data structures used throughout the application. 
 """
 import logging
+from datetime import datetime, timedelta
+from pybaseball import statcast
 from model.game_play import GamePlay
 from model.game_at_bat import GameAtBat
 from model.game_substitution import GameSubstitution
@@ -16,6 +18,7 @@ class Game:
     """
 
     def __init__(self):
+        """ Default Constructor """
         self.game_id = None
         self.info_attributes = {}
         self.starters = []
@@ -23,6 +26,7 @@ class Game:
         self.data = []
 
     def get_last_at_bat(self):
+        """ Locate and return the last at bat record.  """
         if len(self.game_plays) > 0:
             i = len(self.game_plays) - 1
             last_play = None
@@ -54,9 +58,12 @@ class Game:
             if last_at_bat.home_team_flag != current_play.home_team_flag:
                 # validate outs
                 if last_at_bat.outs != 3:
-                    msg = f"Outs out of alignment at top/bottom of inning.  Outs={last_at_bat.outs} " +\
-                          f"LastHTFlag={last_at_bat.home_team_flag} ThisHTFlag={current_play.home_team_flag} " +\
-                          f"LastInning={last_at_bat.inning} ThisInning={current_play.inning}"
+                    msg = "Outs out of alignment at top/bottom of inning. " + \
+                          f"Outs={last_at_bat.outs} " + \
+                          f"LastHTFlag={last_at_bat.home_team_flag} " + \
+                          f"ThisHTFlag={current_play.home_team_flag} " + \
+                          f"LastInning={last_at_bat.inning} " + \
+                          f"ThisInning={current_play.inning}"
                     logger.error(msg)
                     raise ValueError(msg)
 
@@ -96,9 +103,9 @@ class Game:
 
         # log status of inning change
         if last_at_bat is None or last_at_bat.inning != game_at_bat.inning:
-            logger.info(f"Inning {inning} / Top - Visiting Team at Bat")
+            logger.info("Inning %s / Top - Visiting Team at Bat", inning)
         elif last_at_bat is not None and last_at_bat.home_team_flag != game_at_bat.home_team_flag:
-            logger.info(f"Inning {inning} / Bottom - Home Team at Bat")
+            logger.info("Inning %s / Bottom - Home Team at Bat", inning)
 
         return game_at_bat
 
@@ -173,7 +180,7 @@ class Game:
             v = 0
         h = last_at_bat.score_home
         if h is None:
-            h = 0        
+            h = 0
         return [v, h]
 
     def game_end(self):
@@ -186,3 +193,34 @@ class Game:
                     self.game_id,
                     score_tuple[0],
                     score_tuple[1])
+
+
+    def validate(self):
+        """ Validates the scores and other calculated attributes based on official
+            game data from a third party service.
+        """
+        score_tuple = self.score()
+
+        # validate final score
+        date_str = self.info_attributes["date"]
+        date = datetime.strptime(date_str, '%Y/%m/%d')
+        home_team = self.info_attributes["hometeam"]
+        #visiting_team = self.info_attributes["visteam"]
+        start_dt = date - timedelta(days=1)
+        stats_all = statcast(start_dt=datetime.strftime(start_dt, '%Y-%m-%d'),
+                             end_dt=datetime.strftime(date, '%Y-%m-%d'),
+                             team=home_team)
+        #logger.fatal(stats_all.head())
+        game_stats = stats_all.dropna(subset=['home_score', 'away_score'])
+        if len(game_stats) != 1:
+            msg = "Incorrect number of scores in gamestats dataset!  " + \
+                  f"Expected 1 but actuals = {len(game_stats)}"
+            logger.fatal(msg)
+            raise ValueError(msg)
+        home_score = int(game_stats["home_score"])
+        away_score = int(game_stats["away_score"])
+        if home_score != score_tuple[1] or away_score != score_tuple[0]:
+            msg = f"Score Mismatch!  Actual={away_score}-{home_score}.  " + \
+                  f"Calculated={score_tuple[0]}-{score_tuple[1]}"
+            logger.fatal(msg)
+            raise ValueError(msg)

@@ -9,7 +9,7 @@ import logging
 import os
 import csv
 import psycopg
-from utils.db import connect_to_db, truncate_table
+from utils.db import connect_to_db
 from model.game import Game
 from model.game_substitution import GameSubstitution
 from model.starter import Starter
@@ -48,7 +48,6 @@ def extract_batter_events(game_id, batter_events, game_at_bat):
     game_at_bat.basic_play = basic_play
     game_at_bat.modifiers = modifiers
     game_at_bat.advance = advance
-
 
 def process_event_file_rows(file_with_path, game_limit):
     game_chunks = []

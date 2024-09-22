@@ -11,6 +11,10 @@ logger = logging.getLogger(__name__)
 class BaseEvent(object):
     """ Base class for all game events.  """
 
+    def __init__(self):
+        """ Constructor """
+        self.completed_advances = []
+
     def handle(self, game_at_bat, play_list):
         """ Each Game Event Class should implement this method."""
         raise NotImplementedError()
@@ -25,6 +29,32 @@ class BaseEvent(object):
         if len(op_details) > 0:
             self.fail(f"UNHANDLED DETAILS!!!  {op_details}")
 
+    def validate_base(self, base_str, first_allowed=True, home_allowed=True):
+        """ Validates the provided string representation of the base
+            to ensure it is valid for the circumstance.  Otherwise an exception
+            is thrown.
+            
+            base_str - string representation of the base
+            first_allowed - whether first base is a permissiable value
+            home_allowed - whether home is a permissiable value
+        """
+        if base_str is None or len(base_str) != 1:
+            self.fail("Invalid Base String!  Empty string or None.")
+        if not isinstance(base_str, str):
+            self.fail("Base String is not a string!")
+        if base_str == "1":
+            if not first_allowed:
+                self.fail("First base is not a permissible value for this play!")
+            return True
+        if base_str == "2":
+            return True
+        if base_str == "3":
+            return True
+        if base_str == "H":
+            if not home_allowed:
+                self.fail("Home base is not a permissible value for this play!")
+            return True
+        self.fail(f"Unexpected value for Base!  <{base_str}>")
 
     def score(self, game_at_bat):
         """ Update the score based on the team at bat.
@@ -53,6 +83,9 @@ class BaseEvent(object):
             # stop the progression once the runner reaches the target base
             if current_base == base_to or current_base == "H":
                 break
+
+            # save the advancement
+            self.completed_advances.append(f"{base_from}{advancement_type}{base_to}")
     
             # advance one base
             if current_base == "B":

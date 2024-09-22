@@ -9,8 +9,8 @@ from ingest.import_event_data import import_event_file, import_all_event_data_fi
 logger = logging.getLogger(__name__)
 
 class ColorOutputFormatter(logging.Formatter):
-    """ Add colors to stdout logging output to simplify text.
-        Thank you to https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output.
+    """ Add colors to stdout logging output to simplify text.  Thank you to:
+        https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output
     """
 
     grey = "\x1b[38;20m"
@@ -18,14 +18,14 @@ class ColorOutputFormatter(logging.Formatter):
     red = "\x1b[31;20m"
     bold_red = "\x1b[31;1m"
     reset = "\x1b[0m"
-    format = '%(name)-13s: %(message)s'
+    format_str = '%(name)-13s: %(message)s'
 
     FORMATS = {
-        logging.DEBUG: grey + format + reset,
-        logging.INFO: grey + format + reset,
-        logging.WARNING: yellow + format + reset,
-        logging.ERROR: red + format + reset,
-        logging.CRITICAL: bold_red + format + reset
+        logging.DEBUG: grey + format_str + reset,
+        logging.INFO: grey + format_str + reset,
+        logging.WARNING: yellow + format_str + reset,
+        logging.ERROR: red + format_str + reset,
+        logging.CRITICAL: bold_red + format_str + reset
     }
 
     def format(self, record):
