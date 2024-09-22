@@ -47,9 +47,9 @@ class GameEventPipeline(BasePipeline):
                 # ignoring player name row[2]
                 self.no_play_sub_player = None
             elif record[0] == "com":
-                logger.debug("Comment: %s", record[1])
+                logger.info("Comment: %s", record[1])
             else:
-                logger.error("Unknown Row Type!  %s", record[0])
+                self.fail(f"Unknown Game Event Row Type! {record[0]}")
 
             self.processed_records.append(record)
 
