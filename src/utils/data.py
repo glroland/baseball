@@ -16,6 +16,19 @@ def split_num_paren_chunks(str):
 def split_leading_num(str):
     return regex_split("^([0-9]+)(.*)", str)
 
+def extract_groups(str):
+    groups = []
+    if str is not None and len(str) > 0:
+        working = str
+        while working.count("(") > 0:
+            s = working.find("(") + 1
+            e = working.find(")")
+            groups.append(working[s:e])
+
+            working = working[e+1:]
+
+    return groups
+
 def split_string(s, token_list):
     """ Splits a string into a list of strings using the list of tokens.
     

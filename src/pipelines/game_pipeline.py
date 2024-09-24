@@ -5,7 +5,7 @@ Data pipeline for games.
 import logging
 from typing import List
 from pipelines.base_pipeline import BasePipeline
-from pipelines.game_event_pipeline import GameEventPipeline
+from pipelines.game_play_pipeline import GamePlayPipeline
 from model.game import Game
 from model.starter import Starter
 from model.data import Data
@@ -16,7 +16,7 @@ class GamePipeline(BasePipeline):
     """ Game Data Pipeline """
 
     game : Game = None
-    game_events_pipelines : List[GameEventPipeline] = []
+    game_events_pipelines : List[GamePlayPipeline] = []
 
     def __init__(self):
         """ Default Constructor """
@@ -39,8 +39,8 @@ class GamePipeline(BasePipeline):
         # handle known record types
         if record[0] in [ "info", "start", "data" ]:
             return False
-        if record[0] in [ "play", "sub", "com" ]:
-            game_event_pipeline = GameEventPipeline()
+        if record[0] in [ "play", "sub", "com", "radj", "badj", "presadj", "padj", "padj", "ladj" ]:
+            game_event_pipeline = GamePlayPipeline()
             game_event_pipeline.game = self.game
             game_event_pipeline.stage_record(record)
             self.game_events_pipelines.append(game_event_pipeline)
@@ -89,7 +89,7 @@ class GamePipeline(BasePipeline):
         
             sql_connection - sql connection to use for tx
         """
-        logger.info("Saving Game")
+        logger.debug("Saving Game")
 
 
     def processing_complete(self):

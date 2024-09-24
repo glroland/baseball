@@ -87,7 +87,7 @@ class EventFilePipeline(BasePipeline):
 
     def save(self):
         """ Save all the encompassing game records to the database """
-        logger.info("Saving Games.  List is %s games long.", len(self.game_pipelines))
+        logger.debug("Saving Games.  List is %s games long.", len(self.game_pipelines))
         sql_connection = connect_to_db()
         try:
             for game_pipeline in self.game_pipelines:

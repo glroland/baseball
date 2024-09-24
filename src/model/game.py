@@ -82,7 +82,9 @@ class Game(BaseModel):
                    player_code,
                    count,
                    pitches,
-                   game_event):
+                   basic_play,
+                   modifiers,
+                   advances):
         """ Generate a new at bat record, prepopulated with the latest game
             details for incrementing.
 
@@ -91,7 +93,9 @@ class Game(BaseModel):
             player_code - player code
             count - count
             pitches - pitches string
-            game_event - game event string
+            basic_play - basic play string
+            modifiers - modifiers represented as a list of strings
+            advances - advances represented as a list of strings
         """
         game_at_bat = GameAtBat()
         game_at_bat.inning = inning
@@ -99,7 +103,9 @@ class Game(BaseModel):
         game_at_bat.player_code = player_code
         game_at_bat.count = count
         game_at_bat.pitches = pitches
-        game_at_bat.game_event = game_event
+        game_at_bat.basic_play = basic_play
+        game_at_bat.modifiers = modifiers
+        game_at_bat.advances = advances
         last_at_bat = self.propogate_game_stats(game_at_bat)
         self.game_plays.append(game_at_bat)
 

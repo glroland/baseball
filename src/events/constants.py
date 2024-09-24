@@ -25,6 +25,8 @@ class EventCodes:
     PICKED_OFF = "PO"
     FLY_BALL_ERROR = "FLE"
     DEFENSIVE_INDIFFERENCE = "DI"
+    GROUND_RULE_DOUBLE = "DGR"
+    PASSED_BALL = "PB"
 
 class Modifiers:
 

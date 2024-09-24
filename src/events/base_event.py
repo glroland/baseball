@@ -178,10 +178,10 @@ class BaseEvent:
     
             game_at_bat - game at bat
         """
-        if game_at_bat.advance is not None and len(game_at_bat.advance) > 0:
-            advances = game_at_bat.advance.split(";")
-            game_at_bat.advance = ""
-            for advance in advances:
+        if game_at_bat.advances is not None and len(game_at_bat.advances) > 0:
+            while len(game_at_bat.advances) > 0:
+                advance = game_at_bat.advances.pop(0)
+
                 # gather first 3 characters - required for advance
                 if len(advance) < 3:
                     self.fail(f"Advancement entry is invalid due to length! {advance}")

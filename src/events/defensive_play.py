@@ -78,8 +78,7 @@ class DefensivePlayEvent(BaseEvent):
                     due_to += "Due to Bunt Popup"
                 else:
                     msg = f"Unhandled Modifier!  {modifier}"
-                    logger.error(msg)
-                    raise ValueError(msg)
+                    logger.warning(msg)
 
             if not error:
                 logger.info ("Runner out after hit.  Out credited to pos %s. %s", game_at_bat.fielded_by, due_to)

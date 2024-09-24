@@ -61,4 +61,4 @@ class StolenBaseEvent(BaseEvent):
             else:
                 self.fail(f"Unknown Stolen Base # {base}")
 
-            logging.info("Runner stole base:", base)
+            logging.info("Runner stole base: %s", base)

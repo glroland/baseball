@@ -55,6 +55,6 @@ def import_all_event_data_files(directory):
             file_with_path = directory + file
             import_event_file(file_with_path)
 
-            logger.debug("Deleting file after successful processing: %s", file)
-            os.remove(file)
+#            logger.debug("Deleting file after successful processing: %s", file)
+#            os.remove(file)
     logger.debug("All files imported")

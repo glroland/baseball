@@ -3,6 +3,7 @@
 Baseball data structures used throughout the application. 
 """
 import logging
+from typing import List
 from model.game_play import GamePlay
 
 logger = logging.getLogger(__name__)
@@ -14,10 +15,9 @@ class GameAtBat(GamePlay):
     player_code : str = None
     count : int = None
     pitches : int = None
-    game_event : str = None
     basic_play : str = None
-    modifiers : str = None
-    advance : str = None
+    modifiers : List[str] = None
+    advances : List[str] = None
     hit_to_location : int = None
     fielded_by : str = None
 
@@ -27,7 +27,7 @@ class GameAtBat(GamePlay):
                f""""{self.player_code}", "count": {self.count}, "pitches": """ \
                f""""{self.pitches}", "game_event": "{self.game_event}", """ \
                f""""basic_play": {self.basic_play}, "modifiers": {self.modifiers}, """ \
-               f""""advance": {self.advance}, "outs": {self.outs}, """ \
+               f""""advances": {self.advances}, "outs": {self.outs}, """ \
                f""""runner_on_1b": {self.runner_on_1b}, "runner_on_2b": {self.runner_on_2b}, """ \
                f""""runner_on_3b": {self.runner_on_3b}, "score_home": {self.score_home}, """ \
                f""""score_visitor": {self.score_visitor} }}"""

@@ -37,7 +37,9 @@ class EventFactory:
         EventCodes.STOLEN_BASE: { EVENT_MODULE: "events.stolen_base", EVENT_CLASS: "StolenBaseEvent" },
         EventCodes.DEFENSIVE_INDIFFERENCE: { EVENT_MODULE: "events.defensive_indifference", EVENT_CLASS: "DefensiveIndifferenceEvent" },
         EventCodes.BATTER_HIT_BY_PITCH: { EVENT_MODULE: "events.hit_by_pitch", EVENT_CLASS: "HitByPitchEvent" },
-        EventCodes.FLY_BALL_ERROR: { EVENT_MODULE: "events.fly_ball_error", EVENT_CLASS: "FlyBallErrorEvent" }
+        EventCodes.FLY_BALL_ERROR: { EVENT_MODULE: "events.fly_ball_error", EVENT_CLASS: "FlyBallErrorEvent" },
+        EventCodes.GROUND_RULE_DOUBLE: { EVENT_MODULE: "events.ground_rule_double", EVENT_CLASS: "GroundRuleDoubleEvent" },
+        EventCodes.PASSED_BALL: { EVENT_MODULE: "events.passed_ball", EVENT_CLASS: "PassedBallEvent" }
     }
 
     def __instantiate_class(module_name, class_name):
@@ -87,21 +89,22 @@ class EventFactory:
         
         game_at_bat - game at bat record
         """
-        logger.debug("Interpretting game at bat event.  BasicPlay = <%s>, Modifiers = <%s>, Advance = <%s>", game_at_bat.basic_play, game_at_bat.modifiers, game_at_bat.advance)
+        logger.debug("Interpretting game at bat event.  BasicPlay = <%s>, Modifiers = <%s>, Advances = <%s>", game_at_bat.basic_play, game_at_bat.modifiers, game_at_bat.advances)
+
+        play = game_at_bat.basic_play[0]
 
         # Analyze Defensive Play
         regex = "(^[0-9]+)"
-        if re.search(regex, game_at_bat.basic_play):
-            play_list = split_num_paren_chunks(game_at_bat.basic_play)
+        if re.search(regex, play):
             event = EventFactory.__create_event_by_name(EventFactory.MAPPING_DEFENSIVE, game_at_bat)
             event.handle_advances(game_at_bat)
-            event.handle(game_at_bat, play_list)
-            event.debug_check_key_attributes_out(game_at_bat, play_list)
+            event.handle(game_at_bat, game_at_bat.basic_play)
+            event.debug_check_key_attributes_out(game_at_bat, game_at_bat.basic_play)
 
         # Analyze Offensive Play
         regex = "(^[A-Z]+)(.*)"
-        if re.search(regex, game_at_bat.basic_play):
-            play_list = regex_split(regex, game_at_bat.basic_play)
+        if re.search(regex, play):
+            play_list = regex_split(regex, play)
             op_event = play_list.pop(0)
             for result in play_list:
                 logger.debug("Basic_Play Modifiers: - LEN=%s, RESULT = %s", len(play_list), result)
@@ -115,8 +118,8 @@ class EventFactory:
             msg = f"UNHANDLED MODIFIERS!!!  {game_at_bat.modifiers}"
             logger.error(msg)
             raise ValueError(msg)
-        if game_at_bat.advance is not None and len(game_at_bat.advance) > 0:
-            msg = f"UNHANDLED ADVANCE!!!  {game_at_bat.advance}"
+        if game_at_bat.advances is not None and len(game_at_bat.advances) > 0:
+            msg = f"UNHANDLED ADVANCE!!!  {game_at_bat.advances}"
             logger.error(msg)
             raise ValueError(msg)
 
