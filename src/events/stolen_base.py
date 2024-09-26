@@ -5,13 +5,15 @@ Stolen base game event.
 import logging
 from events.base_event import BaseEvent
 from utils.data import regex_split
+from model.action_record import ActionRecord
+from model.game_at_bat import GameAtBat
 
 logger = logging.getLogger(__name__)
 
 class StolenBaseEvent(BaseEvent):
     """ Stolen Base Event """
 
-    def was_advancement_already_handled(self, base_to):
+    def handle(self, game_at_bat : GameAtBat, action : ActionRecord):
         """ Check the advancement history to see if this runner progression was
             already handled.
             

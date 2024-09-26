@@ -7,6 +7,8 @@ from events.base_event import BaseEvent
 from events.constants import Modifiers, EventCodes
 from events.stolen_base import StolenBaseEvent
 from events.caught_stealing import CaughtStealingEvent
+from model.action_record import ActionRecord
+from model.game_at_bat import GameAtBat
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +17,7 @@ class StrikeoutEvent(BaseEvent):
 
     DROPPED_THIRD_STRIKE_PUTOUT = "23"  # K23
 
-    def handle(self, game_at_bat, op_details):
+    def handle(self, game_at_bat : GameAtBat, action : ActionRecord):
         # attempt to grab play modifiers
         called = ""
         while len(game_at_bat.modifiers) > 0:

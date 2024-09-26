@@ -44,6 +44,5 @@ class ActionRecord(BaseModel):
 
         return record
 
-
     def __str__(self) -> str:
         return json.dumps(self)

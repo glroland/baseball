@@ -4,13 +4,15 @@ Runner hit a ground rule double game event.
 """
 import logging
 from events.base_event import BaseEvent
+from model.action_record import ActionRecord
+from model.game_at_bat import GameAtBat
 
 logger = logging.getLogger(__name__)
 
 class GroundRuleDoubleEvent(BaseEvent):
     """ Ground Rule Double Event """
 
-    def handle(self, game_at_bat, details):
+    def handle(self, game_at_bat : GameAtBat, action : ActionRecord):
         if len(details) > 0:
             game_at_bat.fielded_by = details.pop(0)
         if len(game_at_bat.modifiers) > 0:

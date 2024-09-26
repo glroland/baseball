@@ -5,13 +5,15 @@ Defensive error resulting in a runner progression game event.
 import logging
 from events.base_event import BaseEvent
 from events.constants import Modifiers
+from model.action_record import ActionRecord
+from model.game_at_bat import GameAtBat
 
 logger = logging.getLogger(__name__)
 
 class DefensiveErrorEvent(BaseEvent):
     """ Defensive Error Event """
 
-    def handle(self, game_at_bat, op_details):
+    def handle(self, game_at_bat : GameAtBat, action : ActionRecord):
         fb = ""
         if len(op_details) > 0:
             game_at_bat.fielded_by = op_details.pop(0)

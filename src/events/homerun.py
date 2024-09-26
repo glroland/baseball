@@ -4,13 +4,15 @@ Runner hit a home run game event.
 """
 import logging
 from events.base_event import BaseEvent
+from model.action_record import ActionRecord
+from model.game_at_bat import GameAtBat
 
 logger = logging.getLogger(__name__)
 
 class HomerunEvent(BaseEvent):
     """ Homerun Event """
 
-    def handle(self, game_at_bat, op_details):
+    def handle(self, game_at_bat : GameAtBat, action : ActionRecord):
         logger.info("Out of Park Home Run hit by batter")
         if len(game_at_bat.modifiers) > 0:
             game_at_bat.hit_to_location = game_at_bat.modifiers.pop(0)

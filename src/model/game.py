@@ -3,6 +3,7 @@
 Baseball data structures used throughout the application. 
 """
 import logging
+import json
 from datetime import datetime, timedelta
 from typing import List, Dict
 from pydantic import BaseModel
@@ -82,9 +83,7 @@ class Game(BaseModel):
                    player_code,
                    count,
                    pitches,
-                   basic_play,
-                   modifiers,
-                   advances):
+                   play):
         """ Generate a new at bat record, prepopulated with the latest game
             details for incrementing.
 
@@ -93,9 +92,7 @@ class Game(BaseModel):
             player_code - player code
             count - count
             pitches - pitches string
-            basic_play - basic play string
-            modifiers - modifiers represented as a list of strings
-            advances - advances represented as a list of strings
+            play - play record
         """
         game_at_bat = GameAtBat()
         game_at_bat.inning = inning
@@ -103,9 +100,7 @@ class Game(BaseModel):
         game_at_bat.player_code = player_code
         game_at_bat.count = count
         game_at_bat.pitches = pitches
-        game_at_bat.basic_play = basic_play
-        game_at_bat.modifiers = modifiers
-        game_at_bat.advances = advances
+        game_at_bat.play = play
         last_at_bat = self.propogate_game_stats(game_at_bat)
         self.game_plays.append(game_at_bat)
 
@@ -145,35 +140,6 @@ class Game(BaseModel):
         logger.info("Player <%s> substituted with <%s>", game_subst.player_from,
                     game_subst.player_to)
         return game_subst
-
-    def __str__(self) -> str:
-        response = f"""{{ "id": "{self.game_id}", "info_attributes": {self.info_attributes}, """
-        response += """"starters": [ """
-        c = 0
-        for starter in self.starters:
-            if c > 0:
-                response += ", "
-            response += str(starter)
-            c += 1
-        response += " ], "
-        response += """"game_plays": [ """
-        c = 0
-        for play in self.game_plays:
-            if c > 0:
-                response += ", "
-            response += str(play)
-            c += 1
-        response += " ], "
-        response += """"data": [ """
-        c = 0
-        for d in self.data:
-            if c > 0:
-                response += ", "
-            response += str(d)
-            c += 1
-        response += " ] "
-        response += "}"
-        return response
 
     def score(self):
         """ Get the current score of the game.
@@ -232,3 +198,6 @@ class Game(BaseModel):
                   f"Calculated={score_tuple[0]}-{score_tuple[1]}"
             logger.fatal(msg)
             raise ValueError(msg)
+
+    def __str__(self) -> str:
+        return json.dumps(self)

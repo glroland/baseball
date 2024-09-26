@@ -90,38 +90,29 @@ class EventFactory:
         
         game_at_bat - game at bat record
         """
-        logger.debug("Interpretting game at bat event.  BasicPlay = <%s>, Modifiers = <%s>, Advances = <%s>", game_at_bat.basic_play, game_at_bat.modifiers, game_at_bat.advances)
+        logger.debug("Interpretting game at bat event.  Play = <%s>", game_at_bat.play)
 
-        play = game_at_bat.basic_play[0]
+        # process each play action
+        for action in game_at_bat.play.actions:
+            a_str = action.action
 
-        # Analyze Defensive Play
-        regex = "(^[0-9]+)"
-        if re.search(regex, play):
-            event = EventFactory.__create_event_by_name(EventFactory.MAPPING_DEFENSIVE, game_at_bat)
-            event.handle_advances(game_at_bat)
-            event.handle(game_at_bat, game_at_bat.basic_play)
-            event.debug_check_key_attributes_out(game_at_bat, game_at_bat.basic_play)
+            # Analyze Defensive Play
+            regex = "(^[0-9]+)"
+            if re.search(regex, a_str):
+                event = EventFactory.__create_event_by_name(EventFactory.MAPPING_DEFENSIVE, game_at_bat)
+                event.handle_advances(game_at_bat, game_at_bat.play.advances)
+                event.handle(game_at_bat, action)
+                #event.debug_check_key_attributes_out(game_at_bat, game_at_bat.basic_play)
 
-        # Analyze Offensive Play
-        regex = "(^[A-Z]+)(.*)"
-        if re.search(regex, play):
-            play_list = regex_split(regex, play)
-            op_event = play_list.pop(0)
-            for result in play_list:
-                logger.debug("Basic_Play Modifiers: - LEN=%s, RESULT = %s", len(play_list), result)
+            # Analyze Offensive Play
+            regex = "(^[A-Z]+)(.*)"
+            if re.search(regex, a_str):
+                play_list = regex_split(regex, a_str)
+                op_event = play_list.pop(0)
+                for result in play_list:
+                    logger.debug("Basic_Play Modifiers: - LEN=%s, RESULT = %s", len(play_list), result)
 
-            event = EventFactory.__create_event_by_name(op_event, game_at_bat)
-            event.handle_advances(game_at_bat)
-            event.handle(game_at_bat, play_list)
-            event.debug_check_key_attributes_out(game_at_bat, play_list)
-
-        if game_at_bat.modifiers is not None and len(game_at_bat.modifiers) > 0:
-            msg = f"UNHANDLED MODIFIERS!!!  {game_at_bat.modifiers}"
-            logger.error(msg)
-            raise ValueError(msg)
-        if game_at_bat.advances is not None and len(game_at_bat.advances) > 0:
-            msg = f"UNHANDLED ADVANCE!!!  {game_at_bat.advances}"
-            logger.error(msg)
-            raise ValueError(msg)
-
-        #raise ValueError("incremental processing as i work through this")
+                event = EventFactory.__create_event_by_name(op_event, game_at_bat)
+                event.handle_advances(game_at_bat, game_at_bat.play.advances)
+                event.handle(game_at_bat, op_event)
+                #event.debug_check_key_attributes_out(game_at_bat, play_list)

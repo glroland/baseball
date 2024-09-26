@@ -4,13 +4,15 @@ Runner hit by pitch game event.
 """
 import logging
 from events.base_event import BaseEvent
+from model.action_record import ActionRecord
+from model.game_at_bat import GameAtBat
 
 logger = logging.getLogger(__name__)
 
 class HitByPitchEvent(BaseEvent):
     """ Hit By Pitch Event """
 
-    def handle(self, game_at_bat, op_details):
+    def handle(self, game_at_bat : GameAtBat, action : ActionRecord):
         """ Walk the player due to hit by pitch
         
             game_at_bat - game at bat

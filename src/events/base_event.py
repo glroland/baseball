@@ -4,18 +4,20 @@ Base logic for game events.
 """
 import logging
 import re
+from typing import List
+from pydantic import BaseModel
 from events.constants import Parameters
+from model.action_record import ActionRecord
+from model.game_at_bat import GameAtBat
 
 logger = logging.getLogger(__name__)
 
-class BaseEvent:
+class BaseEvent(BaseModel):
     """ Base class for all game events.  """
 
-    def __init__(self):
-        """ Constructor """
-        self.completed_advances = []
+    completed_advances : List[str] = []
 
-    def handle(self, game_at_bat, details):
+    def handle(self, game_at_bat : GameAtBat, action : ActionRecord):
         """ Each Game Event Class should implement this method."""
         raise NotImplementedError()
 
@@ -173,24 +175,19 @@ class BaseEvent:
             self.fail(f"Unexpected advance type = {advancement_type}")
 
 
-    def handle_advances(self, game_at_bat):
+    def handle_advances(self, game_at_bat, advances):
         """ Handle Base Advances.
     
             game_at_bat - game at bat
+            advances - list of base advances
         """
-        if game_at_bat.advances is not None and len(game_at_bat.advances) > 0:
-            while len(game_at_bat.advances) > 0:
-                advance = game_at_bat.advances.pop(0)
+        if advances is not None and len(advances) > 0:
+            for advance in advances:
+                base_from = advance.base_from
+                was_out = advance[1].is_out
+                base_to = advance.base_to
 
-                # gather first 3 characters - required for advance
-                if len(advance) < 3:
-                    self.fail(f"Advancement entry is invalid due to length! {advance}")
-                base_from = advance[0]
-                safe_or_out = advance[1]
-                base_to = advance[2]
-                parameter = advance[3:]
-
-                self.advance_runner(game_at_bat, base_from, base_to, safe_or_out, parameter)
+                self.advance_runner(game_at_bat, base_from, base_to, was_out)
 
 
     def fail(self, msg):

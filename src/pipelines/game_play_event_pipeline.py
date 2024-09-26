@@ -41,33 +41,24 @@ class GamePlayEventPipeline(BasePipeline):
 
     def execute_pipeline(self):
         """ Orchestrate the end to end ingestion process associated with this pipeline. """
+        # validate pipeline first
+        if len(self.processed_records) > 0:
+            self.fail(f"Pipeline not designed for use of staged records!  Count={len(self.processed_records)}")
+
         # handle substitutions
         if self.sub_player_tobe is not None and len(self.sub_player_tobe) > 0:
             self.__handle_sub()
 
         else:
-            # Process all the game level info records first
-            is_first = True
-            m = self.modifiers
-            a = self.advancements
-            while len(self.staged_records) > 0:
-                record = self.staged_records.pop(0)
-                logger.fatal("Record -- %s", record)
+            # create at bat model
+            game_at_bat = self.game.new_at_bat(
+                        inning = self.inning,
+                        home_team_flag = self.home_team_flag == "1",
+                        player_code = self.player_code,
+                        count = self.pitch_count,
+                        pitches = self.pitches,
+                        play = self.play)
 
-                game_at_bat = self.game.new_at_bat(
-                            inning = self.inning,
-                            home_team_flag = self.home_team_flag == "1",
-                            player_code = self.player_code,
-                            count = self.pitch_count,
-                            pitches = self.pitches,
-                            basic_play = record,
-                            modifiers = m,
-                            advances = a)
-                if is_first:
-                      m = []
-                      a = []
-                      is_first = False
 
-                EventFactory.create(game_at_bat)
-
-                self.processed_records.append(record)
+            # process each action under the play record
+            EventFactory.create(game_at_bat)

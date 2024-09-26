@@ -69,23 +69,23 @@ class GamePlayPipeline(BasePipeline):
 
             elif record[0] == "radj":
                 # TODO
-                self.fail("Unhandled game record event - %s", record[0])
+                self.fail(f"Unhandled game record event - {record[0]}")
 
             elif record[0] == "badj":
                 # TODO
-                self.fail("Unhandled game record event - %s", record[0])
+                self.fail(f"Unhandled game record event - {record[0]}")
 
             elif record[0] == "presadj":
                 # TODO
-                self.fail("Unhandled game record event - %s", record[0])
+                self.fail(f"Unhandled game record event - {record[0]}")
 
             elif record[0] == "padj":
                 # TODO
-                self.fail("Unhandled game record event - %s", record[0])
+                self.fail(f"Unhandled game record event - {record[0]}")
 
             elif record[0] == "ladj":
                 # TODO
-                self.fail("Unhandled game record event - %s", record[0])
+                self.fail(f"Unhandled game record event - {record[0]}")
 
             else:
                 self.fail(f"Unknown Game Event Row Type! {record[0]}")

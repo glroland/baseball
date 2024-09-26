@@ -6,13 +6,15 @@ import logging
 import re
 from events.base_event import BaseEvent
 from utils.data import split_leading_num
+from model.action_record import ActionRecord
+from model.game_at_bat import GameAtBat
 
 logger = logging.getLogger(__name__)
 
 class PickedOffEvent(BaseEvent):
     """ Picked Off Event """
 
-    def handle(self, game_at_bat, details):
+    def handle(self, game_at_bat : GameAtBat, action : ActionRecord):
         d = details.pop()
         details_list = split_leading_num(d)
         logger.debug("Picked Off Base Details: %s", details)

@@ -7,13 +7,15 @@ import re
 from events.base_event import BaseEvent
 from events.constants import Modifiers
 from utils.data import split_leading_num
+from model.action_record import ActionRecord
+from model.game_at_bat import GameAtBat
 
 logger = logging.getLogger(__name__)
 
 class DefensivePlayEvent(BaseEvent):
     """ Defensive Play Event """
 
-    def handle(self, game_at_bat, play_list):
+    def handle(self, game_at_bat : GameAtBat, action : ActionRecord):
         """ Handle defensive play based on provided action list.exc_info=
         
         game_at_bat - game at bat
