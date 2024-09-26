@@ -8,6 +8,7 @@ from typing import List
 from pydantic import BaseModel
 from events.constants import Parameters
 from model.action_record import ActionRecord
+from model.advance_record import AdvanceRecord
 from model.game_at_bat import GameAtBat
 from utils.data import to_json_string
 
@@ -15,8 +16,6 @@ logger = logging.getLogger(__name__)
 
 class BaseEvent(BaseModel):
     """ Base class for all game events.  """
-
-    completed_advances : List[str] = []
 
     def handle(self, game_at_bat : GameAtBat, action : ActionRecord):
         """ Each Game Event Class should implement this method."""
@@ -81,22 +80,19 @@ class BaseEvent(BaseModel):
             logger.info("Visiting Team Scored!")
 
     def advance_runner(self, game_at_bat, base_from, base_to,
-                       advancement_type = "-", parameter = ""):
+                       was_out = False, parameter = ""):
         """ Advance runner from the specified from to the to base.
         
             game_at_bat - game at bat
             base_from - starting base
             base_to - ending base
-            advancement_type - advancement type character
+            was_out - advancement type character
         """
         current_base = base_from
         while True:
             # stop the progression once the runner reaches the target base
             if current_base in [base_to, "H"]:
                 break
-
-            # save the advancement
-            self.completed_advances.append(f"{base_from}{advancement_type}{base_to}")
 
             # advance one base
             if current_base == "B":
@@ -151,7 +147,7 @@ class BaseEvent(BaseModel):
             else:
                 self.fail(f"Unknown value for current_base: {current_base}")
 
-        if advancement_type == "X":
+        if was_out:
             extra_text = ""
             if parameter is None or len(parameter) == 0:
                 pass
@@ -169,11 +165,8 @@ class BaseEvent(BaseModel):
                         base_from, base_to, extra_text)
             game_at_bat.outs += 1
 
-        elif advancement_type == "-":
+        elif not was_out:
             logger.info("Base Runner advanced from %s to %s.", base_from, base_to)
-
-        else:
-            self.fail(f"Unexpected advance type = {advancement_type}")
 
 
     def handle_advances(self, game_at_bat, advances):
@@ -185,7 +178,7 @@ class BaseEvent(BaseModel):
         if advances is not None and len(advances) > 0:
             for advance in advances:
                 base_from = advance.base_from
-                was_out = advance[1].is_out
+                was_out = advance.was_out
                 base_to = advance.base_to
 
                 self.advance_runner(game_at_bat, base_from, base_to, was_out)
