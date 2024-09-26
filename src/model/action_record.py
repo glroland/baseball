@@ -6,7 +6,7 @@ import logging
 import json
 from typing import List
 from pydantic import BaseModel
-from utils.data import extract_groups, regex_split
+from utils.data import extract_groups, regex_split, to_json_string
 
 logger = logging.getLogger(__name__)
 
@@ -45,4 +45,4 @@ class ActionRecord(BaseModel):
         return record
 
     def __str__(self) -> str:
-        return json.dumps(self)
+        return to_json_string(self)

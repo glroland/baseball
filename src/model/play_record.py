@@ -9,6 +9,7 @@ from typing import List
 from pydantic import BaseModel
 from model.action_record import ActionRecord
 from model.advance_record import AdvanceRecord
+from utils.data import to_json_string
 
 logger = logging.getLogger(__name__)
 
@@ -141,6 +142,5 @@ class PlayRecord(BaseModel):
 
         return record
 
-
     def __str__(self) -> str:
-        return json.dumps(self)
+        return to_json_string(self)

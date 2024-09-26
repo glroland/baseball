@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from events.constants import Parameters
 from model.action_record import ActionRecord
 from model.game_at_bat import GameAtBat
+from utils.data import to_json_string
 
 logger = logging.getLogger(__name__)
 
@@ -197,3 +198,7 @@ class BaseEvent(BaseModel):
         """
         logger.error(msg)
         raise ValueError(msg)
+
+
+    def __str__(self) -> str:
+        return to_json_string(self)

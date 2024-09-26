@@ -7,7 +7,7 @@ import json
 import re
 from typing import List
 from pydantic import BaseModel
-from utils.data import extract_groups
+from utils.data import extract_groups, to_json_string
 
 logger = logging.getLogger(__name__)
 
@@ -111,6 +111,5 @@ class AdvanceRecord(BaseModel):
 
         return record
 
-
     def __str__(self) -> str:
-        return json.dumps(self)
+        return to_json_string(self)

@@ -13,6 +13,7 @@ from model.game_at_bat import GameAtBat
 from model.game_substitution import GameSubstitution
 from model.starter import Starter
 from model.data import Data
+from utils.data import to_json_string
 
 logger = logging.getLogger(__name__)
 
@@ -200,4 +201,4 @@ class Game(BaseModel):
             raise ValueError(msg)
 
     def __str__(self) -> str:
-        return json.dumps(self)
+        return to_json_string(self)

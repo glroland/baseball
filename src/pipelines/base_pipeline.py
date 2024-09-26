@@ -5,6 +5,7 @@ Base class for all data pipelines.
 import logging
 from typing import List
 from pydantic import BaseModel
+from utils.data import to_json_string
 
 logger = logging.getLogger(__name__)
 
@@ -52,3 +53,6 @@ class BasePipeline(BaseModel):
         """
         logger.error(msg)
         raise ValueError(msg)
+
+    def __str__(self) -> str:
+        return to_json_string(self)

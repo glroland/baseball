@@ -19,6 +19,3 @@ class GameAtBat(GamePlay):
     play : PlayRecord = None
     hit_to_location : int = None
     fielded_by : str = None
-
-    def __str__(self) -> str:
-        return json.dumps(self)

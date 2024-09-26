@@ -3,6 +3,7 @@
 Baseball data structures used throughout the application. 
 """
 from pydantic import BaseModel
+from utils.data import to_json_string
 
 # pylint: disable=too-few-public-methods
 class GamePlay(BaseModel):
@@ -15,3 +16,6 @@ class GamePlay(BaseModel):
     runner_on_3b : bool = False
     score_home : int = 0
     score_visitor : int = 0
+
+    def __str__(self) -> str:
+        return to_json_string(self)

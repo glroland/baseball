@@ -4,13 +4,33 @@ Utility functions to help simplify data manipulation.
 """
 import logging
 import re
+import json
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
+
+def to_json_string(i : BaseModel):
+    return json.dumps(i.dict())
 
 def regex_split(regex, str):
     if str is None:
         return []
     return list(filter(None, re.split(regex, str)))
+
+def split_leading_chars_from_numbers(str):
+    if not re.match("[A-Z]", str[0]):
+        msg = f"Input string is not compatible with REGEX!  {str}"
+        logger.error(msg)
+        raise ValueError(msg)
+
+    result = regex_split("^([A-Z]+)([0-9]*)$", str)
+
+    if len(result) != 2:
+        msg = f"Rseulting split is not of the correct structure!  Len={len(result)} Result={result}"
+        logger.error(msg)
+        raise ValueError(msg)
+
+    return result
 
 def split_num_paren_chunks(str):
     return regex_split("([0-9]+\\([0-9]+\\)?)+", str)

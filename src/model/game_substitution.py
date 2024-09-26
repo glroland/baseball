@@ -15,10 +15,3 @@ class GameSubstitution(GamePlay):
     batting_order : int = None
     fielding_position : int = None
     players_team_home_flag : bool = None
-
-    def __str__(self) -> str:
-        return f"""{{ "play_type": "Substitution", "player_from": "{self.player_from}", """ \
-               f""""player_to": "{self.player_to}", "players_team_home_flag": """ \
-               f"""{str(self.players_team_home_flag).lower()}, """ \
-               f""""batting_order": {self.batting_order}, """ \
-               f""""fielding_position": {self.fielding_position} }}"""

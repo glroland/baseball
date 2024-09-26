@@ -114,5 +114,5 @@ class EventFactory:
 
                 event = EventFactory.__create_event_by_name(op_event, game_at_bat)
                 event.handle_advances(game_at_bat, game_at_bat.play.advances)
-                event.handle(game_at_bat, op_event)
+                event.handle(game_at_bat, action)
                 #event.debug_check_key_attributes_out(game_at_bat, play_list)

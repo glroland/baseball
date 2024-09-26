@@ -4,6 +4,7 @@ Baseball data structures used throughout the application.
 """
 import logging
 from pydantic import BaseModel
+from utils.data import to_json_string
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,4 @@ class Starter(BaseModel):
     fielding_position : int = None
 
     def __str__(self) -> str:
-        return f"""{{ "player_code": "{self.player_code}", "player_name": """ \
-               f""""{self.player_name}", "home_team_flag": {str(self.home_team_flag).lower()}, """ \
-               f""""batting_order": {self.batting_order}, "fielding_position": """ \
-               f"""{self.fielding_position} }}"""
+        return to_json_string(self)
