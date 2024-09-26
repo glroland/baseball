@@ -85,8 +85,10 @@ class PlayRecord(BaseModel):
                 if is_first:
                     play += modifiers
                 logger.debug ("No groups in action.  Play w/modifiers = %s", play)
-                record = ActionRecord.create(play)
-                self.actions.append(record)
+                split_plays = play.split("+")
+                for split_play in split_plays:
+                    record = ActionRecord.create(split_play)
+                    self.actions.append(record)
 
                 break
             else:
@@ -94,8 +96,12 @@ class PlayRecord(BaseModel):
                 if is_first:
                     part_one += modifiers
                 logger.debug ("Groups exist in action.  Play w/o groups plus modifiers = %s", part_one)
-                record = ActionRecord.create(part_one)
-                self.actions.append(record)
+
+                split_plays = part_one.split("+")
+                for split_play in split_plays:
+                    record = ActionRecord.create(split_play)
+                    self.actions.append(record)
+
                 play = play[end_parens+1:]
 
             modifiers = None
@@ -136,7 +142,7 @@ class PlayRecord(BaseModel):
             record.hard_hit_ball_flag = True
             play_str = action_str[0:len(play_str)-1]
             logger.info(f"Hard Hit Ball Flag set for play!  {record.original_play_record}")
-
+    
         # Break up play components
         record.__break_up_play(play_str)
 

@@ -387,3 +387,24 @@ def test_E_three_advs_with_2_groups():
     assert(len(r.actions[0].groups) == 0)
     assert(len(r.actions[0].modifiers) == 1)
     assert(r.actions[0].modifiers[0] == "G")
+
+def test_multi_plays_walk_plus_caught_stealing():
+    s = "W+CS3(25)"
+
+    r = PlayRecord.create(s)
+    assert(r != None)
+    assert(not r.uncertainty_flag)
+    assert(not r.exceptional_play_flag)
+    assert(not r.softly_hit_ball_flag)
+    assert(not r.hard_hit_ball_flag)
+    assert(len(r.advances) == 0)
+    assert(len(r.actions) == 2)
+    assert(r.actions[0] != None)
+    assert(r.actions[0].action == "W")
+    assert(len(r.actions[0].groups) == 0)
+    assert(len(r.actions[0].modifiers) == 0)
+    assert(r.actions[1] != None)
+    assert(r.actions[1].action == "CS3")
+    assert(len(r.actions[1].groups) == 1)
+    assert(r.actions[1].groups[0] == "25")
+    assert(len(r.actions[1].modifiers) == 0)

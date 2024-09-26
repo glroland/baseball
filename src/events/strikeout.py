@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class StrikeoutEvent(BaseEvent):
     """ Strikeout Event """
 
-    DROPPED_THIRD_STRIKE_PUTOUT = "23"  # K23
+    DROPPED_THIRD_STRIKE_PUTOUT : str = "23"  # K23
 
     def handle(self, game_at_bat : GameAtBat, action : ActionRecord):
         # attempt to grab play modifiers

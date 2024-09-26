@@ -18,7 +18,9 @@ class FlyBallErrorEvent(BaseEvent):
             game_at_bat - game at bat
             op_details - offensive play details
         """
-        details = op_details.pop()
-        logger.info("Fielding error on a fly ball by {details}.  Putting batter on base.")
+        #details = op_details.pop()
+        #logger.info("Fielding error on a fly ball by {details}.  Putting batter on base.")
+
+        logger.info("Fielding error on a fly ball.  Putting batter on base.")
 
         self.advance_runner(game_at_bat, "B", "1")

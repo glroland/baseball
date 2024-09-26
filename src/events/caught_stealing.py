@@ -14,8 +14,12 @@ class CaughtStealingEvent(BaseEvent):
     """ Caught Stealing Event """
 
     def handle(self, game_at_bat : GameAtBat, action : ActionRecord):
-        components = split_leading_chars_from_numbers(action.action)
-        base = components[1]
+        base = ""
+        if action.action == "CSH":
+            base = "H"
+        else:
+            components = split_leading_chars_from_numbers(action.action)
+            base = components[1]
         logger.error("Stolen Base.  Base=%s Details=%s", base, action)
 
         # Check to see if there are details being ignored

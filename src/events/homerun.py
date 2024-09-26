@@ -14,8 +14,7 @@ class HomerunEvent(BaseEvent):
 
     def handle(self, game_at_bat : GameAtBat, action : ActionRecord):
         logger.info("Out of Park Home Run hit by batter")
-        if len(game_at_bat.modifiers) > 0:
-            game_at_bat.hit_to_location = game_at_bat.modifiers.pop(0)
+
         if game_at_bat.runner_on_3b:
             game_at_bat.runner_on_3b = False
             self.score(game_at_bat)
