@@ -27,13 +27,15 @@ class PlayRecord(BaseModel):
         if action_str.count(".") > 1:
             msg = "Unexpected - too Many dots encountered with advancement!  " + \
                     f"{action_str.count('.')} Action={action_str}"
-            logger.fatal(msg)
+            logger.error(msg)
             raise ValueError(msg)
 
         # split advancements
         advancements = action_str.split(".")
         if action_str.count(".") != (len(advancements) - 1):
-            self.fail("Split Operation for advancements failed due to count mispatch.")
+            msg = "Split Operation for advancements failed due to count mispatch."
+            logger.error(msg)
+            raise ValueError(msg)
         beginning = advancements[0]
         advancements = advancements[1:]
         if len(advancements) > 0:
@@ -66,7 +68,7 @@ class PlayRecord(BaseModel):
         if mod_index != -1:
             modifiers = s[mod_index:]
             s = s[0:mod_index]
-        logger.fatal("FYI - s=%s m=%s", s, modifiers)
+        logger.debug("Identified Play and Modifiers - s=%s m=%s", s, modifiers)
         
         # break out plays (usually just 1 but that's a big usually)
         play = s
@@ -81,7 +83,7 @@ class PlayRecord(BaseModel):
             if end_parens == -1:
                 if is_first:
                     play += modifiers
-                logger.fatal ("PART_2 = %s", play)
+                logger.debug ("No groups in action.  Play w/modifiers = %s", play)
                 record = ActionRecord.create(play)
                 self.actions.append(record)
 
@@ -90,7 +92,7 @@ class PlayRecord(BaseModel):
                 part_one = play[0:end_parens+1]
                 if is_first:
                     part_one += modifiers
-                logger.fatal ("PART_1 = %s", part_one)
+                logger.debug ("Groups exist in action.  Play w/o groups plus modifiers = %s", part_one)
                 record = ActionRecord.create(part_one)
                 self.actions.append(record)
                 play = play[end_parens+1:]
@@ -100,7 +102,7 @@ class PlayRecord(BaseModel):
 
 
     def create(s):
-        logger.fatal("Parsing Play Record - <%s>", s)
+        logger.info("Parsing Play Record - <%s>", s)
 
         # create basic play record structure
         record = PlayRecord()
@@ -120,19 +122,19 @@ class PlayRecord(BaseModel):
 
         # parse advancements
         play_str = record.__split_advancements(action_str)
-        logger.info("Resulting Play Str - <%s>", play_str)
+        logger.debug("Resulting Play Str - <%s>", play_str)
 
         # trim softly hit ball flag
         if play_str[len(play_str)-1] == "-":
             record.softly_hit_ball_flag = True
             play_str = action_str[0:len(play_str)-1]
-            logger.warning(f"Softly Hit Ball Flag set for play!  {record.original_play_record}")
+            logger.info(f"Softly Hit Ball Flag set for play!  {record.original_play_record}")
 
         # trim hard hit ball flag
         if play_str[len(play_str)-1] == "+":
             record.hard_hit_ball_flag = True
             play_str = action_str[0:len(play_str)-1]
-            logger.warning(f"Hard Hit Ball Flag set for play!  {record.original_play_record}")
+            logger.info(f"Hard Hit Ball Flag set for play!  {record.original_play_record}")
 
         # Break up play components
         record.__break_up_play(play_str)

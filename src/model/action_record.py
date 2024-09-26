@@ -17,7 +17,7 @@ class ActionRecord(BaseModel):
     modifiers : List[str] = []
 
     def create(s : str):
-        logger.info("Parsing Action Record - Action<%s>", s)
+        logger.debug("Parsing Action Record - Action<%s>", s)
 
         record = ActionRecord()
         record.groups = extract_groups(s)

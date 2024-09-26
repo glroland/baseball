@@ -23,7 +23,7 @@ class AdvanceRecord(BaseModel):
     def __parse_advancement_str(self, a):
         if not re.match("^[B123][X-][123H](\\(.+\\))*$", a):
             msg = f"Invalid Advancement: {a}"
-            logger.fatal(msg)
+            logger.error(msg)
             raise ValueError(msg)
 
         # parse advancement
@@ -74,12 +74,12 @@ class AdvanceRecord(BaseModel):
                     logger.debug("Advancement Parameter - Throw")
                 else:
                     msg = f"Illegal Advancement Parameter - {group}"
-                    logger.fatal(msg)
+                    logger.error(msg)
                     raise ValueError(msg)
 
 
     def create(s):
-        logger.fatal("Parsing Advancement Record - <%s>", s)
+        logger.debug("Parsing Advancement Record - <%s>", s)
 
         # parse advancements
         record = AdvanceRecord()
