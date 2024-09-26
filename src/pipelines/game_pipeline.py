@@ -75,7 +75,7 @@ class GamePipeline(BasePipeline):
                 data.quantity = int(record[3])
                 self.game.data.append(data)
             else:
-                self.fail("Unknown Row Type!  {record[0]}")
+                self.fail(f"Unknown Row Type!  {record[0]}")
 
             self.processed_records.append(record)
 

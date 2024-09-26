@@ -7,6 +7,7 @@ import logging
 from pipelines.base_pipeline import BasePipeline
 from events.event_factory import EventFactory
 from model.game import Game
+from model.play_record import PlayRecord
 
 logger = logging.getLogger(__name__)
 
@@ -22,11 +23,7 @@ class GamePlayEventPipeline(BasePipeline):
     player_code : str = None
     pitch_count : str = None
     pitches : str = None
-    full_play_action : str = None
-
-    play : str = None
-    modifiers : List[str] = []
-    advancements : List[str] = []
+    play : PlayRecord = None
 
     sub_player_tobe : str = None
     batting_order : int = None

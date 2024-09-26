@@ -50,5 +50,5 @@ class BasePipeline(BaseModel):
         
             msg - error message
         """
-        logger.fatal(msg)
+        logger.error(msg)
         raise ValueError(msg)
