@@ -8,10 +8,12 @@ import re
 logger = logging.getLogger(__name__)
 
 def regex_split(regex, str):
+    if str is None:
+        return []
     return list(filter(None, re.split(regex, str)))
 
 def split_num_paren_chunks(str):
-    return regex_split("([0-9]+\([0-9]+\)?)+", str)
+    return regex_split("([0-9]+\\([0-9]+\\)?)+", str)
 
 def split_leading_num(str):
     return regex_split("^([0-9]+)(.*)", str)

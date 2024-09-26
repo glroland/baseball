@@ -39,7 +39,8 @@ class EventFactory:
         EventCodes.BATTER_HIT_BY_PITCH: { EVENT_MODULE: "events.hit_by_pitch", EVENT_CLASS: "HitByPitchEvent" },
         EventCodes.FLY_BALL_ERROR: { EVENT_MODULE: "events.fly_ball_error", EVENT_CLASS: "FlyBallErrorEvent" },
         EventCodes.GROUND_RULE_DOUBLE: { EVENT_MODULE: "events.ground_rule_double", EVENT_CLASS: "GroundRuleDoubleEvent" },
-        EventCodes.PASSED_BALL: { EVENT_MODULE: "events.passed_ball", EVENT_CLASS: "PassedBallEvent" }
+        EventCodes.PASSED_BALL: { EVENT_MODULE: "events.passed_ball", EVENT_CLASS: "PassedBallEvent" },
+        EventCodes.BASE_RUNNER_ADVANCE: { EVENT_MODULE: "events.base_runner_advance", EVENT_CLASS: "BaseRunnerAdvanceEvent" }
     }
 
     def __instantiate_class(module_name, class_name):

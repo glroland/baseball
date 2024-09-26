@@ -27,6 +27,7 @@ class EventCodes:
     DEFENSIVE_INDIFFERENCE = "DI"
     GROUND_RULE_DOUBLE = "DGR"
     PASSED_BALL = "PB"
+    BASE_RUNNER_ADVANCE = "OA"
 
 class Modifiers:
 

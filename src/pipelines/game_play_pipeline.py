@@ -10,6 +10,7 @@ from pipelines.base_pipeline import BasePipeline
 from pipelines.game_play_event_pipeline import GamePlayEventPipeline
 from events.constants import EventCodes
 from utils.data import extract_groups
+from model.play_record import PlayRecord
 
 logger = logging.getLogger(__name__)
 
@@ -21,70 +22,6 @@ class GamePlayPipeline(BasePipeline):
     events : List[GamePlayEventPipeline] = []
     uncertainty_flag : bool = False
     exceptional_play_flag : bool = False
-
-    def __split_advancements(self, event, action_str):
-        # splt advancements
-        if action_str.count(".") > 1:
-            self.fail("Unexpected - too Many dots encountered with advancement!  " + \
-                        f"{action_str.count('.')} Action={event.full_play_action}")
-        advancements = action_str.split(".")
-        if action_str.count(".") != (len(advancements) - 1):
-            self.fail("Split Operation for advancements failed due to count mispatch.")
-        beginning = advancements[0]
-        advancements = advancements[1:]
-        if len(advancements) > 0:
-            event.advancements = advancements[0].split(";")
-
-            # validate advancements
-            for a in event.advancements:
-                if not re.match("^[B123][X-][123H](\\(.+\\))*$", a):
-                    self.fail(f"Invalid Advancement: {a}")
-
-                # extract advancement parameters
-                advancement_parameters = extract_groups(a)
-                if len(advancement_parameters) > 0:
-                    for group in advancement_parameters:
-                        # all numbers test
-                        if re.match("^[0-9]+$", group):
-                            logger.debug("Advancement Parameter - all numbers - %s", group)
-                        elif re.match("^[0-9]+X$", group):
-                            logger.debug("Advancement Parameter - number X - %s", group)
-                        elif re.match("^[0-9]+H$", group):
-                            logger.debug("Advancement Parameter - number H - %s", group)
-                        elif re.match("^[0-9]+/TH[123H]?$", group):
-                            logger.debug("Advancement Parameter - numbers plus throw - %s", group)
-                        elif re.match("^[0-9]+/BINT$", group):
-                            logger.debug("Advancement Parameter - numbers plus BINT - %s", group)
-                        elif re.match("^[0-9]+/RINT$", group):
-                            logger.debug("Advancement Parameter - numbers plus RINT - %s", group)
-                        elif re.match("^[0-9]+/AP$", group):
-                            logger.debug("Advancement Parameter - numbers plus AP - %s", group)
-                        elif re.match("^[0-9]*E[0-9]/TH[123H]?$", group):
-                            logger.debug("Advancement Parameter - error due to throw - %s", group)
-                        elif re.match("^[0-9]*E[0-9]/OBS?$", group):
-                            logger.debug("Advancement Parameter - error due to OBS - %s", group)
-                        elif re.match("^[0-9]*E[0-9]$", group):
-                            logger.debug("Advancement Parameter - error - %s", group)
-                        elif group == "ER":
-                            logger.debug("Advancement Parameter - Earned Run")
-                        elif group == "UR":
-                            logger.debug("Advancement Parameter - Unearned Run")
-                        elif group == "TUR":
-                            logger.debug("Advancement Parameter - Team Unearned Run")
-                        elif group == "NR":
-                            logger.debug("Advancement Parameter - RBI Not Credited")
-                        elif group == "PB":
-                            logger.debug("Advancement Parameter - Passed Ball")
-                        elif group == "RBI":
-                            logger.debug("Advancement Parameter - RBI")
-                        elif group == "WP":
-                            logger.debug("Advancement Parameter - WP")
-                        elif re.match("^TH[123H]?$", group):
-                            logger.debug("Advancement Parameter - Throw")
-                        else:
-                            self.fail(f"Illegal Advancement Parameter - {group}")
-        
-        return beginning
 
 
     def __split_action_string(self, event):
@@ -102,17 +39,13 @@ class GamePlayPipeline(BasePipeline):
 
         # splt advancements
         beginning = self.__split_advancements(event, action_str)
-
-        # extract the modifiers
-        slash_pos = beginning.find("/")
-        if slash_pos == -1:
-            event.play = beginning
-        else:
-            event.play = beginning[0:slash_pos]
-            modifiers = beginning[slash_pos+1:]
-            event.modifiers = modifiers.split("/")
-
-        logger.fatal("Play = %s", event.play)
+        logging.fatal("Beginning - %s", beginning)
+        groups = extract_groups(beginning)
+        tokens = groups[0].split("/")
+        event.play = tokens.pop(0)
+        logging.fatal("Play - %s", beginning)
+        event.modifiers = tokens
+        logging.fatal("Modifiers - %s", beginning)
 
         # break out plays (usually just 1 but that's a big usually)
         play = event.play
@@ -120,29 +53,30 @@ class GamePlayPipeline(BasePipeline):
             end_parens = play.find(")")
             if end_parens == -1:
                 event.stage_record([play])
-                logger.fatal("1 %s", event.staged_records)
                 break
             elif end_parens == len(play)-1:
                 groups = extract_groups(play)
                 first_part = play[0:play.find("(")]
                 event.stage_record([first_part] + groups)
-                logger.fatal("2 %s", event.staged_records)
                 break
             else:
                 record = play[0:end_parens+1]
                 play = play[end_parens+1:]
                 groups = extract_groups(record)
                 first_part = record[0:record.find("(")]
-                logger.fatal("3A %s", first_part)
-                logger.fatal("3B %s", groups)
                 event.stage_record([first_part] + groups)
-                logger.fatal("3 %s", event.staged_records)
-
 
     def __setup_child_pipelines(self):
         # Process all the game level info records first
         while len(self.staged_records) > 0:
             record = self.staged_records.pop(0)
+
+
+            if len(record)> 6:
+                play = PlayRecord.create(record[6])
+                logger.fatal("PlayRecord - %s", str(play.__dict__))
+            return
+
 
             logger.fatal("TEMP <ROW> -- %s", record)
             if record[0] == "play" and record[6] == EventCodes.NO_PLAY_SUB_COMING:

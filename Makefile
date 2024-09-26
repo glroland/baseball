@@ -34,4 +34,10 @@ help:
 	cd src && BASEBALL_DB_CONN_STRING=$(db_connection_string) python import_events_app.py --help
 
 etest:
+	cd src && BASEBALL_DB_CONN_STRING=$(db_connection_string) python import_events_app.py ../data/raw/2000ANA.EVA --debug ../import_events_apps.log --truncate
+
+events:
 	cd src && BASEBALL_DB_CONN_STRING=$(db_connection_string) python import_events_app.py ../data/raw/ --debug ../import_events_apps.log --truncate
+
+test:
+	pytest
