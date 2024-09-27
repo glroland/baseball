@@ -32,7 +32,7 @@ class GameAtBat(GamePlay):
             change_in_batting_team = True
         
         # validate outs
-        if change_in_batting_team and self.outs not in [0, 1]:
+        if change_in_batting_team and self.outs not in [0, 1, 3]:
             msg = f"Incorrect number of outs after batting team change! #={self.outs}"
             logger.error(msg)
             raise ValueError(msg)

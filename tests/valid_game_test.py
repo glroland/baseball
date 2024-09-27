@@ -161,3 +161,16 @@ def test_valid_game():
         if len(row) > 0:
             event_file_pipeline.stage_record(row)
     event_file_pipeline.execute_pipeline()
+
+    assert len(event_file_pipeline.game_pipelines) == 1
+    game_pipeline = event_file_pipeline.game_pipelines[0]
+    assert game_pipeline is not None
+    assert game_pipeline.game is not None
+    game = game_pipeline.game
+    assert game.game_id == "ANA200004030"
+
+    score_tuple = game.score()
+    assert score_tuple is not None
+    assert len(score_tuple) == 2
+    assert score_tuple[0] == 3
+    assert score_tuple[1] == 2
