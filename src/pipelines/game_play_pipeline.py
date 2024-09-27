@@ -9,7 +9,6 @@ from model.game import Game
 from pipelines.base_pipeline import BasePipeline
 from pipelines.game_play_event_pipeline import GamePlayEventPipeline
 from events.constants import EventCodes
-from utils.data import extract_groups
 from model.play_record import PlayRecord
 
 logger = logging.getLogger(__name__)
@@ -19,8 +18,8 @@ class GamePlayPipeline(BasePipeline):
 
     game : Game = None
     events : List[GamePlayEventPipeline] = []
-    uncertainty_flag : bool = False
-    exceptional_play_flag : bool = False
+    inning : int = 0
+    home_team_flag : bool = None
 
     def __setup_child_pipelines(self):
         # Process all the game level info records first
@@ -40,7 +39,9 @@ class GamePlayPipeline(BasePipeline):
                 event.game = self.game
                 event.record = record
                 event.inning = int(record[1])
+                self.inning = event.inning
                 event.home_team_flag = record[2] == "1"
+                self.home_team_flag = event.home_team_flag
                 event.player_code = record[3]
                 event.pitch_count = record[4]
                 event.pitches = record[5]
@@ -94,15 +95,33 @@ class GamePlayPipeline(BasePipeline):
         self.__setup_child_pipelines()
 
         for event in self.events:
+            logger.error("---- PLAY   %s", event.record)
+
             event.execute_pipeline()
             self.processed_records.append(event.record)
 
-            logger.error("POST PLAY DETAILS.  Inning=%s HTF=%s Outs=%s Score=%s-%s Bases=1-%s/2-%s/3-%s",
-                        event.game_play_model.inning,
-                        event.game_play_model.home_team_flag,
+            # build game tracking strings
+            inning_str = str(event.game_play_model.inning)
+            if event.game_play_model.home_team_flag:
+                inning_str += "/Bottom"
+            else:
+                inning_str += "/Top"
+            bases = ""
+            if event.game_play_model.runner_on_1b:
+                bases += "1"
+            else:
+                bases += "-"
+            if event.game_play_model.runner_on_2b:
+                bases += "2"
+            else:
+                bases += "-"
+            if event.game_play_model.runner_on_3b:
+                bases += "3"
+            else:
+                bases += "-"
+            logger.error(">>>> POST PLAY DETAILS.  Inning=%s Outs=%s Score=%s-%s Bases=%s",
+                        inning_str,
                         event.game_play_model.outs,
                         event.game_play_model.score_visitor,
                         event.game_play_model.score_home,
-                        event.game_play_model.runner_on_1b,
-                        event.game_play_model.runner_on_2b,
-                        event.game_play_model.runner_on_3b)
+                        bases)

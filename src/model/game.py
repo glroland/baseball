@@ -3,7 +3,6 @@
 Baseball data structures used throughout the application. 
 """
 import logging
-import json
 from datetime import datetime, timedelta
 from typing import List, Dict
 from pydantic import BaseModel
@@ -13,6 +12,7 @@ from model.game_at_bat import GameAtBat
 from model.game_substitution import GameSubstitution
 from model.starter import Starter
 from model.data import Data
+from events.event_factory import EventFactory
 from utils.data import to_json_string
 
 logger = logging.getLogger(__name__)
@@ -111,6 +111,9 @@ class Game(BaseModel):
             logger.info("Inning %s / Top - Visiting Team at Bat", inning)
         elif last_at_bat is not None and last_at_bat.home_team_flag != game_at_bat.home_team_flag:
             logger.info("Inning %s / Bottom - Home Team at Bat", inning)
+
+        # process each action under the play record
+        EventFactory.create(game_at_bat)
 
         return game_at_bat
 

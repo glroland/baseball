@@ -5,7 +5,6 @@ Data pipeline for events associated with a game play.
 from typing import List
 import logging
 from pipelines.base_pipeline import BasePipeline
-from events.event_factory import EventFactory
 from model.game import Game
 from model.play_record import PlayRecord
 from model.game_play import GamePlay
@@ -64,6 +63,3 @@ class GamePlayEventPipeline(BasePipeline):
                         count = self.pitch_count,
                         pitches = self.pitches,
                         play = self.play)
-
-            # process each action under the play record
-            EventFactory.create(self.game_play_model)

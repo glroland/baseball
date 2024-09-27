@@ -80,6 +80,7 @@ class GamePipeline(BasePipeline):
             self.processed_records.append(record)
 
         # Process all the game events, in order
+        logger.debug("Processing Game Events Pipeline.  Size=%s", len(self.game_events_pipelines))
         for game_events_pipeline in self.game_events_pipelines:
             game_events_pipeline.execute_pipeline()
 
