@@ -10,7 +10,7 @@ from pydantic import BaseModel
 logger = logging.getLogger(__name__)
 
 def to_json_string(i : BaseModel):
-    return json.dumps(i.dict())
+    return i.model_dump_json(indent=2)
 
 def regex_split(regex, str):
     if str is None:
