@@ -8,6 +8,7 @@ from pipelines.base_pipeline import BasePipeline
 from events.event_factory import EventFactory
 from model.game import Game
 from model.play_record import PlayRecord
+from model.game_play import GamePlay
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,7 @@ class GamePlayEventPipeline(BasePipeline):
     record : List[str] = None
     inning : int = 0
     home_team_flag : bool = False
+    game_play_model : GamePlay = None
 
     player_code : str = None
     pitch_count : str = None
@@ -32,7 +34,7 @@ class GamePlayEventPipeline(BasePipeline):
 
     def __handle_sub(self):
         logger.info("Handling substituion...")
-        self.game.new_substitution(player_to=self.game.no_play_sub_player,
+        self.game_play_model = self.game.new_substitution(player_to=self.game.no_play_sub_player,
                             player_from=self.player_code,
                             home_team_flag=self.players_team_home_flag,
                             batting_order=self.batting_order,
@@ -55,7 +57,7 @@ class GamePlayEventPipeline(BasePipeline):
                 self.fail(f"Play is empty, meaning the NP record wasn't picked up prior to the sub record! Game={self.game.game_id} SubFrom={self.player_code} SubToBe={self.sub_player_tobe} HomeTeamFlag={self.players_team_home_flag} FieldingPosition={self.fielding_position} BattingOrder={self.batting_order}")
 
             # create at bat model
-            game_at_bat = self.game.new_at_bat(
+            self.game_play_model = self.game.new_at_bat(
                         inning = self.inning,
                         home_team_flag = self.home_team_flag == "1",
                         player_code = self.player_code,
@@ -64,4 +66,4 @@ class GamePlayEventPipeline(BasePipeline):
                         play = self.play)
 
             # process each action under the play record
-            EventFactory.create(game_at_bat)
+            EventFactory.create(self.game_play_model)

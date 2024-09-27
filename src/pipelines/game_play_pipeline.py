@@ -96,3 +96,13 @@ class GamePlayPipeline(BasePipeline):
         for event in self.events:
             event.execute_pipeline()
             self.processed_records.append(event.record)
+
+            logger.error("POST PLAY DETAILS.  Inning=%s HTF=%s Outs=%s Score=%s-%s Bases=1-%s/2-%s/3-%s",
+                        event.game_play_model.inning,
+                        event.game_play_model.home_team_flag,
+                        event.game_play_model.outs,
+                        event.game_play_model.score_visitor,
+                        event.game_play_model.score_home,
+                        event.game_play_model.runner_on_1b,
+                        event.game_play_model.runner_on_2b,
+                        event.game_play_model.runner_on_3b)
