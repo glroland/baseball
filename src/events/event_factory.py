@@ -89,7 +89,7 @@ class EventFactory:
         
         game_at_bat - game at bat record
         """
-        logger.info("Interpretting game at bat event.  Play = <%s>", game_at_bat.play)
+        logger.debug("Interpretting game at bat event.  Play = <%s>", game_at_bat.play)
 
         # process each play action
         for action in game_at_bat.play.actions:

@@ -21,19 +21,20 @@ class DefensivePlayEvent(BaseEvent):
         game_at_bat - game at bat
         play_list - list of offensive play components
         """
-        logger.debug("Defensive Play.  Play_List<%s>", action.action)
+        logger.info("Defensive Play.  Play_List<%s>", action.action)
 
         # Check for error
-        error = False
+        is_out = True
         if len(action.groups) > 0:
             for group in action.groups:
                 if re.match("^[0-9]+E[0-9]*$", group):
                     logger.debug("Defensive error overriding out")
-                    error = True
-                    game_at_bat.runner_on_1b = True
+                    is_out = False
 
-        if not error:
-            game_at_bat.outs += 1
+        # advance the runner
+        self.advance_runner(game_at_bat, "B", "1", is_out)
+        
+        # analyze modifier
         due_to = ""
         for modifier in action.modifiers:
             if modifier == Modifiers.GROUNDER or modifier == Modifiers.GROUNDER_UNKNOWN:
@@ -78,7 +79,7 @@ class DefensivePlayEvent(BaseEvent):
                 msg = f"Unhandled Modifier!  {modifier}"
                 logger.warning(msg)
 
-        if not error:
+        if is_out:
             logger.info ("Runner out after hit.  Out credited to pos %s. %s", game_at_bat.fielded_by, due_to)
         else:
             logger.info("Runner safe on base after defensive error by %s. %s", game_at_bat.fielded_by, due_to)
