@@ -18,14 +18,26 @@ class StrikeoutEvent(BaseEvent):
     DROPPED_THIRD_STRIKE_PUTOUT : str = "K23"
 
     def handle(self, game_at_bat : GameAtBat, action : ActionRecord):
+        due_to = ""
+        runner_saved = False
+
         # Check for dropped putout
-        was_dropped_third_strike_putout = False
         if action.action == self.DROPPED_THIRD_STRIKE_PUTOUT:
-            was_dropped_third_strike_putout = True
+            runner_saved = True
+            due_to += "Dropped third stike putout. "
 
         # Unknown strikeout action
         elif len(action.action) > 1:
             self.fail(f"Unknown action type: {action.action}")
+
+        # review chained actions
+        chained_action = action.chain_to
+        while chained_action is not None:
+            if chained_action.action == EventCodes.WILD_PITCH:
+                due_to += "Wild Pitch, saving runner. "
+                runner_saved = True
+                chained_action.handled = True
+            chained_action = chained_action.chain_to
 
         called = ""
         #while len(game_at_bat.modifiers) > 0:
@@ -38,7 +50,8 @@ class StrikeoutEvent(BaseEvent):
         #        raise ValueError(f"Unknown modifier on strikeout! {called}")
 
         # game play result
-        game_at_bat.outs += 1
+        if not runner_saved:
+            game_at_bat.outs += 1
 
         # handle extra play events
         #op_detail = None
@@ -67,7 +80,7 @@ class StrikeoutEvent(BaseEvent):
         #        self.fail(f"Unknown/Unhandled added play type: {added_play}")
 
         # log detail
-        if was_dropped_third_strike_putout:
-            logger.info("Third Strike Dropped but Player still out due to putout.  %s", called)
+        if runner_saved:
+            logger.info("Runner saved from strikeout.  %s  %s", called, due_to)
         else:
-            logger.info("Player Striked Out.  %s", called)
+            logger.info("Player Striked Out.  %s  %s", called, due_to)

@@ -27,6 +27,7 @@ class EventCodes:
     GROUND_RULE_DOUBLE = "DGR"
     PASSED_BALL = "PB"
     BASE_RUNNER_ADVANCE = "OA"
+    WILD_PITCH = "WP"
 
 class Modifiers:
 

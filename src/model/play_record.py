@@ -49,6 +49,34 @@ class PlayRecord(BaseModel):
         
         return beginning
 
+    def __create_actions_chained_or_standalone(self, play):
+        """ Takes a parsed play string with chained components and breaks
+            them apart into discrete actions that are still chained together.
+            
+            play - play string
+        """
+        split_plays = play.split("+")
+
+        # determine if there is a need to chain
+        chained_flag = False
+        if len(split_plays) > 1:
+            chained_flag = True
+
+        # create all the action records
+        for split_play in split_plays:
+            record = ActionRecord.create(split_play)
+            self.actions.append(record)
+
+        # chain the actions together when +'ed
+        if chained_flag:
+            prev_action = None
+            for action in self.actions:
+                if prev_action is not None:
+                    prev_action.chain_to = action
+                prev_action = action
+
+        return split_plays
+
 
     def __break_up_play(self, s):
         # get trailing modifiers
@@ -77,7 +105,7 @@ class PlayRecord(BaseModel):
         while True:
             # stop condition - empty string
             if len(play) == 0:
-                break;
+                break
 
             # stop condition - no more groups
             end_parens = play.find(")")
@@ -85,10 +113,7 @@ class PlayRecord(BaseModel):
                 if is_first:
                     play += modifiers
                 logger.debug ("No groups in action.  Play w/modifiers = %s", play)
-                split_plays = play.split("+")
-                for split_play in split_plays:
-                    record = ActionRecord.create(split_play)
-                    self.actions.append(record)
+                self.__create_actions_chained_or_standalone(play)
 
                 break
             else:
@@ -96,11 +121,7 @@ class PlayRecord(BaseModel):
                 if is_first:
                     part_one += modifiers
                 logger.debug ("Groups exist in action.  Play w/o groups plus modifiers = %s", part_one)
-
-                split_plays = part_one.split("+")
-                for split_play in split_plays:
-                    record = ActionRecord.create(split_play)
-                    self.actions.append(record)
+                self.__create_actions_chained_or_standalone(part_one)
 
                 play = play[end_parens+1:]
 

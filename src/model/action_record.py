@@ -15,6 +15,8 @@ class ActionRecord(BaseModel):
     action : str = None
     groups : List[str] = []
     modifiers : List[str] = []
+    chain_to : object = None
+    handled_flag : bool = False
 
     def create(s : str):
         logger.debug("Parsing Action Record - Action<%s>", s)
