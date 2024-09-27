@@ -58,7 +58,7 @@ class GamePlayEventPipeline(BasePipeline):
             # create at bat model
             self.game_play_model = self.game.new_at_bat(
                         inning = self.inning,
-                        home_team_flag = self.home_team_flag == "1",
+                        home_team_flag = self.home_team_flag,
                         player_code = self.player_code,
                         count = self.pitch_count,
                         pitches = self.pitches,

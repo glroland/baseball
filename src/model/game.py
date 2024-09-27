@@ -30,7 +30,7 @@ class Game(BaseModel):
     data : List[Data] = []
     no_play_sub_player : str = None
 
-    def get_last_at_bat(self):
+    def get_last_at_bat(self) -> GameAtBat:
         """ Locate and return the last at bat record.  """
         if len(self.game_plays) > 0:
             i = len(self.game_plays) - 1
@@ -42,7 +42,7 @@ class Game(BaseModel):
                 i -= 1
         return None
 
-    def propogate_game_stats(self, current_play, force_overwrite_team_flag = False):
+    def propogate_game_stats(self, current_play : GameAtBat, force_overwrite_team_flag = False):
         """ Copies the running outs, runs, players on base, etc from the last batting
             event to the current one.
             
@@ -115,6 +115,9 @@ class Game(BaseModel):
         # process each action under the play record
         EventFactory.create(game_at_bat)
 
+        # validate the game after each at bat
+        self.validate()
+
         return game_at_bat
 
     def new_substitution(self,
@@ -173,8 +176,30 @@ class Game(BaseModel):
                     score_tuple[0],
                     score_tuple[1])
 
-
     def validate(self):
+        """ Validate the game and the state of its at bat objects. """
+        # get 2 most recent at bats
+        current_atbat = None
+        prev_atbat = None
+        i = len(self.game_plays) - 1
+        while i >= 0:
+            atbat = self.game_plays[i]
+            if isinstance(atbat, GamePlay):
+                if current_atbat is None:
+                    current_atbat = atbat
+                elif prev_atbat is None:
+                    prev_atbat = atbat
+                else:
+                    break
+            i -= 1
+
+        # validate current at bat based on previous at bat
+        if current_atbat is not None and prev_atbat is not None:
+            current_atbat.validate(prev_atbat)
+
+
+
+    def validate_externally(self):
         """ Validates the scores and other calculated attributes based on official
             game data from a third party service.
         """
