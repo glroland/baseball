@@ -18,7 +18,6 @@ class GamePlayPipeline(BasePipeline):
     """ Game Play Data Pipeline """
 
     game : Game = None
-    no_play_sub_player : str = None
     events : List[GamePlayEventPipeline] = []
     uncertainty_flag : bool = False
     exceptional_play_flag : bool = False
@@ -29,8 +28,8 @@ class GamePlayPipeline(BasePipeline):
             record = self.staged_records.pop(0)
 
             if record[0] == "play" and record[6] == EventCodes.NO_PLAY_SUB_COMING:
-                self.no_play_sub_player = record[3]
-                logger.debug("No Play - player preparing for substitution: %s", record[3])
+                self.game.no_play_sub_player = record[3]
+                logger.info("No Play - player preparing for substitution: %s", record[3])
 
             elif record[0] == "play":
                 # parse action record
@@ -52,7 +51,7 @@ class GamePlayPipeline(BasePipeline):
                 event = GamePlayEventPipeline()
                 event.game = self.game
                 event.record = record
-                event.sub_player_tobe = self.no_play_sub_player
+                event.sub_player_tobe = self.game.no_play_sub_player
                 event.player_code = record[1]
                 event.batting_order = record[4]
                 event.fielding_position = record[5]
@@ -62,7 +61,7 @@ class GamePlayPipeline(BasePipeline):
                              record[1],
                              event.sub_player_tobe,
                              event.players_team_home_flag)
-                self.no_play_sub_player = None
+                self.game.no_play_sub_player = None
 
             elif record[0] == "com":
                 logger.info("Comment: %s", record[1])

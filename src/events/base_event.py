@@ -149,18 +149,17 @@ class BaseEvent(BaseModel):
 
         if was_out:
             extra_text = ""
-            if parameter is None or len(parameter) == 0:
-                pass
-            if parameter == Parameters.UNEARNED_RUN:
-                extra_text = "Unearned Run"
-            elif parameter == Parameters.RBI_CREDITED:
-                extra_text = "Credited with RBI"
-            elif parameter in [Parameters.RBI_NOT_CREDITED_1, Parameters.RBI_NOT_CREDITED_2]:
-                extra_text = "RBI NOT Credited"
-            elif re.match("^\\([0-9]+\\)#?$", parameter) is not None:
-                extra_text = f"{parameter} are credited with the out"
-            else:
-                self.fail(f"Unknown advancement parameter = {parameter}")
+            if parameter is not None and len(parameter) > 0:
+                if parameter == Parameters.UNEARNED_RUN:
+                    extra_text = "Unearned Run"
+                elif parameter == Parameters.RBI_CREDITED:
+                    extra_text = "Credited with RBI"
+                elif parameter in [Parameters.RBI_NOT_CREDITED_1, Parameters.RBI_NOT_CREDITED_2]:
+                    extra_text = "RBI NOT Credited"
+                elif re.match("^\\([0-9]+\\)#?$", parameter) is not None:
+                    extra_text = f"{parameter} are credited with the out"
+                else:
+                    self.fail(f"Unknown advancement parameter = {parameter}")
             logger.info("Base Runner OUT while progressing from %s to %s.  %s",
                         base_from, base_to, extra_text)
             game_at_bat.outs += 1

@@ -32,7 +32,7 @@ class GamePlayEventPipeline(BasePipeline):
 
     def __handle_sub(self):
         logger.info("Handling substituion...")
-        self.game.new_substitution(player_to=self.no_play_sub_player,
+        self.game.new_substitution(player_to=self.game.no_play_sub_player,
                             player_from=self.player_code,
                             home_team_flag=self.players_team_home_flag,
                             batting_order=self.batting_order,
@@ -50,6 +50,10 @@ class GamePlayEventPipeline(BasePipeline):
             self.__handle_sub()
 
         else:
+            # validate at bat metadata
+            if self.play is None:
+                self.fail(f"Play is empty, meaning the NP record wasn't picked up prior to the sub record! Game={self.game.game_id} SubFrom={self.player_code} SubToBe={self.sub_player_tobe} HomeTeamFlag={self.players_team_home_flag} FieldingPosition={self.fielding_position} BattingOrder={self.batting_order}")
+
             # create at bat model
             game_at_bat = self.game.new_at_bat(
                         inning = self.inning,
@@ -58,7 +62,6 @@ class GamePlayEventPipeline(BasePipeline):
                         count = self.pitch_count,
                         pitches = self.pitches,
                         play = self.play)
-
 
             # process each action under the play record
             EventFactory.create(game_at_bat)

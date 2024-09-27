@@ -15,11 +15,17 @@ logger = logging.getLogger(__name__)
 class StrikeoutEvent(BaseEvent):
     """ Strikeout Event """
 
-    DROPPED_THIRD_STRIKE_PUTOUT : str = "23"  # K23
+    DROPPED_THIRD_STRIKE_PUTOUT : str = "K23"
 
     def handle(self, game_at_bat : GameAtBat, action : ActionRecord):
-        if len(action.action) > 1:
-            self.fail("Unknown action type: {action.action}")
+        # Check for dropped putout
+        was_dropped_third_strike_putout = False
+        if action.action == self.DROPPED_THIRD_STRIKE_PUTOUT:
+            was_dropped_third_strike_putout = True
+
+        # Unknown strikeout action
+        elif len(action.action) > 1:
+            self.fail(f"Unknown action type: {action.action}")
 
         called = ""
         #while len(game_at_bat.modifiers) > 0:
@@ -36,7 +42,6 @@ class StrikeoutEvent(BaseEvent):
 
         # handle extra play events
         #op_detail = None
-        was_dropped_third_strike_putout = False
         #while len(op_details) > 0:
         #    op_detail = op_details.pop(0)
         #    if op_detail == self.DROPPED_THIRD_STRIKE_PUTOUT:

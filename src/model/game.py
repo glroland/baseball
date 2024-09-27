@@ -28,6 +28,7 @@ class Game(BaseModel):
     starters : List[Starter] = []
     game_plays : List[GamePlay] = []
     data : List[Data] = []
+    no_play_sub_player : str = None
 
     def get_last_at_bat(self):
         """ Locate and return the last at bat record.  """

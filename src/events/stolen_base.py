@@ -4,7 +4,7 @@ Stolen base game event.
 """
 import logging
 from events.base_event import BaseEvent
-from utils.data import regex_split
+from utils.data import regex_split, split_leading_chars_from_numbers
 from model.action_record import ActionRecord
 from model.game_at_bat import GameAtBat
 
@@ -19,48 +19,44 @@ class StolenBaseEvent(BaseEvent):
             
             base_to - where the runner is running to 
         """
+        # Extract the tailing numbers
+        components = split_leading_chars_from_numbers(action.action)
+        if len(components) != 2:
+            self.fail(f"Illegal action for SB!  {action.action}  ComponentLen={len(components)}")
+        base_to = components[1]
         self.validate_base(base_to, first_allowed=False)
-        for advance in self.completed_advances:
-            # get and validate base information from prior advances
-            old_from = advance[0]
-            self.validate_base(old_from)
-            old_to = advance[2]
-            self.validate_base(old_to)
+    
+        # determine if the advancement was already completed
+        #if self.was_advancement_already_handled(base_to):
+        #    logger.warning("Advancement already handled.  Skipping validations and base assignments!")
+        #elif base_to == "2":
+        if base_to == "2":
+            if not game_at_bat.runner_on_1b:
+                self.fail("Runner stealing 2nd but there was no runner on 1st")
+            game_at_bat.runner_on_1b = False
+            game_at_bat.runner_on_2b = True
+        elif base_to == "3":
+            if not game_at_bat.runner_on_2b:
+                self.fail("Runner stealing 3rd but there was no runner on 2nd")
+            game_at_bat.runner_on_2b = False
+            game_at_bat.runner_on_3b = True
+        elif base_to == "H":
+            if not game_at_bat.runner_on_3b:
+                self.fail("Runner stealing home but there was no runner on 3rd")
+            game_at_bat.runner_on_3b = False
+            game_at_bat.score()
 
-            if base_to == "2":
-                pass
-            if base_to == "3":
-                pass
-            if base_to == "H":
-                pass
-        return False
+        #for advance in self.completed_advances:
+        #    # get and validate base information from prior advances
+        #    old_from = advance[0]
+        #    self.validate_base(old_from)
+        #    old_to = advance[2]
+        #    self.validate_base(old_to)
 
-    def handle(self, game_at_bat, op_details):
-        details = op_details.pop(0)
-        base_list = regex_split("^([23H]);SB([23H])$", details)
-
-        logger.debug(f"Stolen Base List: {base_list}")
-        while len(base_list) > 0:
-            base = base_list.pop(0)
-
-            if self.was_advancement_already_handled(base):
-                logger.warning("Advancement already handled.  Skipping validations and base assignments!")
-            elif base == "2":
-                if not game_at_bat.runner_on_1b:
-                    self.fail("Runner stealing 2nd but there was no runner on 1st")
-                game_at_bat.runner_on_1b = False
-                game_at_bat.runner_on_2b = True
-            elif base == "3":
-                if not game_at_bat.runner_on_2b:
-                    self.fail("Runner stealing 3rd but there was no runner on 2nd")
-                game_at_bat.runner_on_2b = False
-                game_at_bat.runner_on_3b = True
-            elif base == "H":
-                if not game_at_bat.runner_on_3b:
-                    self.fail("Runner stealing home but there was no runner on 3rd")
-                game_at_bat.runner_on_3b = False
-                game_at_bat.score()
-            else:
-                self.fail(f"Unknown Stolen Base # {base}")
-
-            logging.info("Runner stole base: %s", base)
+        #    if base_to == "2":
+        #        pass
+        #    if base_to == "3":
+        #        pass
+        #    if base_to == "H":
+        #        pass
+        #return False
