@@ -28,7 +28,7 @@ class DefensivePlayEvent(BaseEvent):
         if len(action.groups) > 0:
             for group in action.groups:
                 if re.match("^[0-9]+E[0-9]*$", group):
-                    logger.debug("Defensive error overriding out")
+                    logger.info("Defensive error overriding out")
                     is_out = False
 
         # advance the runner

@@ -72,12 +72,18 @@ class BaseEvent(BaseModel):
         """
         if game_at_bat.home_team_flag is None:
             self.fail("Unknown Home Team Flag Type!  Its unexpectedly None!")
+
+        inning_str = str(game_at_bat.inning) + "/"
         if game_at_bat.home_team_flag:
             game_at_bat.score_home += 1
-            logger.info("Home Team Scored!")
+            inning_str += "Bottom"
+            logger.info("Home Team Scored! %s %s-%s", inning_str,
+                        game_at_bat.score_visitor, game_at_bat.score_home)
         else:
             game_at_bat.score_visitor += 1
-            logger.info("Visiting Team Scored!")
+            inning_str += "Top"
+            logger.info("Visiting Team Scored! %s %s-%s", inning_str,
+                        game_at_bat.score_visitor, game_at_bat.score_home)
 
     def advance_runner(self, game_at_bat, base_from, base_to,
                        was_out = False, parameter = ""):
