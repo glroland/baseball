@@ -42,7 +42,7 @@ class Game(BaseModel):
                 i -= 1
         return None
 
-    def propogate_game_stats(self, current_play : GameAtBat, force_overwrite_team_flag = False):
+    def propogate_game_stats(self, current_play : GameAtBat, is_sub = False):
         """ Copies the running outs, runs, players on base, etc from the last batting
             event to the current one.
             
@@ -57,8 +57,9 @@ class Game(BaseModel):
             current_play.score_home = last_at_bat.score_home
             current_play.score_visitor = last_at_bat.score_visitor
 
-            if force_overwrite_team_flag:
+            if is_sub:
                 current_play.home_team_flag = last_at_bat.home_team_flag
+                current_play.inning = last_at_bat.inning
 
             if last_at_bat.home_team_flag != current_play.home_team_flag:
                 # validate outs
@@ -142,7 +143,7 @@ class Game(BaseModel):
         game_subst.players_team_home_flag = home_team_flag
         game_subst.batting_order = batting_order
         game_subst.fielding_position = fielding_position
-        self.propogate_game_stats(game_subst, force_overwrite_team_flag=True)
+        self.propogate_game_stats(game_subst, is_sub=True)
         self.game_plays.append(game_subst)
 
         logger.info("Player <%s> substituted with <%s>", game_subst.player_from,
