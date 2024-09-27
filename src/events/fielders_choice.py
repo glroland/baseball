@@ -21,13 +21,13 @@ class FieldersChoiceEvent(BaseEvent):
         """
         # Identify due to
         fielder = ""
-        if len(details) > 0:
-            fielder = details.pop(0)
+        #if len(details) > 0:
+        #    fielder = details.pop(0)
 
         # Check Modifiers
         due_to = ""
-        if len(game_at_bat.modifiers) > 0:
-            modifier = game_at_bat.modifiers.pop(0)
+        if len(action.modifiers) > 0:
+            modifier = action.modifiers[0]
             if modifier == Modifiers.DOUBLE_PLAY:
                 due_to = "Double Play"
 
