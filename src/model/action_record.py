@@ -3,7 +3,6 @@
 Parser for the play action record string.
 """
 import logging
-import json
 from typing import List
 from pydantic import BaseModel
 from utils.data import extract_groups, regex_split, to_json_string
@@ -11,6 +10,7 @@ from utils.data import extract_groups, regex_split, to_json_string
 logger = logging.getLogger(__name__)
 
 class ActionRecord(BaseModel):
+    """ Play Action Record """
 
     action : str = None
     groups : List[str] = []
@@ -18,7 +18,12 @@ class ActionRecord(BaseModel):
     chain_to : object = None
     handled_flag : bool = False
 
+    # pylint: disable=no-self-argument
     def create(s : str):
+        """ Instantiate an action record object from an action string.
+        
+            s - action string
+        """
         logger.debug("Parsing Action Record - Action<%s>", s)
 
         record = ActionRecord()

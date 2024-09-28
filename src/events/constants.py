@@ -2,7 +2,9 @@
 
 Constants related to game events in the Retrosheet data feed.
 """
+#pylint: disable=too-few-public-methods
 class EventCodes:
+    """ Retrosheet Event Codes """
 
     WALK = "W"
     BALK = "BK"
@@ -29,7 +31,9 @@ class EventCodes:
     BASE_RUNNER_ADVANCE = "OA"
     WILD_PITCH = "WP"
 
+#pylint: disable=too-few-public-methods
 class Modifiers:
+    """ Retrosheet Action Modifier Codes """
 
     CALLED_THIRD_STRIKE = "C"
     THROW = "TH"
@@ -55,7 +59,9 @@ class Modifiers:
     PICKED_OFF = "PO"
     GROUND_BALL_BUNT = "BG"
 
+#pylint: disable=too-few-public-methods
 class Parameters:
+    """ Actionsheet Parameter Codes """
 
     UNEARNED_RUN = "UR"
     RBI_CREDITED = "RBI"

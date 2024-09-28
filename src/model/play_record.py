@@ -22,6 +22,7 @@ class PlayRecord(BaseModel):
     softly_hit_ball_flag : bool = False
     hard_hit_ball_flag : bool = False
 
+    # pylint: disable=unused-private-member
     def __split_advancements(self, action_str):
         # validate input parameter
         if action_str.count(".") > 1:
@@ -76,7 +77,7 @@ class PlayRecord(BaseModel):
 
         return split_plays
 
-
+    # pylint: disable=unused-private-member
     def __break_up_play(self, s):
         # get trailing modifiers
         in_group = False
@@ -129,7 +130,7 @@ class PlayRecord(BaseModel):
             modifiers = None
             is_first = False
 
-    # pylint: disable=no-self-argument
+    # pylint: disable=no-self-argument,protected-access
     def create(s) -> object:
         """ Create a Play Record from string.
         

@@ -3,7 +3,6 @@
 Parser for the play advance record string.
 """
 import logging
-import json
 import re
 from typing import List
 from pydantic import BaseModel
@@ -12,6 +11,7 @@ from utils.data import extract_groups, to_json_string
 logger = logging.getLogger(__name__)
 
 class AdvanceRecord(BaseModel):
+    """ Advance Record for moving runners from one base to another. """
 
     original_advance_record : str = None
     advance : str = None
@@ -21,6 +21,10 @@ class AdvanceRecord(BaseModel):
     groups : List[str] = []
 
     def __parse_advancement_str(self, a):
+        """ Parse Advancement String.
+        
+            a - advancement string
+        """
         if not re.match("^[B123][X-][123H](\\(.+\\))*$", a):
             msg = f"Invalid Advancement: {a}"
             logger.error(msg)
@@ -77,8 +81,9 @@ class AdvanceRecord(BaseModel):
                     logger.error(msg)
                     raise ValueError(msg)
 
-
+    # pylint: disable=no-self-argument
     def create(s):
+        """ Create a new Advancement Record instance. """
         logger.debug("Parsing Advancement Record - <%s>", s)
 
         # parse advancements
@@ -112,4 +117,5 @@ class AdvanceRecord(BaseModel):
         return record
 
     def __str__(self) -> str:
+        """ Convert object to JSON string """
         return to_json_string(self)

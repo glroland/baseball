@@ -4,30 +4,37 @@ Utility functions to help simplify data manipulation.
 """
 import logging
 import re
-import json
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
 def fail(s : str):
+    """ Log and fail process.
+    
+        s - string to log
+    """
     logger.fatal(s)
     raise ValueError(s)
 
 def to_json_string(i : BaseModel):
+    """ Create a JSON string for the provided pydantic model.
+    
+        i - model
+    """
     return i.model_dump_json(indent=2)
 
-def regex_split(regex, str):
-    if str is None:
+def regex_split(regex, s):
+    if s is None:
         return []
-    return list(filter(None, re.split(regex, str)))
+    return list(filter(None, re.split(regex, s)))
 
-def split_leading_chars_from_numbers(str):
-    if not re.match("[A-Z]", str[0]):
-        msg = f"Input string is not compatible with REGEX!  {str}"
+def split_leading_chars_from_numbers(s):
+    if not re.match("[A-Z]", s[0]):
+        msg = f"Input string is not compatible with REGEX!  {s}"
         logger.error(msg)
         raise ValueError(msg)
 
-    result = regex_split("^([A-Z]+)([0-9]*)$", str)
+    result = regex_split("^([A-Z]+)([0-9]*)$", s)
 
     if len(result) != 2:
         msg = f"Rseulting split is not of the correct structure!  Len={len(result)} Result={result}"
@@ -36,16 +43,16 @@ def split_leading_chars_from_numbers(str):
 
     return result
 
-def split_num_paren_chunks(str):
-    return regex_split("([0-9]+\\([0-9]+\\)?)+", str)
+def split_num_paren_chunks(s):
+    return regex_split("([0-9]+\\([0-9]+\\)?)+", s)
 
-def split_leading_num(str):
-    return regex_split("^([0-9]+)(.*)", str)
+def split_leading_num(s):
+    return regex_split("^([0-9]+)(.*)", s)
 
-def extract_groups(str):
+def extract_groups(s):
     groups = []
-    if str is not None and len(str) > 0:
-        working = str
+    if s is not None and len(s) > 0:
+        working = s
         while working.count("(") > 0:
             s = working.find("(") + 1
             e = working.find(")")
