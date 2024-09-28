@@ -9,11 +9,7 @@ from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
-def fail(s : str, *argv):
-    #if argv is None:
-    #    logger.fatal(s)
-    #else:
-    #    logger.fatal(s, argv)
+def fail(s : str):
     logger.fatal(s)
     raise ValueError(s)
 

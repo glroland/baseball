@@ -58,17 +58,17 @@ class GameState(BaseModel):
     def action_advance_runner_safe_or_out(self, base_from, base_to, is_out):
         # validate inputs before entering more complex logic
         if base_from not in ["B", 0, "1", 1, "2", 2, "3", 3]:
-            fail("Invalid value for base_from! %s", base_from)
+            fail(f"Invalid value for base_from! {base_from}")
         if base_to not in ["1", 1, "2", 2, "3", 3, "H", 4]:
-            fail("Invalid value for base_to! %s", base_from)
+            fail(f"Invalid value for base_to! {base_from}")
         if base_from in ["B", 0] and base_to not in ["1", 1, "2", 2, "3", 3, "H", 4]:
-            fail("Illegal advancement from Batter's box!  To=%s", base_to)
+            fail(f"Illegal advancement from Batter's box!  To={base_to}")
         if base_from in ["1", 1] and base_to not in ["2", 2, "3", 3, "H", 4]:
-            fail("Illegal advancement from First Base!  To=%s", base_to)
+            fail(f"Illegal advancement from First Base!  To={base_to}")
         if base_from in ["2", 2] and base_to not in ["3", 3, "H", 4]:
-            fail("Illegal advancement from Second Base!  To=%s", base_to)
+            fail(f"Illegal advancement from Second Base!  To={base_to}")
         if base_from in ["3", 3] and base_to not in ["H", 4]:
-            fail("Illegal advancement from Third Base!  To=%s", base_to)
+            fail(f"Illegal advancement from Third Base!  To={base_to}")
 
         # runner advances from batter's position
         if base_from in ["B", 0]:
@@ -150,7 +150,7 @@ class GameState(BaseModel):
     def on_batting_team_change(self):
         # validate first
         if self._outs != 3:
-            fail("Changing batting team but outs is incorrect! %s", self._outs)
+            fail("Changing batting team but outs is incorrect! {self._outs}")
 
         # then clear
         self._outs = 0
