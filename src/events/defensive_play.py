@@ -23,25 +23,46 @@ class DefensivePlayEvent(BaseEvent):
         """
         logger.info("Defensive Play.  Play_List<%s>", action.action)
 
-        # Check for error
+        # Check for error or a specific runner
         is_out = True
+        runner = None
         if len(action.groups) > 0:
             for group in action.groups:
                 if re.match("^[0-9]+E[0-9]*$", group):
                     logger.info("Defensive error overriding out")
                     is_out = False
+                elif group in ["B", "1", "2", "3"]:
+                    runner = group
+                else:
+                    self.fail(f"Unknown group command!  {group}")
+
+        logger.fatal("Offensive Play - Runner Out -- %s", runner)
 
         # check for non-advancing reasons in modifier list
         non_advancing_out = False
         for modifier in action.modifiers:
             if len(modifier) >= 2:
-                if (modifier[0] == Modifiers.FLY or modifier[0] == Modifiers.POP_FLY) and \
+                if modifier == Modifiers.FOUL:
+                    non_advancing_out = True
+                    logger.info("Batter out due to catch from foul ball.")
+                elif (modifier[0] == Modifiers.FLY or modifier[0] == Modifiers.POP_FLY) and \
                     re.match("^[0-9]+$", modifier[1]):
                     non_advancing_out = True
                     logger.info("Batter out due to fly ball.")
 
         # advance the runner
-        if not non_advancing_out:
+        if runner is not None and runner in ["1", "2"]:
+            self.advance_runner(game_at_bat, "B", "1", False)
+            game_at_bat.outs += 1
+            if runner == "1":
+                game_at_bat.runner_on_2b = False
+            elif runner == "2":
+                game_at_bat.runner_on_3b = False
+        elif runner is not None and runner in ["3"]:
+            self.advance_runner(game_at_bat, "B", "1", False)
+            game_at_bat.runner_on_3b = False
+            game_at_bat.outs += 1
+        elif not non_advancing_out:
             self.advance_runner(game_at_bat, "B", "1", is_out)
         else:
             game_at_bat.outs += 1
