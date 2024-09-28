@@ -35,8 +35,8 @@ class DefensivePlayEvent(BaseEvent):
         non_advancing_out = False
         for modifier in action.modifiers:
             if len(modifier) >= 2:
-                if modifier[0] == Modifiers.FLY and re.match("^[0-9]+$", modifier[1]):
-                    components = split_leading_chars_from_numbers(modifier)
+                if (modifier[0] == Modifiers.FLY or modifier[0] == Modifiers.POP_FLY) and \
+                    re.match("^[0-9]+$", modifier[1]):
                     non_advancing_out = True
                     logger.info("Batter out due to fly ball.")
 
