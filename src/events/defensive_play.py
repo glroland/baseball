@@ -6,7 +6,7 @@ import logging
 import re
 from events.base_event import BaseEvent
 from events.constants import Modifiers
-from utils.data import split_leading_num
+from utils.data import split_leading_num, split_leading_chars_from_numbers
 from model.action_record import ActionRecord
 from model.game_at_bat import GameAtBat
 
@@ -31,8 +31,20 @@ class DefensivePlayEvent(BaseEvent):
                     logger.info("Defensive error overriding out")
                     is_out = False
 
+        # check for non-advancing reasons in modifier list
+        non_advancing_out = False
+        for modifier in action.modifiers:
+            if len(modifier) >= 2:
+                if modifier[0] == Modifiers.FLY and re.match("^[0-9]+$", modifier[1]):
+                    components = split_leading_chars_from_numbers(modifier)
+                    non_advancing_out = True
+                    logger.info("Batter out due to fly ball.")
+
         # advance the runner
-        self.advance_runner(game_at_bat, "B", "1", is_out)
+        if not non_advancing_out:
+            self.advance_runner(game_at_bat, "B", "1", is_out)
+        else:
+            game_at_bat.outs += 1
         
         # analyze modifier
         due_to = ""

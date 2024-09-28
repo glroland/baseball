@@ -86,13 +86,13 @@ class BaseEvent(BaseModel):
                         game_at_bat.score_visitor, game_at_bat.score_home)
 
     def advance_runner(self, game_at_bat, base_from, base_to,
-                       was_out = False, parameter = ""):
+                       is_out = False, parameter = ""):
         """ Advance runner from the specified from to the to base.
         
             game_at_bat - game at bat
             base_from - starting base
             base_to - ending base
-            was_out - advancement type character
+            is_out - advancement type character
         """
         current_base = base_from
         while True:
@@ -114,7 +114,7 @@ class BaseEvent(BaseModel):
                         game_at_bat.runner_on_2b = False
                     game_at_bat.runner_on_2b = True
                     game_at_bat.runner_on_1b = False
-                game_at_bat.runner_on_1b = True
+                game_at_bat.runner_on_1b = not is_out
                 current_base = "1"
 
             elif current_base == "1":
@@ -128,7 +128,7 @@ class BaseEvent(BaseModel):
                         game_at_bat.runner_on_3b = False
                     game_at_bat.runner_on_3b = True
                     game_at_bat.runner_on_2b = False
-                game_at_bat.runner_on_2b = True
+                game_at_bat.runner_on_2b = not is_out
                 game_at_bat.runner_on_1b = False
                 current_base = "2"
 
@@ -139,7 +139,7 @@ class BaseEvent(BaseModel):
                     logger.info("3rd Base Runner Progressed")
                     self.score(game_at_bat)
                     game_at_bat.runner_on_3b = False
-                game_at_bat.runner_on_3b = True
+                game_at_bat.runner_on_3b = not is_out
                 game_at_bat.runner_on_2b = False
                 current_base = "3"
 
@@ -153,7 +153,7 @@ class BaseEvent(BaseModel):
             else:
                 self.fail(f"Unknown value for current_base: {current_base}")
 
-        if was_out:
+        if is_out:
             extra_text = ""
             if parameter is not None and len(parameter) > 0:
                 if parameter == Parameters.UNEARNED_RUN:
@@ -170,7 +170,7 @@ class BaseEvent(BaseModel):
                         base_from, base_to, extra_text)
             game_at_bat.outs += 1
 
-        elif not was_out:
+        elif not is_out:
             logger.info("Base Runner advanced from %s to %s.", base_from, base_to)
 
 
