@@ -8,6 +8,7 @@ import psycopg
 from pipelines.base_pipeline import BasePipeline
 from pipelines.game_pipeline import GamePipeline
 from utils.db import connect_to_db
+from games_to_skip import GAMES_TO_SKIP
 
 logger = logging.getLogger(__name__)
 
@@ -18,8 +19,6 @@ class EventFilePipeline(BasePipeline):
     game_pipelines : List[GamePipeline] = []
     inflight : GamePipeline = None
 
-    GAMES_TO_SKIP : List[str] = [ "ANA200004080" ]
-
     def optionally_redelegate_record(self, record : List[str]):
         """ If implemented by a subclass, this is its opportunity to re-delegate the record
             to another pipeline. 
@@ -28,7 +27,7 @@ class EventFilePipeline(BasePipeline):
         """
         if record[0] == "id":
             self.inflight = None
-            if record[1] in self.GAMES_TO_SKIP:
+            if record[1] in GAMES_TO_SKIP:
                 logger.warning("Skipping Game!  Game_ID=%s", record[1])
             else:
                 # Creating new Game Pipeline
