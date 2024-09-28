@@ -10,8 +10,12 @@ from pydantic import BaseModel
 logger = logging.getLogger(__name__)
 
 def fail(s : str, *argv):
-    logger.fatal(s, argv)
-    raise ValueError
+    #if argv is None:
+    #    logger.fatal(s)
+    #else:
+    #    logger.fatal(s, argv)
+    logger.fatal(s)
+    raise ValueError(s)
 
 def to_json_string(i : BaseModel):
     return i.model_dump_json(indent=2)

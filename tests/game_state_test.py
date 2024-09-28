@@ -87,7 +87,7 @@ def test_batter_flyball_error_on_bases_loaded_visitor(new_bases_loaded):
     assert new_bases_loaded.get_score() == [1, 0]
 
 def test_batter_flyball_error_on_bases_loaded_home(new_bases_loaded):
-    new_bases_loaded.top_of_inning_flag = False
+    new_bases_loaded._top_of_inning_flag = False
     new_bases_loaded.action_batter_to_first_safe()
     assert new_bases_loaded.is_on_first()
     assert new_bases_loaded.is_on_second()
@@ -105,27 +105,133 @@ def test_switch_batting_teams_zero_outs(new_game):
     pytest.fail()
 
 def test_switch_batting_teams_three_outs(new_game):
-    new_game.outs = 3
-    assert new_game.top_of_inning_flag
+    new_game._outs = 3
+    assert new_game._top_of_inning_flag
     new_game.on_batting_team_change()
-    assert new_game.outs == 0
-    assert not new_game.top_of_inning_flag
+    assert new_game._outs == 0
+    assert not new_game._top_of_inning_flag
 
 def test_dont_advance_23_on_hit(new_game):
-    new_game.second = True
-    new_game.third = True
+    new_game._second = True
+    new_game._third = True
     new_game.action_batter_to_first_safe()
     assert new_game.get_outs() == 0
     assert new_game.get_score() == [0, 0]
-    assert new_game.first
-    assert new_game.second
-    assert new_game.third
+    assert new_game._first
+    assert new_game._second
+    assert new_game._third
 
 def test_dont_advance_3_on_hit(new_game):
-    new_game.third = True
+    new_game._third = True
     new_game.action_batter_to_first_safe()
     assert new_game.get_outs() == 0
     assert new_game.get_score() == [0, 0]
-    assert new_game.first
-    assert not new_game.second
-    assert new_game.third
+    assert new_game._first
+    assert not new_game._second
+    assert new_game._third
+
+def test_advance_runner_on_1st_not_on_base(new_game):
+    try:
+        new_game.action_runner_advance_safe("1", "2")
+        pytest.fail()
+    except ValueError:
+        return
+
+def test_advance_runner_on_1st(new_game):
+    new_game._first = True
+    new_game.action_runner_advance_safe("1", "2")
+    assert not new_game._first
+    assert new_game._second
+    assert not new_game._third
+
+def test_advance_runner_on_2nd_not_on_base(new_game):
+    try:
+        new_game.action_runner_advance_safe("2", "3")
+        pytest.fail()
+    except ValueError:
+        return
+
+def test_advance_runner_on_2nd(new_game):
+    new_game._second = True
+    new_game.action_runner_advance_safe("2", "3")
+    assert not new_game._first
+    assert not new_game._second
+    assert new_game._third
+
+def test_advance_runner_on_3rd_not_on_base(new_game):
+    try:
+        new_game.action_runner_advance_safe("3", "H")
+        pytest.fail()
+    except ValueError:
+        return
+
+def test_advance_runner_on_3rd(new_game):
+    new_game._third = True
+    new_game.action_runner_advance_safe("3", "H")
+    assert not new_game._first
+    assert not new_game._second
+    assert not new_game._third
+    assert new_game.get_score() == [1, 0]
+
+def test_advance_runner_from_3rd_to_2nd(new_game):
+    try:
+        new_game.action_runner_advance_safe("3", "2")
+        pytest.fail()
+    except ValueError:
+        return
+
+def test_advance_runner_from_3rd_to_1nd(new_game):
+    try:
+        new_game.action_runner_advance_safe("3", "1")
+        pytest.fail()
+    except ValueError:
+        return
+
+def test_advance_runner_from_2nd_to_1nd(new_game):
+    try:
+        new_game.action_runner_advance_safe("2", "1")
+        pytest.fail()
+    except ValueError:
+        return
+
+def test_home_run_new_game(new_game):
+    new_game.action_runner_advance_safe("B", "H")
+    assert not new_game.is_on_first()
+    assert not new_game.is_on_second()
+    assert not new_game.is_on_third()
+    assert len(new_game.get_runners()) == 0
+    assert new_game.get_outs() == 0
+    assert new_game.get_score() == [1, 0]
+
+def test_home_run_100(new_game):
+    new_game._first = True
+    new_game.action_runner_advance_safe("B", "H")
+    assert not new_game.is_on_first()
+    assert not new_game.is_on_second()
+    assert not new_game.is_on_third()
+    assert len(new_game.get_runners()) == 0
+    assert new_game.get_outs() == 0
+    assert new_game.get_score() == [2, 0]
+
+def test_home_run_101(new_game):
+    new_game._first = True
+    new_game._third = True
+    new_game.action_runner_advance_safe("B", "H")
+    assert not new_game.is_on_first()
+    assert not new_game.is_on_second()
+    assert not new_game.is_on_third()
+    assert len(new_game.get_runners()) == 0
+    assert new_game.get_outs() == 0
+    assert new_game.get_score() == [3, 0]
+
+def test_home_run_grand_slam(new_game):
+    new_game._first = True
+    new_game._second = True
+    new_game._third = True
+    new_game.action_runner_advance_safe("B", "H")
+    assert not new_game.is_on_first()
+    assert not new_game.is_on_second()
+    assert not new_game.is_on_third()
+    assert len(new_game.get_runners()) == 0
+    assert new_game.get_outs() == 0
+    assert new_game.get_score() == [4, 0]

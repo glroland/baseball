@@ -12,16 +12,16 @@ logger = logging.getLogger(__name__)
 class GameState(BaseModel):
     """ Baseball Game Model """
 
-    first : bool = False
-    second : bool = False
-    third : bool = False
+    _first : bool = False
+    _second : bool = False
+    _third : bool = False
 
-    inning : int = 0
-    top_of_inning_flag : bool = True
+    _inning : int = 0
+    _top_of_inning_flag : bool = True
 
-    outs : int = 0
-    score_visitor : int = 0
-    score_home : int = 0
+    _outs : int = 0
+    _score_visitor : int = 0
+    _score_home : int = 0
 
     def copy(self) -> object:
         # validate parameters
@@ -30,25 +30,25 @@ class GameState(BaseModel):
 
         # create new game state
         result = GameState()
-        result.first = self.first
-        result.second = self.second
-        result.third = self.third
-        result.inning = self.inning
-        result.top_of_inning_flag = self.top_of_inning_flag
-        result.outs = self.outs
-        result.score_visitor = self.score_visitor
-        result.score_home = self.score_home
+        result._first = self._first
+        result._second = self._second
+        result._third = self._third
+        result._inning = self._inning
+        result._top_of_inning_flag = self._top_of_inning_flag
+        result._outs = self._outs
+        result._score_visitor = self._score_visitor
+        result._score_home = self._score_home
 
         return result
 
 
     def action_batter_to_first_safe(self):
-        """ Signal that the batter made it to first. """
+        """ Signal that the batter made it to _first. """
         logger.debug("action_batter_to_first_safe()")
         self.action_runner_advance_safe("B", "1")
 
-    def action_batter_to_first_out(self):
-        logger.debug("action_batter_to_first_out()")
+    def action_batter_to__first_out(self):
+        logger.debug("action_batter_to__first_out()")
         self.action_advancing_runner_out("B", "1")
 
     def action_batter_out_non_progressing(self):
@@ -73,57 +73,69 @@ class GameState(BaseModel):
         # runner advances from batter's position
         if base_from in ["B", 0]:
             # to validation above, we can always assume an advancement at least to first
-            if self.first:
-                if self.second:
-                    if self.third:
+            if self._first:
+                if self._second:
+                    if self._third:
                         if not is_out:
                             self.on_score()
-                    self.third = True
-                self.second = True
-            self.first = True
+                    self._third = True
+                self._second = True
+            self._first = True
             if base_to in ["2", 2, "3", 3, "4", "H"]:
                 self.action_runner_advance_safe("1", base_to)
 
-        # runner advances from first base
+        # runner advances from _first base
         if base_from in ["1", 1]:
-            self.first = False
+            # ensure runner actually on base
+            if not self._first:
+                fail("Advancing runner from first but no runner on base!")
+
+            self._first = False
 
             # to validation above, we can always assume an advancement at least to second
-            if self.second:
-                if self.third:
+            if self._second:
+                if self._third:
                     if not is_out:
                         self.on_score()
-                self.third = True
-            self.second = True
+                self._third = True
+            self._second = True
             if base_to in ["3", 3, "4", "H"]:
                 self.action_runner_advance_safe("2", base_to)
 
         # runner advances from second base
         if base_from in ["2", 2]:
-            self.second = False
+            # ensure runner actually on base
+            if not self._second:
+                fail("Advancing runner from second but no runner on base!")
+
+            self._second = False
 
             # to validation above, we can always assume an advancement at least to third
-            if self.third:
+            if self._third:
                 if not is_out:
                     self.on_score()
-            self.third = True
-            if base_to in ["3", 3, "4", "H"]:
-                self.action_runner_advance_safe("2", base_to)
+            self._third = True
+            if base_to in ["4", "H"]:
+                self.action_runner_advance_safe("3", base_to)
 
         # runner advances from third base
         if base_from in ["3", 3]:
-            self.third = False
+            # ensure runner actually on base
+            if not self._third:
+                fail("Advancing runner from third but no runner on base!")
+
+            self._third = False
             if not is_out:
                 self.on_score()
 
         # mark the runner out
         if is_out:
             if base_to in ["1", 1]:
-                self.first = False
+                self._first = False
             elif base_to in ["2", 2]:
-                self.second = False
+                self._second = False
             elif base_to in ["3", 3]:
-                self.third = False
+                self._third = False
             self.on_out()
 
 
@@ -137,43 +149,43 @@ class GameState(BaseModel):
 
     def on_batting_team_change(self):
         # validate first
-        if self.outs != 3:
-            fail("Changing batting team but outs is incorrect! %s", self.outs)
+        if self._outs != 3:
+            fail("Changing batting team but outs is incorrect! %s", self._outs)
 
         # then clear
-        self.outs = 0
-        self.first = False
-        self.second = False
-        self.third = False
-        if self.top_of_inning_flag:
-            self.top_of_inning_flag = False
+        self._outs = 0
+        self._first = False
+        self._second = False
+        self._third = False
+        if self._top_of_inning_flag:
+            self._top_of_inning_flag = False
         else:
-            self.top_of_inning_flag = True
-            self.inning += 1
+            self._top_of_inning_flag = True
+            self._inning += 1
 
 
     def is_on_first(self):
-        return self.first
+        return self._first
 
     def is_on_second(self):
-        return self.second
+        return self._second
 
     def is_on_third(self):
-        return self.third
+        return self._third
 
     def on_out(self):
         logger.debug("on_out()")
-        self.outs += 1
+        self._outs += 1
     
     def get_outs(self):
-        return self.outs
+        return self._outs
 
     def on_score(self):
         logger.debug("on_score")
-        if self.top_of_inning_flag:
-            self.score_visitor += 1
+        if self._top_of_inning_flag:
+            self._score_visitor += 1
         else:
-            self.score_home += 1
+            self._score_home += 1
 
     def get_runners(self) -> List[str]:
         runners = []
@@ -202,18 +214,18 @@ class GameState(BaseModel):
         return runners
 
     def get_score(self) -> List[int]:
-        return [self.score_visitor, self.score_home]
+        return [self._score_visitor, self._score_home]
 
     def get_score_str(self) -> str:
-        return f"{self.score_visitor}-{self.score_home}"
+        return f"{self._score_visitor}-{self._score_home}"
 
     def get_inning_and_score_str(self) -> str:
         # create top or bottom of inning str
         top_or_bottom_str = "Bot"
-        if self.top_of_inning_flag:
+        if self._top_of_inning_flag:
             top_or_bottom_str = "Top"
 
-        return f"{self.inning}/{top_or_bottom_str} {self.get_score_str()}"
+        return f"{self._inning}/{top_or_bottom_str} {self.get_score_str()}"
 
     def __str__(self) -> str:
         return to_json_string(self)
