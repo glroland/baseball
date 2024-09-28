@@ -68,6 +68,7 @@ class EventFilePipeline(BasePipeline):
 
             # Execute Pipeline
             logger.debug("Executing Pipeline = %s", game_pipeline)
+            logger.info("Starting New Game!  %s", game_pipeline.game.game_id)
             game_pipeline.execute_pipeline()
             logger.debug("Pipeline Executed")
 

@@ -18,16 +18,12 @@ class GamePipeline(BasePipeline):
     game : Game = None
     game_events_pipelines : List[GamePlayPipeline] = []
 
-    def __init__(self):
-        """ Default Constructor """
-        super().__init__()
-        self.game = Game()
-
     def set_game_id(self, game_id):
         """ Set the game id
         
             game_id - game id
         """
+        self.game = Game()
         self.game.game_id = game_id
 
     def optionally_redelegate_record(self, record : List[str]):
