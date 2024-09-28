@@ -14,4 +14,4 @@ class BaseRunnerAdvanceEvent(BaseEvent):
 
     def handle(self, game_at_bat : GameAtBat, action : ActionRecord):
 
-        logging.info("Base Runner Advance Event.  Assuming that the advancement details contain the details")
+        logging.warning("Base Runner Advance Event.  Assuming advancements contain details.")

@@ -4,7 +4,7 @@ Stolen base game event.
 """
 import logging
 from events.base_event import BaseEvent
-from utils.data import regex_split, split_leading_chars_from_numbers
+from utils.data import split_leading_chars_from_numbers
 from model.action_record import ActionRecord
 from model.game_at_bat import GameAtBat
 
@@ -25,7 +25,7 @@ class StolenBaseEvent(BaseEvent):
             self.fail(f"Illegal action for SB!  {action.action}  ComponentLen={len(components)}")
         base_to = components[1]
         self.validate_base(base_to, first_allowed=False)
-    
+
         # determine if the advancement was already completed
         #if self.was_advancement_already_handled(base_to):
         #    logger.warning("Advancement already handled.  Skipping validations and base assignments!")

@@ -6,7 +6,6 @@ import logging
 import re
 from events.base_event import BaseEvent
 from events.constants import Modifiers
-from utils.data import split_leading_num, split_leading_chars_from_numbers
 from model.action_record import ActionRecord
 from model.game_at_bat import GameAtBat
 

@@ -14,4 +14,4 @@ class DefensiveIndifferenceEvent(BaseEvent):
 
     def handle(self, game_at_bat : GameAtBat, action : ActionRecord):
 
-        logging.info("Defensive Indifference.  Assuming that the advancement details contain the details")
+        logging.info("Defensive Indifference.  Assuming advancements contain the details.")

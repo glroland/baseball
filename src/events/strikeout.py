@@ -4,9 +4,7 @@ Runner striked out game event.
 """
 import logging
 from events.base_event import BaseEvent
-from events.constants import Modifiers, EventCodes
-from events.stolen_base import StolenBaseEvent
-from events.caught_stealing import CaughtStealingEvent
+from events.constants import EventCodes
 from model.action_record import ActionRecord
 from model.game_at_bat import GameAtBat
 
@@ -63,7 +61,7 @@ class StrikeoutEvent(BaseEvent):
         #        was_dropped_third_strike_putout = True
         #    elif op_detail[0] != "+":
         #        self.fail("Expected K+ but received something otherwise.")
-    
+
         #    # handle extra play
         #    added_play = op_detail[1:]
         #    if was_dropped_third_strike_putout:

@@ -3,8 +3,6 @@
 Parser for the play record string.
 """
 import logging
-import re
-import json
 from typing import List
 from pydantic import BaseModel
 from model.action_record import ActionRecord
@@ -14,6 +12,7 @@ from utils.data import to_json_string
 logger = logging.getLogger(__name__)
 
 class PlayRecord(BaseModel):
+    """ Data structure for analyzing and leveraging action strings in the game data. """
 
     original_play_record : str = None
     actions : List[ActionRecord] = []
@@ -46,7 +45,7 @@ class PlayRecord(BaseModel):
             for a in adv_list:
                 advance_record = AdvanceRecord.create(a)
                 self.advances.append(advance_record)
-        
+
         return beginning
 
     def __create_actions_chained_or_standalone(self, play):
@@ -98,7 +97,7 @@ class PlayRecord(BaseModel):
             modifiers = s[mod_index:]
             s = s[0:mod_index]
         logger.debug("Identified Play and Modifiers - s=%s m=%s", s, modifiers)
-        
+
         # break out plays (usually just 1 but that's a big usually)
         play = s
         is_first = True
@@ -114,22 +113,28 @@ class PlayRecord(BaseModel):
                     play += modifiers
                 logger.debug ("No groups in action.  Play w/modifiers = %s", play)
                 self.__create_actions_chained_or_standalone(play)
-
                 break
-            else:
-                part_one = play[0:end_parens+1]
-                if is_first:
-                    part_one += modifiers
-                logger.debug ("Groups exist in action.  Play w/o groups plus modifiers = %s", part_one)
-                self.__create_actions_chained_or_standalone(part_one)
 
-                play = play[end_parens+1:]
+            # parse action w/group
+            part_one = play[0:end_parens+1]
+            if is_first:
+                part_one += modifiers
+            logger.debug ("Groups exist in action.  Play w/o groups plus modifiers = %s",
+                            part_one)
+            self.__create_actions_chained_or_standalone(part_one)
+
+            # progress to next chunk
+            play = play[end_parens+1:]
 
             modifiers = None
             is_first = False
 
-
-    def create(s):
+    # pylint: disable=no-self-argument
+    def create(s) -> object:
+        """ Create a Play Record from string.
+        
+            s - action string
+        """
         logger.info("Parsing Play Record - <%s>", s)
 
         # create basic play record structure
@@ -141,7 +146,7 @@ class PlayRecord(BaseModel):
         if action_str[len(action_str)-1] == "#":
             record.uncertainty_flag = True
             action_str = action_str[0:len(action_str)-1]
-            logger.warning(f"Uncertainty Flag set for play!  {record.original_play_record}")
+            logger.warning("Uncertainty Flag set for play! %s", record.original_play_record)
 
         # manage exceptional plays
         if action_str.find("!") != -1:
@@ -156,14 +161,14 @@ class PlayRecord(BaseModel):
         if play_str[len(play_str)-1] == "-":
             record.softly_hit_ball_flag = True
             play_str = action_str[0:len(play_str)-1]
-            logger.info(f"Softly Hit Ball Flag set for play!  {record.original_play_record}")
+            logger.info("Softly Hit Ball Flag set for play! %s", record.original_play_record)
 
         # trim hard hit ball flag
         if play_str[len(play_str)-1] == "+":
             record.hard_hit_ball_flag = True
             play_str = action_str[0:len(play_str)-1]
-            logger.info(f"Hard Hit Ball Flag set for play!  {record.original_play_record}")
-    
+            logger.info("Hard Hit Ball Flag set for play! %s", record.original_play_record)
+
         # Break up play components
         record.__break_up_play(play_str)
 

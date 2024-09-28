@@ -4,9 +4,6 @@ Runner walked game event.
 """
 import logging
 from events.base_event import BaseEvent
-from events.constants import EventCodes
-from events.stolen_base import StolenBaseEvent
-from events.caught_stealing import CaughtStealingEvent
 from model.action_record import ActionRecord
 from model.game_at_bat import GameAtBat
 
@@ -22,5 +19,5 @@ class WalkEvent(BaseEvent):
             action - offensive play details
         """
         logger.info("Batter Walked")
-            
+
         self.advance_runner(game_at_bat, "B", "1")

@@ -4,7 +4,6 @@ Defensive error resulting in a runner progression game event.
 """
 import logging
 from events.base_event import BaseEvent
-from events.constants import Modifiers
 from model.action_record import ActionRecord
 from model.game_at_bat import GameAtBat
 

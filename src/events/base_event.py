@@ -4,11 +4,9 @@ Base logic for game events.
 """
 import logging
 import re
-from typing import List
 from pydantic import BaseModel
 from events.constants import Parameters
 from model.action_record import ActionRecord
-from model.advance_record import AdvanceRecord
 from model.game_at_bat import GameAtBat
 from utils.data import to_json_string
 

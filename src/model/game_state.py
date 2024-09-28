@@ -9,6 +9,7 @@ from utils.data import to_json_string, fail
 
 logger = logging.getLogger(__name__)
 
+#pylint: disable=too-many-instance-attributes,protected-access
 class GameState(BaseModel):
     """ Baseball Game Model """
 
@@ -23,7 +24,8 @@ class GameState(BaseModel):
     _score_visitor : int = 0
     _score_home : int = 0
 
-    def copy(self) -> object:
+    def clone(self) -> object:
+        """ Duplicate object. """
         # validate parameters
         if self is None:
             fail("Input object for game state is None!")
@@ -43,19 +45,30 @@ class GameState(BaseModel):
 
 
     def action_batter_to_first_safe(self):
-        """ Signal that the batter made it to _first. """
+        """ Signal that the batter made it to first. """
         logger.debug("action_batter_to_first_safe()")
         self.action_runner_advance_safe("B", "1")
 
-    def action_batter_to__first_out(self):
+    def action_batter_to_first_out(self):
+        """ Signal that the batter progressed the runners but was out at first. """
         logger.debug("action_batter_to__first_out()")
         self.action_advancing_runner_out("B", "1")
 
     def action_batter_out_non_progressing(self):
+        """ Signal that the batter is out and should not progresseed runners.
+            i.e. fly balls.
+        """
         logger.debug("action_batter_out_non_progressing")
         self.on_out()
 
+    #pylint: disable=too-many-branches,too-many-statements
     def action_advance_runner_safe_or_out(self, base_from, base_to, is_out):
+        """ Advance runners with full control over the details.
+        
+            base_from - where the runner is running from
+            base_to - where the runner is going to
+            is_out - whether or not the runner is out
+        """
         # validate inputs before entering more complex logic
         if base_from not in ["B", 0, "1", 1, "2", 2, "3", 3]:
             fail(f"Invalid value for base_from! {base_from}")
@@ -140,14 +153,27 @@ class GameState(BaseModel):
 
 
     def action_runner_advance_safe(self, base_from, base_to):
+        """ Safely advance the runner.
+
+            base_from - where the runner is running from
+            base_to - where the runner is running to
+        """
         logger.debug("action_runner_advance_safe()")
         self.action_advance_runner_safe_or_out(base_from, base_to, False)
 
     def action_advancing_runner_out(self, base_from, base_to):
+        """ Indicate the runner is attempting to progress but is out.
+
+            base_from - where the runner is running from
+            base_to - where the runner is running to
+        """
         logger.debug("action_advancing_runner_out()")
         self.action_advance_runner_safe_or_out(base_from, base_to, True)
 
     def on_batting_team_change(self):
+        """ Notify that the inning or batting team is changing and validate that
+            the data reflects a valid condition for this to happen.
+        """
         # validate first
         if self._outs != 3:
             fail("Changing batting team but outs is incorrect! {self._outs}")
@@ -165,22 +191,28 @@ class GameState(BaseModel):
 
 
     def is_on_first(self):
+        """ Is the runner on first? """
         return self._first
 
     def is_on_second(self):
+        """ Is the runner on second? """
         return self._second
 
     def is_on_third(self):
+        """ Is the runner on third? """
         return self._third
 
     def on_out(self):
+        """ Signal that there was an out. """
         logger.debug("on_out()")
         self._outs += 1
-    
+
     def get_outs(self):
+        """ Get the number of outs this batting segment. """
         return self._outs
 
     def on_score(self):
+        """ Signal that a runner just scored. """
         logger.debug("on_score")
         if self._top_of_inning_flag:
             self._score_visitor += 1
@@ -188,6 +220,7 @@ class GameState(BaseModel):
             self._score_home += 1
 
     def get_runners(self) -> List[str]:
+        """ Returns a list of runners on base. """
         runners = []
         if self.is_on_first():
             runners.append ("1")
@@ -198,6 +231,9 @@ class GameState(BaseModel):
         return runners
 
     def get_runners_str(self) -> str:
+        """ Gets a string for logging purposes that indicates what runners on what
+            bases.
+        """
         runners = ""
         if self.is_on_first():
             runners += "1"
@@ -214,12 +250,15 @@ class GameState(BaseModel):
         return runners
 
     def get_score(self) -> List[int]:
+        """ Gets the game score as a tuple """
         return [self._score_visitor, self._score_home]
 
     def get_score_str(self) -> str:
+        """ Gest a string containing the score. """
         return f"{self._score_visitor}-{self._score_home}"
 
     def get_inning_and_score_str(self) -> str:
+        """ Gets the inning and score in a short string suitable for logging. """
         # create top or bottom of inning str
         top_or_bottom_str = "Bot"
         if self._top_of_inning_flag:
@@ -228,4 +267,5 @@ class GameState(BaseModel):
         return f"{self._inning}/{top_or_bottom_str} {self.get_score_str()}"
 
     def __str__(self) -> str:
+        """ Convert object to a JSON string """
         return to_json_string(self)

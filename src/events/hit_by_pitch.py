@@ -19,5 +19,5 @@ class HitByPitchEvent(BaseEvent):
             op_details - offensive play details
         """
         logger.info("Batter Hit By Pitch")
-            
+
         self.advance_runner(game_at_bat, "B", "1")
