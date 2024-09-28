@@ -45,6 +45,9 @@ class DefensivePlayEvent(BaseEvent):
                 if modifier == Modifiers.FOUL:
                     non_advancing_out = True
                     logger.info("Batter out due to catch from foul ball.")
+                elif modifier == Modifiers.SACRIFICE_FLY:
+                    non_advancing_out = True
+                    logger.info("Batter out due to catch from sacrifice fly.")
                 elif (modifier[0] == Modifiers.FLY or modifier[0] == Modifiers.POP_FLY) and \
                     re.match("^[0-9]+$", modifier[1]):
                     non_advancing_out = True
