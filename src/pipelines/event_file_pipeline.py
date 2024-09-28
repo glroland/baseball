@@ -18,6 +18,8 @@ class EventFilePipeline(BasePipeline):
     game_pipelines : List[GamePipeline] = []
     inflight : GamePipeline = None
 
+    GAMES_TO_SKIP : List[str] = [ "ANA200004080" ]
+
     def optionally_redelegate_record(self, record : List[str]):
         """ If implemented by a subclass, this is its opportunity to re-delegate the record
             to another pipeline. 
@@ -25,26 +27,27 @@ class EventFilePipeline(BasePipeline):
             record - row to delegate, optionally
         """
         if record[0] == "id":
-            # Creating new Game Pipeline
-            self.inflight = GamePipeline()
-            self.inflight.set_game_id(record[1])
-            self.game_pipelines.append(self.inflight)
-            logger.info("New Game Record in Data File.  Index # %s", len(self.game_pipelines))
+            self.inflight = None
+            if record[1] in self.GAMES_TO_SKIP:
+                logger.warning("Skipping Game!  Game_ID=%s", record[1])
+            else:
+                # Creating new Game Pipeline
+                self.inflight = GamePipeline()
+                self.inflight.set_game_id(record[1])
+                self.game_pipelines.append(self.inflight)
+                logger.info("New Game Record in Data File.  Index # %s", len(self.game_pipelines))
+
         elif record[0] == "version":
             # ignore game version info
             # pylint: disable=unnecessary-pass
             pass
         else:
             # validate that a game is inflight to delegate to
-            if self.inflight is None:
-                msg = "Inflight Game is null, indicating that data is out of order!"
-                logger.fatal(msg)
-                raise ValueError(msg)
-
-            # delegate the event
-            logger.debug("Redelegating record to game: %s", record)
-            self.inflight.stage_record(record)
-            return True
+            if self.inflight is not None:
+                # delegate the event
+                logger.debug("Redelegating record to game: %s", record)
+                self.inflight.stage_record(record)
+                return True
 
         return False
 
