@@ -36,7 +36,7 @@ class StrikeoutEvent(BaseEvent):
             if chained_action.action == EventCodes.WILD_PITCH:
                 due_to += "Wild Pitch, saving runner. "
                 runner_saved = True
-                chained_action.handled = True
+                chained_action.handled_flag = True
             chained_action = chained_action.chain_to
 
         called = ""
@@ -50,7 +50,9 @@ class StrikeoutEvent(BaseEvent):
         #        raise ValueError(f"Unknown modifier on strikeout! {called}")
 
         # game play result
-        if not runner_saved:
+        if runner_saved:
+            self.advance_runner(game_at_bat, "B", "1", False)
+        else:
             game_at_bat.outs += 1
 
         # handle extra play events
