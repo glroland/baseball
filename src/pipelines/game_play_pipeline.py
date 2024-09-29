@@ -3,13 +3,12 @@
 Data pipeline for game plays.
 """
 import logging
-import re
-from typing import List, Dict
-from model.game import Game
+from typing import List
 from pipelines.base_pipeline import BasePipeline
 from pipelines.game_play_event_pipeline import GamePlayEventPipeline
-from events.constants import EventCodes
+from model.game import Game
 from model.play_record import PlayRecord
+from events.constants import EventCodes
 
 logger = logging.getLogger(__name__)
 

@@ -55,8 +55,9 @@ class GameState(BaseModel):
         logger.debug("action_batter_out_non_progressing")
         self.on_out()
 
-    #pylint: disable=too-many-branches,too-many-statements
-    def action_advance_runner(self, base_from, base_to, is_out=False, parameter = "", is_recursive=False):
+    #pylint: disable=too-many-branches,too-many-statements,too-many-arguments
+    def action_advance_runner(self, base_from, base_to, is_out=False,
+                              parameter = "", is_recursive=False):
         """ Advance runners with full control over the details.
         
             base_from - where the runner is running from
@@ -133,7 +134,8 @@ class GameState(BaseModel):
                     self.on_score()
             self._third = True
             if base_to in ["4", "H"]:
-                # TODO on these recursive calls, what happens when its an advanced out?  seems like you'd call the last one out with all the others safe?
+                # TODO on these recursive calls, what happens when its an advanced out?
+                # seems like you'd call the last one out with all the others safe?
                 self.action_advance_runner("3", base_to, is_recursive=True)
 
         # runner advances from third base
@@ -207,7 +209,7 @@ class GameState(BaseModel):
         if self._inning != prev._inning or self._top_of_inning_flag != prev._top_of_inning_flag:
             logger.debug("Change in batting team recognized in validation.")
             change_in_batting_team = True
-        
+
         # validate outs
         if change_in_batting_team and self._outs not in [0, 1, 3]:
             msg = f"Incorrect number of outs after batting team change! #={self._outs}"

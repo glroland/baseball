@@ -21,6 +21,7 @@ class AdvanceRecord(BaseModel):
     was_out : bool = False
     groups : List[str] = []
 
+    # pylint: disable=unused-private-member,too-many-branches
     def __parse_advancement_str(self, a):
         """ Parse Advancement String.
         
@@ -39,7 +40,7 @@ class AdvanceRecord(BaseModel):
         if len(advancement_parameters) > 0:
             for group in advancement_parameters:
                 self.groups.append(group)
-   
+
                 # all numbers test
                 if re.match("^[0-9]+$", group):
                     logger.debug("Advancement Parameter - all numbers - %s", group)
@@ -82,7 +83,7 @@ class AdvanceRecord(BaseModel):
                     logger.error(msg)
                     raise ValueError(msg)
 
-    # pylint: disable=no-self-argument
+    # pylint: disable=no-self-argument,protected-access
     def create(s):
         """ Create a new Advancement Record instance. """
         logger.debug("Parsing Advancement Record - <%s>", s)

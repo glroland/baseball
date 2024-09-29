@@ -3,12 +3,10 @@
 Base logic for game events.
 """
 import logging
-import re
 from pydantic import BaseModel
-from events.constants import Parameters
 from model.action_record import ActionRecord
 from model.game_state import GameState
-from utils.data import to_json_string, fail
+from utils.data import to_json_string
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +25,7 @@ class BaseEvent(BaseModel):
                      action.modifiers,
                      game_state.get_game_status_string())
 
+    # pylint: disable=unused-argument
     def post_handle(self, game_state : GameState, action : ActionRecord):
         """ Debugging Method """
         logger.info("Post Event Processing Game Status:  %s", game_state.get_game_status_string())

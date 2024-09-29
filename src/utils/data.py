@@ -24,11 +24,19 @@ def to_json_string(i : BaseModel):
     return i.model_dump_json(indent=2)
 
 def regex_split(regex, s):
+    """ Split string via a regular expression.
+    
+        s - string
+    """
     if s is None:
         return []
     return list(filter(None, re.split(regex, s)))
 
 def split_leading_chars_from_numbers(s):
+    """ Split leading characters from numbers and return an array.
+    
+        s - string
+    """
     if not re.match("[A-Z]", s[0]):
         msg = f"Input string is not compatible with REGEX!  {s}"
         logger.error(msg)
@@ -44,12 +52,24 @@ def split_leading_chars_from_numbers(s):
     return result
 
 def split_num_paren_chunks(s):
+    """ Split groups of characters associated via characters.
+    
+        s - string
+    """
     return regex_split("([0-9]+\\([0-9]+\\)?)+", s)
 
 def split_leading_num(s):
+    """ Split the leading number from a string.
+    
+        s - string
+    """
     return regex_split("^([0-9]+)(.*)", s)
 
 def extract_groups(s):
+    """ Extracts groups of characters from a string.
+    
+        s - string
+    """
     groups = []
     if s is not None and len(s) > 0:
         working = s

@@ -12,9 +12,11 @@ from utils.data import fail
 
 logger = logging.getLogger(__name__)
 
+# pylint: disable=protected-access
 class DefensivePlayEvent(BaseEvent):
     """ Defensive Play Event """
 
+    # pylint: disable=too-many-branches,too-many-statements
     def handle(self, game_state : GameState, action : ActionRecord):
         """ Handle defensive play based on provided action list.exc_info=
         
@@ -69,11 +71,11 @@ class DefensivePlayEvent(BaseEvent):
             game_state.action_advance_runner("B", "1", True)
         else:
             game_state.on_out()
-        
+
         # analyze modifier
         due_to = ""
         for modifier in action.modifiers:
-            if modifier == Modifiers.GROUNDER or modifier == Modifiers.GROUNDER_UNKNOWN:
+            if modifier in [Modifiers.GROUNDER, Modifiers.GROUNDER_UNKNOWN]:
                 due_to += "Due to Ground Ball"
             elif modifier == Modifiers.GROUNDER_DOUBLE_PLAY:
                 due_to += "Due to Ground Ball - Double Play"

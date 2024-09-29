@@ -4,6 +4,7 @@ Helper methods for baseball related data.
 """
 from utils.data import fail
 
+# pylint: disable=inconsistent-return-statements
 def get_base_as_int(base):
     """ Gets the specified base as a number.
     
@@ -19,7 +20,7 @@ def get_base_as_int(base):
         return 3
     if base in ["H", 4]:
         return 4
-    
+
     fail(f"get_base_as_int failing due to illegal parameter!  {base}")
 
 def validate_base(base_str, first_allowed=True, home_allowed=True):

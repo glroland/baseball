@@ -43,7 +43,13 @@ class GamePlayEventPipeline(BasePipeline):
     def __handle_new_play(self):
         # validate at bat metadata
         if self.play is None:
-            self.fail(f"Play is empty, meaning the NP record wasn't picked up prior to the sub record! Game={self.game.game_id} SubFrom={self.player_code} SubToBe={self.sub_player_tobe} HomeTeamFlag={self.players_team_home_flag} FieldingPosition={self.fielding_position} BattingOrder={self.batting_order}")
+            self.fail("Play is empty, meaning the NP record wasn't picked up prior to the sub " + \
+                      f"record! Game={self.game.game_id} " + \
+                      f"SubFrom={self.player_code} " + \
+                      f"SubToBe={self.sub_player_tobe} " + \
+                      f"HomeTeamFlag={self.players_team_home_flag} " + \
+                      f"FieldingPosition={self.fielding_position} " + \
+                      f"BattingOrder={self.batting_order}")
 
         # create at bat model
         self.game_play_model = self.game.new_at_bat(
@@ -59,7 +65,8 @@ class GamePlayEventPipeline(BasePipeline):
         """ Orchestrate the end to end ingestion process associated with this pipeline. """
         # validate pipeline first
         if len(self.processed_records) > 0:
-            self.fail(f"Pipeline not designed for use of staged records!  Count={len(self.processed_records)}")
+            self.fail("Pipeline not designed for use of staged records!  " + \
+                      f"Count={len(self.processed_records)}")
 
         # handle substitutions
         if self.sub_player_tobe is not None and len(self.sub_player_tobe) > 0:

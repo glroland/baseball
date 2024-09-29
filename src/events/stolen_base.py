@@ -29,7 +29,7 @@ class StolenBaseEvent(BaseEvent):
 
         # determine if the advancement was already completed
         #if self.was_advancement_already_handled(base_to):
-        #    logger.warning("Advancement already handled.  Skipping validations and base assignments!")
+        #    logger.warning("Advancement already handled.  Skipping!")
         #elif base_to == "2":
         if base_to == "2":
             game_state.action_advance_runner("1", "2", False)

@@ -18,7 +18,7 @@ class ActionRecord(BaseModel):
     chain_to : object = None
     handled_flag : bool = False
 
-    # pylint: disable=no-self-argument
+    # pylint: disable=no-self-argument,self-cls-assignment
     def create(s : str):
         """ Instantiate an action record object from an action string.
         

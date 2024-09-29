@@ -18,7 +18,7 @@ from utils.data import to_json_string
 
 logger = logging.getLogger(__name__)
 
-# pylint: disable=too-few-public-methods
+# pylint: disable=too-few-public-methods,protected-access
 class Game(BaseModel):
     """ Data Structure for a game chunk that is incrementally assembled as 
     the file is parsed.
@@ -43,6 +43,7 @@ class Game(BaseModel):
                 i -= 1
         return None
 
+    # pylint: disable=too-many-arguments
     def new_at_bat(self,
                    inning,
                    home_team_flag,
@@ -61,7 +62,7 @@ class Game(BaseModel):
             play - play record
         """
         game_at_bat = GameAtBat()
-    
+
         # propagate prior game state
         last_at_bat = self.get_last_at_bat()
         if last_at_bat is None:
@@ -69,7 +70,7 @@ class Game(BaseModel):
         else:
             game_at_bat.game_state = last_at_bat.game_state.clone()
             game_at_bat.game_state._inning = inning
-            game_at_bat.game_state._top_of_inning_flag = home_team_flag == False
+            game_at_bat.game_state._top_of_inning_flag = home_team_flag is False
 
             if game_at_bat.game_state._top_of_inning_flag  != \
                 last_at_bat.game_state._top_of_inning_flag:
@@ -86,7 +87,8 @@ class Game(BaseModel):
         if last_at_bat is None or last_at_bat.game_state._inning != game_at_bat.game_state._inning:
             logger.info("Inning %s / Top - Visiting Team at Bat", inning)
         elif last_at_bat is not None and \
-            last_at_bat.game_state._top_of_inning_flag != game_at_bat.game_state._top_of_inning_flag:
+            last_at_bat.game_state._top_of_inning_flag != \
+            game_at_bat.game_state._top_of_inning_flag:
             logger.info("Inning %s / Bottom - Home Team at Bat", inning)
 
         # process each action under the play record
@@ -152,7 +154,7 @@ class Game(BaseModel):
                     score_tuple[0],
                     score_tuple[1])
 
-    def validate(self):
+    def is_valid(self):
         """ Validate the game and the state of its at bat objects. """
         # get 2 most recent at bats
         current_atbat = None
