@@ -6,7 +6,8 @@ import logging
 from events.base_event import BaseEvent
 from events.constants import EventCodes
 from model.action_record import ActionRecord
-from model.game_at_bat import GameAtBat
+from model.game_state import GameState
+from utils.data import fail
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ class StrikeoutEvent(BaseEvent):
 
     DROPPED_THIRD_STRIKE_PUTOUT : str = "K23"
 
-    def handle(self, game_at_bat : GameAtBat, action : ActionRecord):
+    def handle(self, game_state : GameState, action : ActionRecord):
         due_to = ""
         runner_saved = False
 
@@ -26,7 +27,7 @@ class StrikeoutEvent(BaseEvent):
 
         # Unknown strikeout action
         elif len(action.action) > 1:
-            self.fail(f"Unknown action type: {action.action}")
+            fail(f"Unknown action type: {action.action}")
 
         # review chained actions
         chained_action = action.chain_to
@@ -49,9 +50,9 @@ class StrikeoutEvent(BaseEvent):
 
         # game play result
         if runner_saved:
-            self.advance_runner(game_at_bat, "B", "1", False)
+            game_state.action_advance_runner("B", "1", False)
         else:
-            game_at_bat.outs += 1
+            game_state.action_advance_runner("B", "1", True)
 
         # handle extra play events
         #op_detail = None

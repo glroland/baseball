@@ -93,4 +93,4 @@ class GamePipeline(BasePipeline):
         """ Formally acknowledges that the feed is loaded """
         # Validate prior game
         if self.game is not None:
-            self.game.game_end()
+            self.game.on_game_end()

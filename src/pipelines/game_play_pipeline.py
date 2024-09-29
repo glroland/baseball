@@ -101,27 +101,6 @@ class GamePlayPipeline(BasePipeline):
             self.processed_records.append(event.record)
 
             # build game tracking strings
-            inning_str = str(event.game_play_model.inning)
-            if event.game_play_model.home_team_flag:
-                inning_str += "/Bottom"
-            else:
-                inning_str += "/Top"
-            bases = ""
-            if event.game_play_model.runner_on_1b:
-                bases += "1"
-            else:
-                bases += "-"
-            if event.game_play_model.runner_on_2b:
-                bases += "2"
-            else:
-                bases += "-"
-            if event.game_play_model.runner_on_3b:
-                bases += "3"
-            else:
-                bases += "-"
-            logger.error(">>>> POST PLAY DETAILS.  Inning=%s Outs=%s Score=%s-%s Bases=%s",
-                        inning_str,
-                        event.game_play_model.outs,
-                        event.game_play_model.score_visitor,
-                        event.game_play_model.score_home,
-                        bases)
+            game_status = event.game_play_model.game_state.get_game_status_string()
+            logger.error(">>>> POST PLAY DETAILS.  %s",
+                        game_status)

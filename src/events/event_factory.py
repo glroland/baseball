@@ -5,7 +5,7 @@ Apply game events to game at bat event data.
 import logging
 import re
 import importlib
-from utils.data import regex_split, split_num_paren_chunks
+from utils.data import regex_split
 from events.constants import EventCodes
 
 logger = logging.getLogger(__name__)
@@ -91,17 +91,22 @@ class EventFactory:
         """
         logger.debug("Interpretting game at bat event.  Play = <%s>", game_at_bat.play)
 
+        play = game_at_bat.play
+        game_state = game_at_bat.game_state
+
+        game_state.handle_advances(play.advances)
+
         # process each play action
-        for action in game_at_bat.play.actions:
+        for action in play.actions:
             a_str = action.action
 
             # Analyze Defensive Play
             regex = "(^[0-9]+)"
             if re.search(regex, a_str):
                 event = EventFactory.__create_event_by_name(EventFactory.MAPPING_DEFENSIVE, game_at_bat)
-                event.handle_advances(game_at_bat, game_at_bat.play.advances)
-                event.handle(game_at_bat, action)
-                #event.debug_check_key_attributes_out(game_at_bat, game_at_bat.basic_play)
+                event.pre_handle(game_state, action)
+                event.handle(game_state, action)
+                event.post_handle(game_state, action)
 
             # Analyze Offensive Play
             regex = "(^[A-Z]+)(.*)"
@@ -112,6 +117,6 @@ class EventFactory:
                     logger.debug("Basic_Play Modifiers: - LEN=%s, RESULT = %s", len(play_list), result)
 
                 event = EventFactory.__create_event_by_name(op_event, game_at_bat)
-                event.handle_advances(game_at_bat, game_at_bat.play.advances)
-                event.handle(game_at_bat, action)
-                #event.debug_check_key_attributes_out(game_at_bat, play_list)
+                event.pre_handle(game_state, action)
+                event.handle(game_state, action)
+                event.post_handle(game_state, action)

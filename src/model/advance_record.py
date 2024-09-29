@@ -7,6 +7,7 @@ import re
 from typing import List
 from pydantic import BaseModel
 from utils.data import extract_groups, to_json_string
+from utils.baseball import get_base_as_int
 
 logger = logging.getLogger(__name__)
 
@@ -115,6 +116,35 @@ class AdvanceRecord(BaseModel):
         record.was_out = record.advance[1] == "X"
 
         return record
+
+    def is_completed(self, completed : List[object] ):
+        """ Analyzes a list of advancement reocrds and determins if this advancement
+            has already been handled.
+
+            The advance runner logic is recursive and does breakup multi level advances
+            into individual chains of function calls.  This completed advancements check
+            assumes that the original requests are logged vs the incremental changes.
+
+            completed - list of completed advancement requests
+        """
+        # create an array of to_be bases that must be reflected in the completed array
+        self_from = get_base_as_int(self.base_from)
+        self_to = get_base_as_int(self.base_to)
+        coverage = []
+        i = self_from+1
+        while i <= self_to:
+            coverage.append(i)
+            i += 1
+        logger.debug("is_completed() From=%s To=%s Coverage=%s", self_from, self_to, coverage)
+
+        for a in completed:
+            #a_from = get_base_as_int(a.base_from)
+            a_to = get_base_as_int(a.base_to)
+
+            if a_to in coverage:
+                coverage.remove(a_to)
+
+        return len(coverage) == 0
 
     def __str__(self) -> str:
         """ Convert object to JSON string """

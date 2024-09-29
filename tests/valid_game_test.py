@@ -169,7 +169,7 @@ def test_valid_game():
     game = game_pipeline.game
     assert game.game_id == "ANA200004030"
 
-    score_tuple = game.score()
+    score_tuple = game.get_score()
     assert score_tuple is not None
     assert len(score_tuple) == 2
     assert score_tuple[0] == 3

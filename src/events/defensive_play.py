@@ -7,14 +7,15 @@ import re
 from events.base_event import BaseEvent
 from events.constants import Modifiers
 from model.action_record import ActionRecord
-from model.game_at_bat import GameAtBat
+from model.game_state import GameState
+from utils.data import fail
 
 logger = logging.getLogger(__name__)
 
 class DefensivePlayEvent(BaseEvent):
     """ Defensive Play Event """
 
-    def handle(self, game_at_bat : GameAtBat, action : ActionRecord):
+    def handle(self, game_state : GameState, action : ActionRecord):
         """ Handle defensive play based on provided action list.exc_info=
         
         game_at_bat - game at bat
@@ -33,7 +34,7 @@ class DefensivePlayEvent(BaseEvent):
                 elif group in ["B", "1", "2", "3"]:
                     runner = group
                 else:
-                    self.fail(f"Unknown group command!  {group}")
+                    fail(f"Unknown group command!  {group}")
 
         logger.fatal("Offensive Play - Runner Out -- %s", runner)
 
@@ -54,20 +55,20 @@ class DefensivePlayEvent(BaseEvent):
 
         # advance the runner
         if runner is not None and runner in ["1", "2"]:
-            self.advance_runner(game_at_bat, "B", "1", False)
-            game_at_bat.outs += 1
+            game_state.action_advance_runner("B", "1")
+            game_state.on_out()
             if runner == "1":
-                game_at_bat.runner_on_2b = False
+                game_state._second = False
             elif runner == "2":
-                game_at_bat.runner_on_3b = False
+                game_state._third = False
         elif runner is not None and runner in ["3"]:
-            self.advance_runner(game_at_bat, "B", "1", False)
-            game_at_bat.runner_on_3b = False
-            game_at_bat.outs += 1
+            game_state.action_advance_runner("B", "1")
+            game_state._third = False
+            game_state.on_out()
         elif not non_advancing_out:
-            self.advance_runner(game_at_bat, "B", "1", is_out)
+            game_state.action_advance_runner("B", "1", True)
         else:
-            game_at_bat.outs += 1
+            game_state.on_out()
         
         # analyze modifier
         due_to = ""
@@ -114,8 +115,9 @@ class DefensivePlayEvent(BaseEvent):
                 msg = f"Unhandled Modifier!  {modifier}"
                 logger.warning(msg)
 
-        if is_out:
-            logger.info ("Runner out after hit.  Out credited to pos %s. %s", game_at_bat.fielded_by, due_to)
-        else:
-            logger.info("Runner safe on base after defensive error by %s. %s", game_at_bat.fielded_by, due_to)
+        fielded_by = ""
 
+        if is_out:
+            logger.info ("Runner out after hit.  Out credited to pos %s. %s", fielded_by, due_to)
+        else:
+            logger.info("Runner safe on base after defensive error by %s. %s", fielded_by, due_to)

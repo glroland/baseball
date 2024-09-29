@@ -6,21 +6,21 @@ import logging
 from events.base_event import BaseEvent
 from utils.data import split_leading_chars_from_numbers
 from model.action_record import ActionRecord
-from model.game_at_bat import GameAtBat
+from model.game_state import GameState
 
 logger = logging.getLogger(__name__)
 
 class CaughtStealingEvent(BaseEvent):
     """ Caught Stealing Event """
 
-    def handle(self, game_at_bat : GameAtBat, action : ActionRecord):
+    def handle(self, game_state : GameState, action : ActionRecord):
         base = ""
         if action.action == "CSH":
             base = "H"
         else:
             components = split_leading_chars_from_numbers(action.action)
             base = components[1]
-        logger.error("Stolen Base.  Base=%s Details=%s", base, action)
+        logger.error("Stolen Base.  Base=%s Action=%s", base, action)
 
         # Check to see if there are details being ignored
         credited_to = ""
@@ -28,19 +28,12 @@ class CaughtStealingEvent(BaseEvent):
             credited_to = f"Crediting to {action.groups[0]}"
 
         # Player Out
-        game_at_bat.outs += 1
         logger.info("Player Caught Stealing to Base #%s %s", base, credited_to)
 
         #  Update and validate runner status
         if base == "2":
-            if not game_at_bat.runner_on_1b:
-                self.fail("Encountered caught stealing event but no runner on first.")
-            game_at_bat.runner_on_1b = False
+            game_state.action_advance_runner("1", "2", True)
         elif base == "3":
-            if not game_at_bat.runner_on_2b:
-                self.fail("Encountered caught stealing event but no runner on second.")
-            game_at_bat.runner_on_2b = False
+            game_state.action_advance_runner("2", "3", True)
         elif base == "H":
-            if not game_at_bat.runner_on_3b:
-                self.fail("Encountered caught stealing event but no runner on third.")
-            game_at_bat.runner_on_3b = False
+            game_state.action_advance_runner("3", "H", True)

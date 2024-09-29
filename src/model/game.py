@@ -10,6 +10,7 @@ from pybaseball import statcast
 from model.game_play import GamePlay
 from model.game_at_bat import GameAtBat
 from model.game_substitution import GameSubstitution
+from model.game_state import GameState
 from model.starter import Starter
 from model.data import Data
 from events.event_factory import EventFactory
@@ -42,44 +43,6 @@ class Game(BaseModel):
                 i -= 1
         return None
 
-    def propogate_game_stats(self, current_play : GameAtBat, is_sub = False):
-        """ Copies the running outs, runs, players on base, etc from the last batting
-            event to the current one.
-            
-            current_play - current play object to receive attribute values
-        """
-        last_at_bat = self.get_last_at_bat()
-        if last_at_bat is not None:
-            current_play.outs = last_at_bat.outs
-            current_play.runner_on_1b = last_at_bat.runner_on_1b
-            current_play.runner_on_2b = last_at_bat.runner_on_2b
-            current_play.runner_on_3b = last_at_bat.runner_on_3b
-            current_play.score_home = last_at_bat.score_home
-            current_play.score_visitor = last_at_bat.score_visitor
-
-            if is_sub:
-                current_play.home_team_flag = last_at_bat.home_team_flag
-                current_play.inning = last_at_bat.inning
-
-            if last_at_bat.home_team_flag != current_play.home_team_flag:
-                # validate outs
-                if last_at_bat.outs != 3:
-                    msg = "Outs out of alignment at top/bottom of inning. " + \
-                          f"Outs={last_at_bat.outs} " + \
-                          f"LastHTFlag={last_at_bat.home_team_flag} " + \
-                          f"ThisHTFlag={current_play.home_team_flag} " + \
-                          f"LastInning={last_at_bat.inning} " + \
-                          f"ThisInning={current_play.inning}"
-                    logger.error(msg)
-                    raise ValueError(msg)
-
-                current_play.outs = 0
-                current_play.runner_on_1b = False
-                current_play.runner_on_2b = False
-                current_play.runner_on_3b = False
-
-        return last_at_bat
-
     def new_at_bat(self,
                    inning,
                    home_team_flag,
@@ -98,26 +61,39 @@ class Game(BaseModel):
             play - play record
         """
         game_at_bat = GameAtBat()
-        game_at_bat.inning = inning
-        game_at_bat.home_team_flag = home_team_flag
+    
+        # propagate prior game state
+        last_at_bat = self.get_last_at_bat()
+        if last_at_bat is None:
+            game_at_bat.game_state = GameState()
+        else:
+            game_at_bat.game_state = last_at_bat.game_state.clone()
+            game_at_bat.game_state._inning = inning
+            game_at_bat.game_state._top_of_inning_flag = home_team_flag == False
+
+            if game_at_bat.game_state._top_of_inning_flag  != \
+                last_at_bat.game_state._top_of_inning_flag:
+                game_at_bat.game_state.on_batting_team_change()
+
+        # update values with incoming data values
         game_at_bat.player_code = player_code
         game_at_bat.count = count
         game_at_bat.pitches = pitches
         game_at_bat.play = play
-        last_at_bat = self.propogate_game_stats(game_at_bat)
         self.game_plays.append(game_at_bat)
 
         # log status of inning change
-        if last_at_bat is None or last_at_bat.inning != game_at_bat.inning:
+        if last_at_bat is None or last_at_bat.game_state._inning != game_at_bat.game_state._inning:
             logger.info("Inning %s / Top - Visiting Team at Bat", inning)
-        elif last_at_bat is not None and last_at_bat.home_team_flag != game_at_bat.home_team_flag:
+        elif last_at_bat is not None and \
+            last_at_bat.game_state._top_of_inning_flag != game_at_bat.game_state._top_of_inning_flag:
             logger.info("Inning %s / Bottom - Home Team at Bat", inning)
 
         # process each action under the play record
         EventFactory.create(game_at_bat)
 
         # validate the game after each at bat
-        self.validate()
+        #self.validate()
 
         return game_at_bat
 
@@ -138,40 +114,39 @@ class Game(BaseModel):
             game_event - game event string
         """
         game_subst = GameSubstitution()
+
+        last_at_bat = self.get_last_at_bat()
+        if last_at_bat is None:
+            game_subst.game_state = GameState()
+        else:
+            game_subst.game_state = last_at_bat.game_state.clone()
+
         game_subst.player_to = player_to
         game_subst.player_from = player_from
         game_subst.players_team_home_flag = home_team_flag
         game_subst.batting_order = batting_order
         game_subst.fielding_position = fielding_position
-        self.propogate_game_stats(game_subst, is_sub=True)
         self.game_plays.append(game_subst)
 
         logger.info("Player <%s> substituted with <%s>", game_subst.player_from,
                     game_subst.player_to)
         return game_subst
 
-    def score(self):
+    def get_score(self):
         """ Get the current score of the game.
         
         Returns a tuple where visitor is first, home is second.
         """
         last_at_bat = self.get_last_at_bat()
-        if last_at_bat is None:
-            return [0, 0]
-        v = last_at_bat.score_visitor
-        if v is None:
-            v = 0
-        h = last_at_bat.score_home
-        if h is None:
-            h = 0
-        return [v, h]
+        return last_at_bat.game_state.get_score()
 
-    def game_end(self):
+    def on_game_end(self):
         """ Validate that the results of the game matches  the play by play data.
         
             game - game record
         """
-        score_tuple = self.score()
+        last_at_bat = self.get_last_at_bat()
+        score_tuple = last_at_bat.game_state.get_score()
         logger.info("Game Ended!  ID=%s Score=%s-%s",
                     self.game_id,
                     score_tuple[0],
@@ -196,7 +171,7 @@ class Game(BaseModel):
 
         # validate current at bat based on previous at bat
         if current_atbat is not None and prev_atbat is not None:
-            current_atbat.validate(prev_atbat)
+            current_atbat.game_state.validate_against_prev(prev_atbat.game_state)
 
 
 

@@ -3,9 +3,12 @@
 Representation of a baseball game and its field. 
 """
 import logging
+import re
 from typing import List
 from pydantic import BaseModel
 from utils.data import to_json_string, fail
+from events.constants import Parameters
+from model.advance_record import AdvanceRecord
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +26,8 @@ class GameState(BaseModel):
     _outs : int = 0
     _score_visitor : int = 0
     _score_home : int = 0
+
+    _completed_advancements : List[AdvanceRecord] = []
 
     def clone(self) -> object:
         """ Duplicate object. """
@@ -43,17 +48,6 @@ class GameState(BaseModel):
 
         return result
 
-
-    def action_batter_to_first_safe(self):
-        """ Signal that the batter made it to first. """
-        logger.debug("action_batter_to_first_safe()")
-        self.action_runner_advance_safe("B", "1")
-
-    def action_batter_to_first_out(self):
-        """ Signal that the batter progressed the runners but was out at first. """
-        logger.debug("action_batter_to__first_out()")
-        self.action_advancing_runner_out("B", "1")
-
     def action_batter_out_non_progressing(self):
         """ Signal that the batter is out and should not progresseed runners.
             i.e. fly balls.
@@ -62,13 +56,23 @@ class GameState(BaseModel):
         self.on_out()
 
     #pylint: disable=too-many-branches,too-many-statements
-    def action_advance_runner_safe_or_out(self, base_from, base_to, is_out):
+    def action_advance_runner(self, base_from, base_to, is_out=False, parameter = "", is_recursive=False):
         """ Advance runners with full control over the details.
         
             base_from - where the runner is running from
             base_to - where the runner is going to
             is_out - whether or not the runner is out
+            parameter - optional parameters
+            is_recursive - flag indicating whether the invocation is self induced
         """
+        # log the advancement request
+        if not is_recursive:
+            advance_record = AdvanceRecord()
+            advance_record.base_from = base_from
+            advance_record.base_to = base_to
+            advance_record.was_out = is_out
+            self._completed_advancements.append(advance_record)
+
         # validate inputs before entering more complex logic
         if base_from not in ["B", 0, "1", 1, "2", 2, "3", 3]:
             fail(f"Invalid value for base_from! {base_from}")
@@ -95,7 +99,7 @@ class GameState(BaseModel):
                 self._second = True
             self._first = True
             if base_to in ["2", 2, "3", 3, "4", "H"]:
-                self.action_runner_advance_safe("1", base_to)
+                self.action_advance_runner("1", base_to, is_recursive=True)
 
         # runner advances from _first base
         if base_from in ["1", 1]:
@@ -113,7 +117,7 @@ class GameState(BaseModel):
                 self._third = True
             self._second = True
             if base_to in ["3", 3, "4", "H"]:
-                self.action_runner_advance_safe("2", base_to)
+                self.action_advance_runner("2", base_to, is_recursive=True)
 
         # runner advances from second base
         if base_from in ["2", 2]:
@@ -129,7 +133,8 @@ class GameState(BaseModel):
                     self.on_score()
             self._third = True
             if base_to in ["4", "H"]:
-                self.action_runner_advance_safe("3", base_to)
+                # TODO on these recursive calls, what happens when its an advanced out?  seems like you'd call the last one out with all the others safe?
+                self.action_advance_runner("3", base_to, is_recursive=True)
 
         # runner advances from third base
         if base_from in ["3", 3]:
@@ -151,24 +156,25 @@ class GameState(BaseModel):
                 self._third = False
             self.on_out()
 
+            # log extra info about event
+            extra_text = ""
+            if parameter is not None and len(parameter) > 0:
+                if parameter == Parameters.UNEARNED_RUN:
+                    extra_text = "Unearned Run"
+                elif parameter == Parameters.RBI_CREDITED:
+                    extra_text = "Credited with RBI"
+                elif parameter in [Parameters.RBI_NOT_CREDITED_1, Parameters.RBI_NOT_CREDITED_2]:
+                    extra_text = "RBI NOT Credited"
+                elif re.match("^\\([0-9]+\\)#?$", parameter) is not None:
+                    extra_text = f"{parameter} are credited with the out"
+                else:
+                    self.fail(f"Unknown advancement parameter = {parameter}")
+            logger.info("Base Runner OUT while progressing from %s to %s.  %s",
+                        base_from, base_to, extra_text)
 
-    def action_runner_advance_safe(self, base_from, base_to):
-        """ Safely advance the runner.
+        elif not is_out:
+            logger.info("Base Runner advanced from %s to %s.", base_from, base_to)
 
-            base_from - where the runner is running from
-            base_to - where the runner is running to
-        """
-        logger.debug("action_runner_advance_safe()")
-        self.action_advance_runner_safe_or_out(base_from, base_to, False)
-
-    def action_advancing_runner_out(self, base_from, base_to):
-        """ Indicate the runner is attempting to progress but is out.
-
-            base_from - where the runner is running from
-            base_to - where the runner is running to
-        """
-        logger.debug("action_advancing_runner_out()")
-        self.action_advance_runner_safe_or_out(base_from, base_to, True)
 
     def on_batting_team_change(self):
         """ Notify that the inning or batting team is changing and validate that
@@ -176,19 +182,47 @@ class GameState(BaseModel):
         """
         # validate first
         if self._outs != 3:
-            fail("Changing batting team but outs is incorrect! {self._outs}")
+            fail(f"Changing batting team but outs is incorrect! {self._outs}")
 
         # then clear
         self._outs = 0
         self._first = False
         self._second = False
         self._third = False
-        if self._top_of_inning_flag:
-            self._top_of_inning_flag = False
-        else:
-            self._top_of_inning_flag = True
-            self._inning += 1
 
+        # data sets the innings for us
+        #if self._top_of_inning_flag:
+        #    self._top_of_inning_flag = False
+        #else:
+        #    self._top_of_inning_flag = True
+        #    self._inning += 1
+
+    def validate_against_prev(self, prev):
+        """ Validate the game state object. 
+        
+            prev - previous game state
+        """
+        # determine if there is a change in batting team
+        change_in_batting_team = False
+        if self._inning != prev._inning or self._top_of_inning_flag != prev._top_of_inning_flag:
+            logger.debug("Change in batting team recognized in validation.")
+            change_in_batting_team = True
+        
+        # validate outs
+        if change_in_batting_team and self._outs not in [0, 1, 3]:
+            msg = f"Incorrect number of outs after batting team change! #={self._outs}"
+            logger.error(msg)
+            raise ValueError(msg)
+        if self._outs > 3:
+            msg = f"Too many outs! #={self._outs}"
+            logger.error(msg)
+            raise ValueError(msg)
+
+        # validate innings
+        if self._inning < 1:
+            msg = f"Inning value is less than 1! #={self._inning}"
+            logger.error(msg)
+            raise ValueError(msg)
 
     def is_on_first(self):
         """ Is the runner on first? """
@@ -257,14 +291,41 @@ class GameState(BaseModel):
         """ Gest a string containing the score. """
         return f"{self._score_visitor}-{self._score_home}"
 
-    def get_inning_and_score_str(self) -> str:
+    def get_game_status_string(self) -> str:
         """ Gets the inning and score in a short string suitable for logging. """
         # create top or bottom of inning str
         top_or_bottom_str = "Bot"
         if self._top_of_inning_flag:
             top_or_bottom_str = "Top"
 
-        return f"{self._inning}/{top_or_bottom_str} {self.get_score_str()}"
+        return f"{self._inning}/{top_or_bottom_str}  Runners={self.get_runners_str()}  " +\
+               f"Outs={self.get_outs()}  {self.get_score_str()}"
+
+    def handle_advances(self, advances):
+        """ Handle Base Advances.
+    
+            advances - list of base advances
+        """
+        if advances is not None and len(advances) > 0:
+            for advance in advances:
+                base_from = advance.base_from
+                was_out = advance.was_out
+                base_to = advance.base_to
+
+                # see if the advancement was already handled
+                if advance.is_completed(self._completed_advancements):
+                    logger.warning("Advancement Requested F=%s T=%s Out=%s overlaps with " + \
+                                   "Completed Advancements! %s", base_from, base_to, was_out,
+                                   self._completed_advancements)
+
+                else:
+                    # advance the runner
+                    try:
+                        self.action_advance_runner(base_from, base_to, was_out)
+                    except ValueError as e:
+                        logger.error("Unable to advance!  Requested=%s  Completed=%s Error=%s",
+                                     advance, self._completed_advancements, e)
+                        raise e
 
     def __str__(self) -> str:
         """ Convert object to a JSON string """

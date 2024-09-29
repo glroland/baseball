@@ -40,6 +40,21 @@ class GamePlayEventPipeline(BasePipeline):
                             fielding_position=self.fielding_position)
 
 
+    def __handle_new_play(self):
+        # validate at bat metadata
+        if self.play is None:
+            self.fail(f"Play is empty, meaning the NP record wasn't picked up prior to the sub record! Game={self.game.game_id} SubFrom={self.player_code} SubToBe={self.sub_player_tobe} HomeTeamFlag={self.players_team_home_flag} FieldingPosition={self.fielding_position} BattingOrder={self.batting_order}")
+
+        # create at bat model
+        self.game_play_model = self.game.new_at_bat(
+                    inning = self.inning,
+                    home_team_flag = self.home_team_flag,
+                    player_code = self.player_code,
+                    count = self.pitch_count,
+                    pitches = self.pitches,
+                    play = self.play)
+
+
     def execute_pipeline(self):
         """ Orchestrate the end to end ingestion process associated with this pipeline. """
         # validate pipeline first
@@ -49,17 +64,6 @@ class GamePlayEventPipeline(BasePipeline):
         # handle substitutions
         if self.sub_player_tobe is not None and len(self.sub_player_tobe) > 0:
             self.__handle_sub()
-
         else:
-            # validate at bat metadata
-            if self.play is None:
-                self.fail(f"Play is empty, meaning the NP record wasn't picked up prior to the sub record! Game={self.game.game_id} SubFrom={self.player_code} SubToBe={self.sub_player_tobe} HomeTeamFlag={self.players_team_home_flag} FieldingPosition={self.fielding_position} BattingOrder={self.batting_order}")
-
-            # create at bat model
-            self.game_play_model = self.game.new_at_bat(
-                        inning = self.inning,
-                        home_team_flag = self.home_team_flag,
-                        player_code = self.player_code,
-                        count = self.pitch_count,
-                        pitches = self.pitches,
-                        play = self.play)
+            # action play
+            self.__handle_new_play()
