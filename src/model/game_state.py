@@ -66,6 +66,13 @@ class GameState(BaseModel):
             parameter - optional parameters
             is_recursive - flag indicating whether the invocation is self induced
         """
+        # have there already been advancements from B?
+        if base_from == "B":
+            for completed_advancement in self._completed_advancements:
+                if completed_advancement.base_from == base_from:
+                    fail("Redundant advances from batter during a single play! " + \
+                         f"Match={completed_advancement}")
+
         # log the advancement request
         if not is_recursive:
             advance_record = AdvanceRecord()

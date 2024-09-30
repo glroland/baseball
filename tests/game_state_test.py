@@ -15,9 +15,9 @@ def new_game():
 @pytest.fixture
 def new_bases_loaded():
     game = GameState()
-    game.action_advance_runner("B", "3")
-    game.action_advance_runner("B", "2")
-    game.action_advance_runner("B", "1")
+    game._first = True
+    game._second = True
+    game._third = True
     assert game.is_on_first()
     assert game.is_on_second()
     assert game.is_on_third()
@@ -28,8 +28,8 @@ def new_bases_loaded():
 @pytest.fixture
 def sparse():
     game = GameState()
-    game.action_advance_runner("B", "3")
-    game.action_advance_runner("B", "1")
+    game._first = True
+    game._third = True
     assert game.is_on_first()
     assert not game.is_on_second()
     assert game.is_on_third()

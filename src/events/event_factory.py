@@ -77,26 +77,28 @@ class EventFactory:
         # process each play action
         for action in play.actions:
             a_str = action.action
+            if action.handled_flag:
+                logger.info("Skipping Handled Action: %s", action.action)
+            else:
+                # Analyze Defensive Play
+                regex = "(^[0-9]+)"
+                if re.search(regex, a_str):
+                    event = EventFactory.__create_event_by_name(
+                        EventCodeMappings.MAPPING_DEFENSIVE, game_at_bat)
+                    event.pre_handle(game_state, action)
+                    event.handle(game_state, action)
+                    event.post_handle(game_state, action)
 
-            # Analyze Defensive Play
-            regex = "(^[0-9]+)"
-            if re.search(regex, a_str):
-                event = EventFactory.__create_event_by_name(
-                    EventCodeMappings.MAPPING_DEFENSIVE, game_at_bat)
-                event.pre_handle(game_state, action)
-                event.handle(game_state, action)
-                event.post_handle(game_state, action)
+                # Analyze Offensive Play
+                regex = "(^[A-Z]+)(.*)"
+                if re.search(regex, a_str):
+                    play_list = regex_split(regex, a_str)
+                    op_event = play_list.pop(0)
+                    for result in play_list:
+                        logger.debug("Basic_Play Modifiers: - LEN=%s, RESULT = %s",
+                                    len(play_list), result)
 
-            # Analyze Offensive Play
-            regex = "(^[A-Z]+)(.*)"
-            if re.search(regex, a_str):
-                play_list = regex_split(regex, a_str)
-                op_event = play_list.pop(0)
-                for result in play_list:
-                    logger.debug("Basic_Play Modifiers: - LEN=%s, RESULT = %s",
-                                 len(play_list), result)
-
-                event = EventFactory.__create_event_by_name(op_event, game_at_bat)
-                event.pre_handle(game_state, action)
-                event.handle(game_state, action)
-                event.post_handle(game_state, action)
+                    event = EventFactory.__create_event_by_name(op_event, game_at_bat)
+                    event.pre_handle(game_state, action)
+                    event.handle(game_state, action)
+                    event.post_handle(game_state, action)
