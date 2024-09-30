@@ -7,7 +7,7 @@ from typing import List
 from pydantic import BaseModel
 from model.action_record import ActionRecord
 from model.advance_record import AdvanceRecord
-from utils.data import to_json_string
+from utils.data import to_json_string, fail
 
 logger = logging.getLogger(__name__)
 
@@ -26,17 +26,13 @@ class PlayRecord(BaseModel):
     def __split_advancements(self, action_str):
         # validate input parameter
         if action_str.count(".") > 1:
-            msg = "Unexpected - too Many dots encountered with advancement!  " + \
-                    f"{action_str.count('.')} Action={action_str}"
-            logger.error(msg)
-            raise ValueError(msg)
+            fail("Unexpected - too Many dots encountered with advancement!  " + \
+                f"{action_str.count('.')} Action={action_str}")
 
         # split advancements
         advancements = action_str.split(".")
         if action_str.count(".") != (len(advancements) - 1):
-            msg = "Split Operation for advancements failed due to count mispatch."
-            logger.error(msg)
-            raise ValueError(msg)
+            fail("Split Operation for advancements failed due to count mispatch.")
         beginning = advancements[0]
         advancements = advancements[1:]
         if len(advancements) > 0:
@@ -136,7 +132,7 @@ class PlayRecord(BaseModel):
         
             s - action string
         """
-        logger.info("Parsing Play Record - <%s>", s)
+        logger.debug("Parsing Play Record - <%s>", s)
 
         # create basic play record structure
         record = PlayRecord()

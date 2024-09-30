@@ -8,6 +8,7 @@ import psycopg
 from pipelines.base_pipeline import BasePipeline
 from pipelines.game_pipeline import GamePipeline
 from utils.db import connect_to_db
+from utils.data import fail
 from games_to_skip import GAMES_TO_SKIP
 
 logger = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ class EventFilePipeline(BasePipeline):
                 self.inflight = GamePipeline()
                 self.inflight.set_game_id(record[1])
                 self.game_pipelines.append(self.inflight)
-                logger.info("New Game Record in Data File.  Index # %s", len(self.game_pipelines))
+                logger.debug("New Game Record in Data File.  Index # %s", len(self.game_pipelines))
 
         elif record[0] == "version":
             # ignore game version info
@@ -52,7 +53,7 @@ class EventFilePipeline(BasePipeline):
 
     def execute_pipeline(self):
         """ Orchestrate the end to end ingestion process associated with this pipeline. """
-        logger.info("Processing Event File Data Pipeline.  File: %s", self.filename)
+        logger.debug("Processing Event File Data Pipeline.  File: %s", self.filename)
         for game_pipeline in self.game_pipelines:
             # Find where the row is in the row index
             r = None
@@ -62,9 +63,7 @@ class EventFilePipeline(BasePipeline):
 
             # Ensure that it was found
             if r is None:
-                msg = f"Could not find record for game id: {game_pipeline.game.game_id}"
-                logger.error(msg)
-                raise ValueError(msg)
+                fail(f"Could not find record for game id: {game_pipeline.game.game_id}")
 
             # Execute Pipeline
             logger.debug("Executing Pipeline = %s", game_pipeline)
@@ -90,7 +89,7 @@ class EventFilePipeline(BasePipeline):
 
     def save(self):
         """ Save all the encompassing game records to the database """
-        logger.debug("Saving Games.  List is %s games long.", len(self.game_pipelines))
+        logger.info("Saving Games.  List is %s games long.", len(self.game_pipelines))
         sql_connection = connect_to_db()
         try:
             for game_pipeline in self.game_pipelines:

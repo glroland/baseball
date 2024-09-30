@@ -9,6 +9,7 @@ from pipelines.game_play_pipeline import GamePlayPipeline
 from model.game import Game
 from model.starter import Starter
 from model.data import Data
+from utils.data import fail
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ class GamePipeline(BasePipeline):
         self.game = Game()
         self.game.game_id = game_id
 
+    # pylint: disable=inconsistent-return-statements
     def optionally_redelegate_record(self, record : List[str]):
         """ If implemented by a subclass, this is its opportunity to re-delegate the record
             to another pipeline. 
@@ -43,9 +45,7 @@ class GamePipeline(BasePipeline):
             return True
 
         # fail on unexpected record types
-        msg = f"Unknown Game Row Type!  {record[0]}"
-        logger.fatal(msg)
-        raise ValueError(msg)
+        fail(f"Unknown Game Row Type!  {record[0]}")
 
 
     def execute_pipeline(self):
@@ -71,12 +71,13 @@ class GamePipeline(BasePipeline):
                 data.quantity = int(record[3])
                 self.game.data.append(data)
             else:
-                self.fail(f"Unknown Row Type!  {record[0]}")
+                fail(f"Unknown Row Type!  {record[0]}")
 
             self.processed_records.append(record)
 
         # Process all the game events, in order
-        logger.debug("Processing Game Events Pipeline.  Size=%s", len(self.game_events_pipelines))
+        logger.info("New Game (%s)> Processing Events Pipeline.  Size=%s",
+                    self.game.game_id, len(self.game_events_pipelines))
         for game_events_pipeline in self.game_events_pipelines:
             game_events_pipeline.execute_pipeline()
 
@@ -86,11 +87,12 @@ class GamePipeline(BasePipeline):
         
             sql_connection - sql connection to use for tx
         """
-        logger.debug("Saving Game")
+        logger.info("Saving Game #%s", self.game.game_id)
 
 
     def processing_complete(self):
         """ Formally acknowledges that the feed is loaded """
         # Validate prior game
         if self.game is not None:
+            logging.debug("Game processing complete!")
             self.game.on_game_end()

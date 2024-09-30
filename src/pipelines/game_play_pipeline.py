@@ -27,7 +27,7 @@ class GamePlayPipeline(BasePipeline):
 
             if record[0] == "play" and record[6] == EventCodes.NO_PLAY_SUB_COMING:
                 self.game.no_play_sub_player = record[3]
-                logger.info("No Play - player preparing for substitution: %s", record[3])
+                logger.debug("No Play - player preparing for substitution: %s", record[3])
 
             elif record[0] == "play":
                 # parse action record
@@ -57,7 +57,7 @@ class GamePlayPipeline(BasePipeline):
                 event.fielding_position = record[5]
                 event.players_team_home_flag = record[3] == "1"
                 self.events.append(event)
-                logger.debug("Player Substitution. From=%s, To=%s, HomeTeamFlag=%s",
+                logger.info("Player Substitution. From=%s, To=%s, HomeTeamFlag=%s",
                              record[1],
                              event.sub_player_tobe,
                              event.players_team_home_flag)
@@ -67,23 +67,23 @@ class GamePlayPipeline(BasePipeline):
                 logger.info("Comment: %s", record[1])
 
             elif record[0] == "radj":
-                # TODO
+                # TODO Implement radj event record
                 self.fail(f"Unhandled game record event - {record[0]}")
 
             elif record[0] == "badj":
-                # TODO
+                # TODO Implement badj event record
                 self.fail(f"Unhandled game record event - {record[0]}")
 
             elif record[0] == "presadj":
-                # TODO
+                # TODO Implement presadj event record
                 self.fail(f"Unhandled game record event - {record[0]}")
 
             elif record[0] == "padj":
-                # TODO
+                # TODO Implement padj event record
                 self.fail(f"Unhandled game record event - {record[0]}")
 
             elif record[0] == "ladj":
-                # TODO
+                # TODO Implement ladj event record
                 self.fail(f"Unhandled game record event - {record[0]}")
 
             else:
@@ -93,13 +93,18 @@ class GamePlayPipeline(BasePipeline):
         """ Orchestrate the end to end ingestion process associated with this pipeline. """
         self.__setup_child_pipelines()
 
+        prev_game_state = None
         for event in self.events:
-            logger.error("---- PLAY   %s", event.record)
+            details = ""
+            if prev_game_state is not None:
+                details = prev_game_state.get_game_status_string()
+            logger.info(">>> Pre-Play Details.  %s  %s", event.record, details)
 
             event.execute_pipeline()
             self.processed_records.append(event.record)
 
             # build game tracking strings
-            game_status = event.game_play_model.game_state.get_game_status_string()
-            logger.error(">>>> POST PLAY DETAILS.  %s",
-                        game_status)
+            prev_game_state = event.game_play_model.game_state
+            game_status = prev_game_state.get_game_status_string()
+            logger.info("<<<  Post Play Details.  %s", game_status)
+            prev_game_state = event.game_play_model.game_state

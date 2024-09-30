@@ -38,7 +38,7 @@ class DefensivePlayEvent(BaseEvent):
                 else:
                     fail(f"Unknown group command!  {group}")
 
-        logger.fatal("Offensive Play - Runner Out -- %s", runner)
+        logger.debug("Offensive Play - Runner Out -- %s", runner)
 
         # check for non-advancing reasons in modifier list
         non_advancing_out = False
@@ -120,6 +120,6 @@ class DefensivePlayEvent(BaseEvent):
         fielded_by = ""
 
         if is_out:
-            logger.info ("Runner out after hit.  Out credited to pos %s. %s", fielded_by, due_to)
+            logger.info("Runner out after hit.  Out credited to pos %s. %s", fielded_by, due_to)
         else:
             logger.info("Runner safe on base after defensive error by %s. %s", fielded_by, due_to)

@@ -46,13 +46,5 @@ class BasePipeline(BaseModel):
         """ Orchestrate the end to end ingestion process associated with this pipeline. """
         raise NotImplementedError()
 
-    def fail(self, msg):
-        """ Fail with the specified error message.
-        
-            msg - error message
-        """
-        logger.error(msg)
-        raise ValueError(msg)
-
     def __str__(self) -> str:
         return to_json_string(self)

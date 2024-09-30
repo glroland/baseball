@@ -28,7 +28,7 @@ class BaseEvent(BaseModel):
     # pylint: disable=unused-argument
     def post_handle(self, game_state : GameState, action : ActionRecord):
         """ Debugging Method """
-        logger.info("Post Event Processing Game Status:  %s", game_state.get_game_status_string())
+        logger.debug("Post Event Processing Game Status:  %s", game_state.get_game_status_string())
 
 
     def __str__(self) -> str:

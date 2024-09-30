@@ -2,9 +2,9 @@
 
 Map event codes to event classes
 """
-from pydantic import BaseModel
 from events.constants import EventCodes
 
+# pylint: disable=too-few-public-methods
 class EventCodeMappings:
     """ Event Code Mappings """
 

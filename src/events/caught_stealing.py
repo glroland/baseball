@@ -20,7 +20,7 @@ class CaughtStealingEvent(BaseEvent):
         else:
             components = split_leading_chars_from_numbers(action.action)
             base = components[1]
-        logger.error("Stolen Base.  Base=%s Action=%s", base, action)
+        logger.debug("Stolen Base.  Base=%s Action=%s", base, action)
 
         # Check to see if there are details being ignored
         credited_to = ""
