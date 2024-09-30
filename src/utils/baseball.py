@@ -112,14 +112,50 @@ def sort_defensive_play_actions_desc(play):
     logger.debug("sort_defensive_play_actions_desc()")
 
     # before touching the record, ensure that all actions are defensive
-    for action in play.actions:
-        if not is_action_str_defensive_play(action.action):
-            logger.debug("Action is not a defensive play.  Skipping changes!  %s", action.action)
-            return
+    if not is_defensive_play(play):
+        logger.debug("Action is not a defensive play.  Skipping changes!")
+        return
 
-    #sorted(play.actions, key=lambda x: x.attack)
-    #sorted(timestamps, reverse=True)
-
+    # sort descending
     play.actions = sorted(play.actions,
                           key=functools.cmp_to_key(__comparator_defensive_play_actions),
                           reverse=True)
+
+def is_defensive_play_missing_batter_event(play):
+    """ Analyzes the defensive play to determine if it contains any batter
+        related events.
+        
+        play - play record to analyze
+    """
+    logger.debug("does_defensive_play_contain_batter_event()")
+
+    # before touching the record, ensure that all actions are defensive
+    for action in play.actions:
+        # abort on non-defensive plays
+        if not is_action_str_defensive_play(action.action):
+            logger.debug("Action is not a defensive play. Providing positive response!  %s", action.action)
+            return False
+
+        # check for batter play
+        if len(action.groups) == 0 or action.groups[0] in ["B", 0]:
+            logger.debug("Found batter position in groups list")
+            return False
+
+    return True
+
+def is_defensive_play(play):
+    """ Analyzes the play to determine if its a defensive play.
+    
+        play - play to analyze
+    """
+    logger.debug("is_defensive_play()")
+
+    # validate paramters
+    if play is None:
+        fail("Input play is null!")
+
+    for action in play.actions:
+        if not is_action_str_defensive_play(action.action):
+            return False
+
+    return True

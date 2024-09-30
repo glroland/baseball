@@ -6,7 +6,10 @@ import logging
 import re
 import importlib
 from utils.data import regex_split
-from utils.baseball import is_action_str_defensive_play, sort_defensive_play_actions_desc
+from utils.baseball import is_action_str_defensive_play
+from utils.baseball import sort_defensive_play_actions_desc
+from utils.baseball import is_defensive_play_missing_batter_event
+from utils.baseball import is_defensive_play
 from events.event_code_mappings import EventCodeMappings
 from model.game_at_bat import GameAtBat
 
@@ -73,8 +76,11 @@ class EventFactory:
 
         logger.debug("Interpretting game at bat event.  Play = <%s>", play)
 
-        sort_defensive_play_actions_desc(play)
+        # sort the actions descending - handle in reverse order
+        if is_defensive_play(play):
+            sort_defensive_play_actions_desc(play)
 
+        # handle advances before other play actions
         game_state.handle_advances(play.advances)
 
         # process each play action
@@ -104,3 +110,8 @@ class EventFactory:
                     event.pre_handle(game_state, action)
                     event.handle(game_state, action)
                     event.post_handle(game_state, action)
+
+        # ensure that at least one batter event exists
+        if is_defensive_play(play):
+            if is_defensive_play_missing_batter_event(play):
+                game_state.action_advance_runner("B", "1", is_out=False)
