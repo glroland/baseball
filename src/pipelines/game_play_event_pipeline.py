@@ -74,3 +74,5 @@ class GamePlayEventPipeline(BasePipeline):
         else:
             # action play
             self.__handle_new_play()
+            logger.debug("Post Play Game Status = %s",
+                         self.game_play_model.game_state.get_game_status_string())

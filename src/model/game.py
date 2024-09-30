@@ -67,7 +67,11 @@ class Game(BaseModel):
         last_at_bat = self.get_last_at_bat()
         if last_at_bat is None:
             game_at_bat.game_state = GameState()
+            logger.debug("No previous game state")
         else:
+            logger.debug("Previous Game State = %s",
+                         last_at_bat.game_state.get_game_status_string())
+
             game_at_bat.game_state = last_at_bat.game_state.clone()
             game_at_bat.game_state._inning = inning
             game_at_bat.game_state._top_of_inning_flag = home_team_flag is False

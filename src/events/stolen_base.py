@@ -20,6 +20,8 @@ class StolenBaseEvent(BaseEvent):
             
             base_to - where the runner is running to 
         """
+        logger.info("Stealing Base - %s - %s", action.action, game_state.get_game_status_string())
+
         # Extract the tailing numbers
         components = split_leading_chars_from_numbers(action.action)
         if len(components) != 2:

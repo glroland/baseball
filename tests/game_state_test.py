@@ -25,6 +25,18 @@ def new_bases_loaded():
     assert game.get_score() == [0, 0]
     return game
 
+@pytest.fixture
+def sparse():
+    game = GameState()
+    game.action_advance_runner("B", "3")
+    game.action_advance_runner("B", "1")
+    assert game.is_on_first()
+    assert not game.is_on_second()
+    assert game.is_on_third()
+    assert game.get_outs() == 0
+    assert game.get_score() == [0, 0]
+    return game
+
 def test_single_on_new(new_game):
     new_game.action_advance_runner("B", "1")
     assert new_game.is_on_first()
@@ -234,3 +246,13 @@ def test_home_run_grand_slam(new_game):
     assert len(new_game.get_runners()) == 0
     assert new_game.get_outs() == 0
     assert new_game.get_score() == [4, 0]
+
+def test_batter_out_sparse(sparse):
+    sparse.action_advance_runner("B", "1", True)
+    assert not sparse.is_on_first()
+    assert sparse.is_on_second()
+    assert sparse.is_on_third()
+    assert len(sparse.get_runners()) == 2
+    assert sparse.get_runners() == ["2", "3"]
+    assert sparse.get_outs() == 1
+    assert sparse.get_score() == [0, 0]
