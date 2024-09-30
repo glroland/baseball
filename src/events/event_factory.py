@@ -6,6 +6,7 @@ import logging
 import re
 import importlib
 from utils.data import regex_split
+from utils.baseball import is_action_str_defensive_play, sort_defensive_play_actions_desc
 from events.event_code_mappings import EventCodeMappings
 from model.game_at_bat import GameAtBat
 
@@ -72,6 +73,8 @@ class EventFactory:
 
         logger.debug("Interpretting game at bat event.  Play = <%s>", play)
 
+        sort_defensive_play_actions_desc(play)
+
         game_state.handle_advances(play.advances)
 
         # process each play action
@@ -81,8 +84,7 @@ class EventFactory:
                 logger.info("Skipping Handled Action: %s", action.action)
             else:
                 # Analyze Defensive Play
-                regex = "(^[0-9]+)"
-                if re.search(regex, a_str):
+                if is_action_str_defensive_play(a_str):
                     event = EventFactory.__create_event_by_name(
                         EventCodeMappings.MAPPING_DEFENSIVE, game_at_bat)
                     event.pre_handle(game_state, action)

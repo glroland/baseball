@@ -408,3 +408,65 @@ def test_multi_plays_walk_plus_caught_stealing():
     assert(len(r.actions[1].groups) == 1)
     assert(r.actions[1].groups[0] == "25")
     assert(len(r.actions[1].modifiers) == 0)
+
+def test_defensive_one():
+    s = "2(B)"
+
+    r = PlayRecord.create(s)
+    assert(r != None)
+    assert(not r.uncertainty_flag)
+    assert(not r.exceptional_play_flag)
+    assert(not r.softly_hit_ball_flag)
+    assert(not r.hard_hit_ball_flag)
+    assert(len(r.advances) == 0)
+    assert(len(r.actions) == 1)
+    assert(r.actions[0] != None)
+    assert(r.actions[0].action == "2")
+    assert(len(r.actions[0].groups) == 1)
+    assert(r.actions[0].groups[0] == "B")
+    assert(len(r.actions[0].modifiers) == 0)
+
+def test_defensive_multiple():
+    s = "3(B)3(1)/LDP"
+
+    r = PlayRecord.create(s)
+    assert(r != None)
+    assert(not r.uncertainty_flag)
+    assert(not r.exceptional_play_flag)
+    assert(not r.softly_hit_ball_flag)
+    assert(not r.hard_hit_ball_flag)
+    assert(len(r.advances) == 0)
+    assert(len(r.actions) == 2)
+    assert(r.actions[0] != None)
+    assert(r.actions[0].action == "3")
+    assert(len(r.actions[0].groups) == 1)
+    assert(r.actions[0].groups[0] == "B")
+    assert(len(r.actions[0].modifiers) == 1)
+    assert(r.actions[0].modifiers[0] == "LDP")
+    assert(r.actions[1] != None)
+    assert(r.actions[1].action == "3")
+    assert(len(r.actions[1].groups) == 1)
+    assert(r.actions[1].groups[0] == "1")
+    assert(len(r.actions[1].modifiers) == 0)
+
+def test_defensive_simple():
+    s = "4"
+
+    r = PlayRecord.create(s)
+    assert(r != None)
+    assert(not r.uncertainty_flag)
+    assert(not r.exceptional_play_flag)
+    assert(not r.softly_hit_ball_flag)
+    assert(not r.hard_hit_ball_flag)
+    assert(len(r.advances) == 0)
+    assert(len(r.actions) == 1)
+    assert(r.actions[0] != None)
+    assert(r.actions[0].action == "4")
+    assert(len(r.actions[0].groups) == 0)
+    assert(len(r.actions[0].modifiers) == 0)
+
+
+#                    # break apart the event for single, double, triple plays
+#                    chunks = regex_split("^([0-9]+\\([B123]\\))+$", a_str)
+#                    if chunks is None or len(chunks) == 0:
+#                        chunks = [a_str]
