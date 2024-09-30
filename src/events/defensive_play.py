@@ -23,7 +23,11 @@ class DefensivePlayEvent(BaseEvent):
         game_at_bat - game at bat
         play_list - list of offensive play components
         """
-        logger.info("Defensive Play.  Play_List<%s>", action.action)
+        fielded_by = action.action
+        base_out = "B"
+        if len(action.groups) > 0:
+            base_out = action.groups[0]
+        logger.info("Defensive Play.  Base=%s  Credit_to=%s", base_out, fielded_by)
 
         # Check for error or a specific runner
         is_out = True
@@ -55,22 +59,34 @@ class DefensivePlayEvent(BaseEvent):
                     non_advancing_out = True
                     logger.info("Batter out due to fly ball.")
 
-        # advance the runner
-        if runner is not None and runner in ["1", "2"]:
-            game_state.action_advance_runner("B", "1")
-            game_state.on_out()
-            if runner == "1":
-                game_state._second = False
-            elif runner == "2":
-                game_state._third = False
-        elif runner is not None and runner in ["3"]:
-            game_state.action_advance_runner("B", "1")
-            game_state._third = False
-            game_state.on_out()
-        elif not non_advancing_out:
+        # TODO Need to chain defensive plays.  1 runner on base.  3(B)3(1)/LDP
+        # mark the position as out
+        if base_out in ["B", 0]:
             game_state.action_advance_runner("B", "1", True)
+        elif base_out in ["1", 1]:
+            game_state.action_advance_runner("1", "2", True)
+        elif base_out in ["2", 2]:
+            game_state.action_advance_runner("2", "3", True)
+        elif base_out in ["3", 3]:
+            game_state.action_advance_runner("3", "H", True)
         else:
-            game_state.on_out()
+            fail(f"Illegal Base Out on Defensive Play!  {base_out}")
+
+        # advance the runner
+        #if runner is not None and runner in ["1", "2"]:
+        #    game_state.action_advance_runner("B", "1", True)
+        #    if runner == "1":
+        #        game_state._second = False
+        #    elif runner == "2":
+        #        game_state._third = False
+        #elif runner is not None and runner in ["3"]:
+        #    game_state.action_advance_runner("B", "1", True)
+        #    game_state._third = False
+        #    game_state.on_out()
+        #elif not non_advancing_out:
+        #    game_state.action_advance_runner("B", "1", True)
+        #else:
+        #    game_state.on_out()
 
         # analyze modifier
         due_to = ""
