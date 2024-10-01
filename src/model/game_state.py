@@ -85,13 +85,13 @@ class GameState(BaseModel):
         redundant_test.base_from = base_from
         redundant_test.base_to = base_to
         redundant_test.was_out = is_out
-        logger.info("Game State before check = %s", self.get_game_status_string())
+        logger.debug("Game State before check = %s", self.get_game_status_string())
         if redundant_test.is_completed(self._completed_advancements):
             logger.warning("Advancement already completed!  From=%s To=%s WasOut=%s GameStr=%s",
                         base_from, base_to, is_out, self.get_game_status_string())
             #return
         else:
-            logger.info("Advancement NOT completed!  From=%s To=%s WasOut=%s GameStr=%s",
+            logger.debug("Advancement NOT completed!  From=%s To=%s WasOut=%s GameStr=%s",
                         base_from, base_to, is_out, self.get_game_status_string())
 
         # log the advancement request
