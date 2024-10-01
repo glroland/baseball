@@ -6,5 +6,6 @@ from typing import List
 
 GAMES_TO_SKIP : List[str] = \
 [
-    "ANA200004080"
+    "ANA200004080",
+    "ANA200004100"
 ]
