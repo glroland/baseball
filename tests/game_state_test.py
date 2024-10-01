@@ -1,5 +1,14 @@
+""" Game State Unit Tests
+
+Unit tests for the game state object
+"""
+import logging
 import pytest
 from model.game_state import GameState
+from model.play_record import PlayRecord
+from model.advance_record import AdvanceRecord
+
+logger = logging.getLogger(__name__)
 
 @pytest.fixture
 def new_game():
@@ -33,6 +42,17 @@ def sparse():
     assert game.is_on_first()
     assert not game.is_on_second()
     assert game.is_on_third()
+    assert game.get_outs() == 0
+    assert game.get_score() == [0, 0]
+    return game
+
+@pytest.fixture
+def runner_on_first():
+    game = GameState()
+    game._first = True
+    assert game.is_on_first()
+    assert not game.is_on_second()
+    assert not game.is_on_third()
     assert game.get_outs() == 0
     assert game.get_score() == [0, 0]
     return game
@@ -256,3 +276,24 @@ def test_batter_out_sparse(sparse):
     assert sparse.get_runners() == ["2", "3"]
     assert sparse.get_outs() == 1
     assert sparse.get_score() == [0, 0]
+
+def test_complex_multi_w_runner_on_first(runner_on_first):
+    play = PlayRecord.create("E5/TH.1-3;B-2")
+    assert runner_on_first.is_on_first()
+    assert not runner_on_first.is_on_second()
+    assert not runner_on_first.is_on_third()
+    assert runner_on_first.get_outs() == 0
+    assert runner_on_first.get_score() == [0, 0]
+    runner_on_first.handle_advances(play.advances)
+    #runner_on_first.advance_runner("B", "1")
+    logging.info("Game Status - %s", runner_on_first.get_game_status_string())
+    assert not runner_on_first.is_on_first()
+    assert runner_on_first.is_on_second()
+    assert runner_on_first.is_on_third()
+    assert runner_on_first.get_outs() == 0
+    assert runner_on_first.get_score() == [0, 0]
+    std_batter = AdvanceRecord()
+    std_batter.base_from = "B"
+    std_batter.base_to = "1"
+    std_batter.was_out = False
+    assert std_batter.is_completed(runner_on_first._completed_advancements)

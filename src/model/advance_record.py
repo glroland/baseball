@@ -6,8 +6,7 @@ import logging
 import re
 from typing import List
 from pydantic import BaseModel
-from utils.data import extract_groups, to_json_string
-from utils.baseball import get_base_as_int
+from utils.data import extract_groups, to_json_string, get_base_as_int
 
 logger = logging.getLogger(__name__)
 
@@ -128,6 +127,10 @@ class AdvanceRecord(BaseModel):
 
             completed - list of completed advancement requests
         """
+        logger.info("LENGTH OF ALREADY COMPLETED = %s", len(completed))
+        for c in completed:
+            logger.info("ALREADY COMPLETED - From=%s To=%s", c.base_from, c.base_to)
+
         # create an array of to_be bases that must be reflected in the completed array
         self_from = get_base_as_int(self.base_from)
         self_to = get_base_as_int(self.base_to)
@@ -136,15 +139,20 @@ class AdvanceRecord(BaseModel):
         while i <= self_to:
             coverage.append(i)
             i += 1
-        logger.debug("is_completed() From=%s To=%s Coverage=%s", self_from, self_to, coverage)
+        logger.info("BEFORE - is_completed() From=%s To=%s Coverage=%s", self_from, self_to, coverage)
 
         for a in completed:
-            #a_from = get_base_as_int(a.base_from)
+            a_from = get_base_as_int(a.base_from)
             a_to = get_base_as_int(a.base_to)
 
-            if a_to in coverage:
-                coverage.remove(a_to)
+            a_check = a_from + 1
+            while a_check <= a_to:
+                logger.info("TESTING - is_completed() Value=%s Coverage=%s", a_check, coverage)
+                if a_check in coverage:
+                    coverage.remove(a_check)
+                a_check += 1
 
+        logger.info("AFTER - is_completed() From=%s To=%s Coverage=%s", self_from, self_to, coverage)
         return len(coverage) == 0
 
     def __str__(self) -> str:

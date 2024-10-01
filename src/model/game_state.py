@@ -6,7 +6,8 @@ import logging
 import re
 from typing import List
 from pydantic import BaseModel
-from utils.data import to_json_string, fail
+from utils.data import to_json_string, fail, get_base_as_int
+from utils.baseball import sort_play_advances_desc, base_after
 from events.constants import Parameters
 from model.advance_record import AdvanceRecord
 
@@ -67,12 +68,33 @@ class GameState(BaseModel):
             is_recursive - flag indicating whether the invocation is self induced
         """
         # have there already been advancements from B?
-        if base_from == "B":
+        if base_from in ["B", 0]:
             for completed_advancement in self._completed_advancements:
                 if completed_advancement.base_from == base_from:
-                    fail("Redundant advances from batter during a single play! " + \
-                         f"Match={completed_advancement}")
+                    logger.warning("Batter already advanced.  Ignoring requested " + \
+                                   f"advancement to {base_to}.  Completed=" + \
+                                   f"Match={completed_advancement}")
 
+        # ensure runner is actually on base for the requested advancement
+        if (base_from in ["1", 1] and not self._first) or \
+            (base_from in ["2", 2] and not self._second) or \
+            (base_from in ["3", 3] and not self._third):
+            fail(f"Illegal Advancement - Runner not on base: {base_from}")
+
+        # was this advancement already completed?
+        redundant_test = AdvanceRecord()
+        redundant_test.base_from = base_from
+        redundant_test.base_to = base_to
+        redundant_test.was_out = is_out
+        logger.info("Game State before check = %s", self.get_game_status_string())
+        if redundant_test.is_completed(self._completed_advancements):
+            logger.warning("Advancement already completed!  From=%s To=%s WasOut=%s GameStr=%s",
+                        base_from, base_to, is_out, self.get_game_status_string())
+            #return
+        else:
+            logger.info("Advancement NOT completed!  From=%s To=%s WasOut=%s GameStr=%s",
+                        base_from, base_to, is_out, self.get_game_status_string())
+            
         # log the advancement request
         if not is_recursive:
             advance_record = AdvanceRecord()
@@ -82,75 +104,56 @@ class GameState(BaseModel):
             self._completed_advancements.append(advance_record)
 
         # validate inputs before entering more complex logic
-        if base_from not in ["B", 0, "1", 1, "2", 2, "3", 3]:
-            fail(f"Invalid value for base_from! {base_from}")
-        if base_to not in ["1", 1, "2", 2, "3", 3, "H", 4]:
-            fail(f"Invalid value for base_to! {base_from}")
-        if base_from in ["B", 0] and base_to not in ["1", 1, "2", 2, "3", 3, "H", 4]:
-            fail(f"Illegal advancement from Batter's box!  To={base_to}")
-        if base_from in ["1", 1] and base_to not in ["2", 2, "3", 3, "H", 4]:
-            fail(f"Illegal advancement from First Base!  To={base_to}")
-        if base_from in ["2", 2] and base_to not in ["3", 3, "H", 4]:
-            fail(f"Illegal advancement from Second Base!  To={base_to}")
-        if base_from in ["3", 3] and base_to not in ["H", 4]:
-            fail(f"Illegal advancement from Third Base!  To={base_to}")
+        base_from_int = get_base_as_int(base_from)
+        base_to_int = get_base_as_int(base_to)
+        if base_from_int not in [0, 1, 2, 3]:
+            fail(f"Invalid value for base_from! {base_from_int}")
+        if base_to_int not in [1, 2, 3, 4]:
+            fail(f"Invalid value for base_to! {base_to_int}")
+        if base_from_int >= base_to_int:
+            fail(f"Illegal advancement!  From={base_from_int} To={base_to_int}")
 
-        # runner advances from batter's position
-        if base_from in ["B", 0]:
-            # to validation above, we can always assume an advancement at least to first
+        # which nearest base, if any, needs to advance?
+        # -- first?
+        if base_from_int == 0 \
+            and base_to_int >= 1 \
+            and self._first:
+            self.action_advance_runner("1", base_after(base_to), is_out=False)
+
+        # -- second?
+        elif base_from_int <= 1 \
+            and base_to_int >= 2 \
+            and self._second:
+            self.action_advance_runner("2", base_after(base_to), is_out=False)
+
+        # -- third?
+        elif base_from_int <= 2 \
+            and base_to_int >= 3 \
+            and self._third:
+            self.action_advance_runner("3", base_after(base_to), is_out=False)
+
+        # progress runner
+        if base_to_int == 1:
             if self._first:
-                if self._second:
-                    if self._third:
-                        if not is_out:
-                            self.on_score()
-                    self._third = True
-                self._second = True
+                fail(f"Runner on first did not progress?!?!? {self.get_game_status_string()}")
             self._first = True
-            if base_to in ["2", 2, "3", 3, "4", "H"]:
-                self.action_advance_runner("1", base_to, is_recursive=True)
-
-        # runner advances from _first base
-        if base_from in ["1", 1]:
-            # ensure runner actually on base
-            if not self._first:
-                fail("Advancing runner from first but no runner on base!")
-
+        elif base_to_int == 2:
             self._first = False
-
-            # to validation above, we can always assume an advancement at least to second
             if self._second:
-                if self._third:
-                    if not is_out:
-                        self.on_score()
-                self._third = True
+                fail(f"Runner on second did not progress?!?!? {self.get_game_status_string()}")
             self._second = True
-            if base_to in ["3", 3, "4", "H"]:
-                self.action_advance_runner("2", base_to, is_recursive=True)
-
-        # runner advances from second base
-        if base_from in ["2", 2]:
-            # ensure runner actually on base
-            if not self._second:
-                fail("Advancing runner from second but no runner on base!")
-
+        elif base_to_int == 3:
+            if base_from_int <= 1:
+                self._first = False
             self._second = False
-
-            # to validation above, we can always assume an advancement at least to third
-            if self._third:
-                if not is_out:
-                    self.on_score()
+            if self._second:
+                fail(f"Runner on third did not progress?!?!? {self.get_game_status_string()}")
             self._third = True
-            if base_to in ["4", "H"]:
-                # TODO on these recursive calls, what happens when its an advanced out?
-                # seems like you'd call the last one out with all the others safe?
-                self.action_advance_runner("3", base_to, is_recursive=True)
-
-        # runner advances from third base
-        if base_from in ["3", 3]:
-            # ensure runner actually on base
-            if not self._third:
-                fail("Advancing runner from third but no runner on base!")
-
+        elif base_to_int == 4:
+            if base_from_int <= 1:
+                self._first = False
+            if base_from_int == 2:
+                self._second = False
             self._third = False
             if not is_out:
                 self.on_score()
@@ -315,6 +318,9 @@ class GameState(BaseModel):
     
             advances - list of base advances
         """
+        # sort advances before processing them
+        advances = sort_play_advances_desc(advances)
+
         if advances is not None and len(advances) > 0:
             for advance in advances:
                 base_from = advance.base_from

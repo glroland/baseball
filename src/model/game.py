@@ -179,8 +179,6 @@ class Game(BaseModel):
         if current_atbat is not None and prev_atbat is not None:
             current_atbat.game_state.validate_against_prev(prev_atbat.game_state)
 
-
-
     def validate_externally(self):
         """ Validates the scores and other calculated attributes based on official
             game data from a third party service.

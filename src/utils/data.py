@@ -113,3 +113,22 @@ def split_string(s, token_list):
 
     # Split
     return [ s[0:min_index] ] + split_string(s[(min_index+1):], token_list)
+
+# pylint: disable=inconsistent-return-statements
+def get_base_as_int(base):
+    """ Gets the specified base as a number.
+    
+        base - base str
+    """
+    if base in ["B", 0]:
+        return 0
+    if base in ["1", 1]:
+        return 1
+    if base in ["2", 2]:
+        return 2
+    if base in ["3", 3]:
+        return 3
+    if base in ["H", 4]:
+        return 4
+
+    fail(f"get_base_as_int failing due to illegal parameter!  {base}")

@@ -5,29 +5,11 @@ Helper methods for baseball related data.
 import logging
 import re
 import functools
-from utils.data import fail
+from utils.data import fail, get_base_as_int
 from model.action_record import ActionRecord
+from model.advance_record import AdvanceRecord
 
 logger = logging.getLogger(__name__)
-
-# pylint: disable=inconsistent-return-statements
-def get_base_as_int(base):
-    """ Gets the specified base as a number.
-    
-        base - base str
-    """
-    if base in ["B", 0]:
-        return 0
-    if base in ["1", 1]:
-        return 1
-    if base in ["2", 2]:
-        return 2
-    if base in ["3", 3]:
-        return 3
-    if base in ["H", 4]:
-        return 4
-
-    fail(f"get_base_as_int failing due to illegal parameter!  {base}")
 
 def validate_base(base_str, first_allowed=True, home_allowed=True):
     """ Validates the provided string representation of the base
@@ -159,3 +141,48 @@ def is_defensive_play(play):
             return False
 
     return True
+
+def __comparator_play_advances(advance1, advance2):
+    """ Utility function used to compare advances for sorting purposes.
+    
+        advance1 - first advance to compare
+        advance2 - second advance to compare
+    """
+    # validate argumnents
+    if advance1 is None or advance2 is None:
+        fail("Input action(s) are null!")
+    if not isinstance(advance1, AdvanceRecord):
+        fail(f"Input action1 is wrong type. {type(advance1)}")
+    if not isinstance(advance2, AdvanceRecord):
+        fail(f"Input action1 is wrong type. {type(advance2)}")
+
+    # extract base from values
+    advance1_int = get_base_as_int(advance1.base_from[0])
+    advance2_int = get_base_as_int(advance2.base_from[0])
+    if advance1_int == advance2_int:
+        advance1_int = get_base_as_int(advance1.base_from[2])
+        advance2_int = get_base_as_int(advance2.base_from[2])
+
+    return advance1_int - advance2_int
+
+def sort_play_advances_desc(advances):
+    """ Sorts the advances in reverse/descending order. 
+        
+        advances - list of advances to sort
+    """
+    logger.debug("sort_play_advances_desc()")
+
+    # sort descending
+    return sorted(advances,
+                  key=functools.cmp_to_key(__comparator_play_advances),
+                  reverse=True)
+
+def base_after(base):
+    """ Returns the base after the one provided.
+    
+        base - starting base
+    """
+    after_int = get_base_as_int(base) + 1
+    if after_int >= 4:
+        return "H"
+    return str(after_int)
