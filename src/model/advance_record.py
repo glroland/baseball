@@ -127,9 +127,9 @@ class AdvanceRecord(BaseModel):
 
             completed - list of completed advancement requests
         """
-        logger.info("LENGTH OF ALREADY COMPLETED = %s", len(completed))
+        logger.debug("LENGTH OF ALREADY COMPLETED = %s", len(completed))
         for c in completed:
-            logger.info("ALREADY COMPLETED - From=%s To=%s", c.base_from, c.base_to)
+            logger.debug("ALREADY COMPLETED - From=%s To=%s", c.base_from, c.base_to)
 
         # create an array of to_be bases that must be reflected in the completed array
         self_from = get_base_as_int(self.base_from)
@@ -139,7 +139,7 @@ class AdvanceRecord(BaseModel):
         while i <= self_to:
             coverage.append(i)
             i += 1
-        logger.info("BEFORE - is_completed() From=%s To=%s Coverage=%s", self_from, self_to, coverage)
+        logger.debug("BEFORE - is_completed() From=%s To=%s Coverage=%s", self_from, self_to, coverage)
 
         for a in completed:
             a_from = get_base_as_int(a.base_from)
@@ -147,12 +147,12 @@ class AdvanceRecord(BaseModel):
 
             a_check = a_from + 1
             while a_check <= a_to:
-                logger.info("TESTING - is_completed() Value=%s Coverage=%s", a_check, coverage)
+                logger.debug("TESTING - is_completed() Value=%s Coverage=%s", a_check, coverage)
                 if a_check in coverage:
                     coverage.remove(a_check)
                 a_check += 1
 
-        logger.info("AFTER - is_completed() From=%s To=%s Coverage=%s", self_from, self_to, coverage)
+        logger.debug("AFTER - is_completed() From=%s To=%s Coverage=%s", self_from, self_to, coverage)
         return len(coverage) == 0
 
     def __str__(self) -> str:
