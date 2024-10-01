@@ -74,6 +74,7 @@ class GameState(BaseModel):
                                    f"Match={completed_advancement}")
 
         # ensure runner is actually on base for the requested advancement
+        # pylint: disable=too-many-boolean-expressions
         if (base_from in ["1", 1] and not self._first) or \
             (base_from in ["2", 2] and not self._second) or \
             (base_from in ["3", 3] and not self._third):
@@ -92,7 +93,7 @@ class GameState(BaseModel):
         else:
             logger.info("Advancement NOT completed!  From=%s To=%s WasOut=%s GameStr=%s",
                         base_from, base_to, is_out, self.get_game_status_string())
-            
+
         # log the advancement request
         advance_record = AdvanceRecord()
         advance_record.base_from = base_from
@@ -245,10 +246,27 @@ class GameState(BaseModel):
         """ Is the runner on third? """
         return self._third
 
-    def on_out(self):
-        """ Signal that there was an out. """
+    def on_out(self, base=None):
+        """ Signal that there was an out.
+        
+            base - optional base (from - currently resides)
+        """
         logger.debug("on_out()")
         self._outs += 1
+        if base in ["1", 1]:
+            if not self.is_on_first():
+                fail("Runner out but no one is on first.")
+            self._first = False
+        elif base in ["2", 2]:
+            if not self.is_on_second():
+                fail("Runner out but no one is on second.")
+            self._second = False
+        elif base in ["3", 3]:
+            if not self.is_on_third():
+                fail("Runner out but no one is on third.")
+            self._third = False
+        elif base is not None:
+            fail(f"Base runner out but specified base is unknown! {base}")
 
     def get_outs(self):
         """ Get the number of outs this batting segment. """

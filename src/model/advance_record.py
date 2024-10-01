@@ -139,7 +139,8 @@ class AdvanceRecord(BaseModel):
         while i <= self_to:
             coverage.append(i)
             i += 1
-        logger.debug("BEFORE - is_completed() From=%s To=%s Coverage=%s", self_from, self_to, coverage)
+        logger.debug("BEFORE - is_completed() From=%s To=%s Coverage=%s",
+                     self_from, self_to, coverage)
 
         for a in completed:
             a_from = get_base_as_int(a.base_from)
@@ -152,7 +153,8 @@ class AdvanceRecord(BaseModel):
                     coverage.remove(a_check)
                 a_check += 1
 
-        logger.debug("AFTER - is_completed() From=%s To=%s Coverage=%s", self_from, self_to, coverage)
+        logger.debug("AFTER - is_completed() From=%s To=%s Coverage=%s",
+                     self_from, self_to, coverage)
         return len(coverage) == 0
 
     def __str__(self) -> str:

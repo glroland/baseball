@@ -11,6 +11,7 @@ from model.advance_record import AdvanceRecord
 
 logger = logging.getLogger(__name__)
 
+# pylint: disable=inconsistent-return-statements
 def validate_base(base_str, first_allowed=True, home_allowed=True):
     """ Validates the provided string representation of the base
         to ensure it is valid for the circumstance.  Otherwise an exception
@@ -115,7 +116,8 @@ def is_defensive_play_missing_batter_event(play):
     for action in play.actions:
         # abort on non-defensive plays
         if not is_action_str_defensive_play(action.action):
-            logger.debug("Action is not a defensive play. Providing positive response!  %s", action.action)
+            logger.debug("Action is not a defensive play. Providing positive response!  %s",
+                         action.action)
             return False
 
         # check for batter play
