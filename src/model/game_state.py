@@ -57,15 +57,13 @@ class GameState(BaseModel):
         self.on_out()
 
     #pylint: disable=too-many-branches,too-many-statements,too-many-arguments
-    def action_advance_runner(self, base_from, base_to, is_out=False,
-                              parameter = "", is_recursive=False):
+    def action_advance_runner(self, base_from, base_to, is_out=False, parameter = ""):
         """ Advance runners with full control over the details.
         
             base_from - where the runner is running from
             base_to - where the runner is going to
             is_out - whether or not the runner is out
             parameter - optional parameters
-            is_recursive - flag indicating whether the invocation is self induced
         """
         # have there already been advancements from B?
         if base_from in ["B", 0]:
@@ -96,12 +94,11 @@ class GameState(BaseModel):
                         base_from, base_to, is_out, self.get_game_status_string())
             
         # log the advancement request
-        if not is_recursive:
-            advance_record = AdvanceRecord()
-            advance_record.base_from = base_from
-            advance_record.base_to = base_to
-            advance_record.was_out = is_out
-            self._completed_advancements.append(advance_record)
+        advance_record = AdvanceRecord()
+        advance_record.base_from = base_from
+        advance_record.base_to = base_to
+        advance_record.was_out = is_out
+        self._completed_advancements.append(advance_record)
 
         # validate inputs before entering more complex logic
         base_from_int = get_base_as_int(base_from)
