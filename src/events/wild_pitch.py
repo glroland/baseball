@@ -20,5 +20,5 @@ class WildPitchEvent(BaseEvent):
         """
         logger.info("Wild Pitch")
 
-        #TODO - If the next record has the same batter as this one, the runner doesn't advance
-        game_state.action_advance_runner("B", "1")
+        #TODO - does a wild pitch ever advance the batter without an explicit adavance?
+        #game_state.action_advance_runner("B", "1")

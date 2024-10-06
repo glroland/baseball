@@ -4,7 +4,8 @@ Runner caught stealing a base game event.
 """
 import logging
 from events.base_event import BaseEvent
-from utils.data import split_leading_chars_from_numbers
+from events.constants import EventCodes
+from utils.data import split_leading_chars_from_numbers, get_base_as_int, fail
 from model.action_record import ActionRecord
 from model.game_state import GameState
 
@@ -15,7 +16,7 @@ class CaughtStealingEvent(BaseEvent):
 
     def handle(self, game_state : GameState, action : ActionRecord):
         base = ""
-        if action.action == "CSH":
+        if action.action == EventCodes.CAUGHT_STEALING_HOME:
             base = "H"
         else:
             components = split_leading_chars_from_numbers(action.action)
@@ -30,10 +31,15 @@ class CaughtStealingEvent(BaseEvent):
         # Player Out
         logger.info("Player Caught Stealing to Base #%s %s", base, credited_to)
 
-        #  Update and validate runner status
-        if base == "2":
-            game_state.action_advance_runner("1", "2", True)
-        elif base == "3":
-            game_state.action_advance_runner("2", "3", True)
-        elif base == "H":
-            game_state.action_advance_runner("3", "H", True)
+        # determine source base
+        base_int = get_base_as_int(base)
+        original_base_int = base_int - 1
+        runner = game_state.get_runner_from_original_base(original_base_int)
+        if runner is None:
+            fail("No runner for original base!  {original_base_int}")
+
+        # mark the player out
+        if not runner.is_out and runner.current_base == "H":
+            #TODO Reverse Score logic
+            fail("Runner was advanced home but was out earlier.  Need to reverse score.")
+        game_state.on_out(runner.current_base)
