@@ -11,6 +11,7 @@ class EventCodeMappings:
     EVENT_MODULE : str = "module"
     EVENT_CLASS : str = "class"
     MAPPING_DEFENSIVE : str = "defense"
+    MAPPING_DEFENSIVE_ERROR : str = "defense_error"
 
     mappings = {
 
@@ -18,6 +19,12 @@ class EventCodeMappings:
         {
             EVENT_MODULE: "events.defensive_play",
             EVENT_CLASS: "DefensivePlayEvent"
+        },
+
+        MAPPING_DEFENSIVE_ERROR:
+        {
+            EVENT_MODULE: "events.defensive_error",
+            EVENT_CLASS: "DefensiveErrorEvent"
         },
 
         EventCodes.WALK:

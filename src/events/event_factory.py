@@ -5,8 +5,8 @@ Apply game events to game at bat event data.
 import logging
 import re
 import importlib
-from utils.data import regex_split
-from utils.baseball import is_action_str_defensive_play
+from utils.data import regex_split, fail
+from utils.baseball import is_action_str_defensive_play, is_action_str_defensive_error
 from utils.baseball import sort_defensive_play_actions_desc
 from utils.baseball import is_defensive_play_missing_batter_event
 from utils.baseball import is_defensive_play
@@ -89,8 +89,20 @@ class EventFactory:
             if action.handled_flag:
                 logger.info("Skipping Handled Action: %s", action.action)
             else:
+                action_handler_assigned = False
+
+                # Analyze Defensive Error
+                if is_action_str_defensive_error(a_str):
+                    action_handler_assigned = True
+                    event = EventFactory.__create_event_by_name(
+                        EventCodeMappings.MAPPING_DEFENSIVE_ERROR, game_at_bat)
+                    event.pre_handle(game_state, action)
+                    event.handle(game_state, action)
+                    event.post_handle(game_state, action)
+
                 # Analyze Defensive Play
                 if is_action_str_defensive_play(a_str):
+                    action_handler_assigned = True
                     event = EventFactory.__create_event_by_name(
                         EventCodeMappings.MAPPING_DEFENSIVE, game_at_bat)
                     event.pre_handle(game_state, action)
@@ -100,6 +112,7 @@ class EventFactory:
                 # Analyze Offensive Play
                 regex = "(^[A-Z]+)(.*)"
                 if re.search(regex, a_str):
+                    action_handler_assigned = True
                     play_list = regex_split(regex, a_str)
                     op_event = play_list.pop(0)
                     for result in play_list:
@@ -110,6 +123,9 @@ class EventFactory:
                     event.pre_handle(game_state, action)
                     event.handle(game_state, action)
                     event.post_handle(game_state, action)
+
+                if not action_handler_assigned:
+                    fail(f"Action not handled!  {a_str}")
 
         # ensure that at least one batter event exists
         if is_defensive_play(play):

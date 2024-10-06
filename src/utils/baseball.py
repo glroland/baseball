@@ -44,7 +44,16 @@ def is_action_str_defensive_play(s):
     
         s - action string
     """
-    if re.search("(^[0-9]+)", s):
+    if re.search("^[0-9]+$", s):
+        return True
+    return False
+
+def is_action_str_defensive_error(s):
+    """ Analyzes an action string to determine if its defensive error.  
+    
+        s - action string
+    """
+    if re.search("^[0-9]+E[0-9]*$", s):
         return True
     return False
 
