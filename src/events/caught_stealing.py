@@ -16,7 +16,8 @@ class CaughtStealingEvent(BaseEvent):
 
     def handle(self, game_state : GameState, action : ActionRecord):
         base = ""
-        if action.action == EventCodes.CAUGHT_STEALING_HOME:
+        if action.action in [EventCodes.CAUGHT_STEALING_HOME,
+                             EventCodes.PICKED_OFF_CAUGHT_STEALING_HOME]:
             base = "H"
         else:
             components = split_leading_chars_from_numbers(action.action)

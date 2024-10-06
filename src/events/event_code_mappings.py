@@ -99,6 +99,12 @@ class EventCodeMappings:
             EVENT_CLASS: "CaughtStealingEvent"
         },
 
+        EventCodes.PICKED_OFF_CAUGHT_STEALING_HOME:
+        {
+            EVENT_MODULE: "events.caught_stealing",
+            EVENT_CLASS: "CaughtStealingEvent"
+        },
+
         EventCodes.PICKED_OFF:
         {
             EVENT_MODULE: "events.picked_off",
