@@ -83,6 +83,10 @@ class DefensivePlayEvent(BaseEvent):
                 game_state.action_advance_runner("2", "3", True)
             elif current_base_for_out in ["3", 3]:
                 game_state.action_advance_runner("3", "H", True)
+            elif current_base_for_out in ["H", 4]:
+                # reverse the homerun
+                game_state.reverse_score_due_to_out(runner_for_original_base)
+
             else:
                 fail(f"Illegal Base Out on Defensive Play!  Original={base_out} " + \
                      f"Current={current_base_for_out}")

@@ -239,6 +239,28 @@ class GameState(BaseModel):
         """ Is the runner on third? """
         return self.get_runner_on_base("3") is not None
 
+    def reverse_score_due_to_out(self, runner):
+        """ Reverse the score due to the provided runner actually being out.
+        
+            runner - runner
+        """
+        logger.warning("Reversing score by runner: %s", runner)
+
+        # Verify the runner made it home
+        if runner.current_base not in ["H", 4]:
+            fail("Cannot reverse score of runner who didn't score!  {runner}")
+
+        # Runner Out
+        runner.current_base = None
+        runner.is_out = True
+        self._outs += 1
+
+        # Reverse Score
+        if self._top_of_inning_flag:
+            self._score_visitor -= 1
+        else:
+            self._score_home -= 1
+
     def on_out(self, base):
         """ Signal that there was an out.
         
