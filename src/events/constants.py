@@ -31,6 +31,7 @@ class EventCodes:
     PASSED_BALL = "PB"
     BASE_RUNNER_ADVANCE = "OA"
     WILD_PITCH = "WP"
+    CATCHER_INTERFERENCE = "C"
 
 #pylint: disable=too-few-public-methods
 class Modifiers:

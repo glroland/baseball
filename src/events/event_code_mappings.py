@@ -163,5 +163,11 @@ class EventCodeMappings:
         {
             EVENT_MODULE: "events.base_runner_advance",
             EVENT_CLASS: "BaseRunnerAdvanceEvent"
+        },
+
+        EventCodes.CATCHER_INTERFERENCE:
+        {
+            EVENT_MODULE: "events.catcher_interference",
+            EVENT_CLASS: "CatcherInterferenceEvent"
         }
     }
