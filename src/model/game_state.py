@@ -343,6 +343,9 @@ class GameState(BaseModel):
                 # check for situation where advancement is to itself
                 if base_from == base_to and not out_override:
                     logger.info("Runner ran back to base.  Ignoring advancement...")
+                elif base_from == base_to and out_override:
+                    logger.info("Runner ran back to base but was still out!")
+                    self.on_out(base_from)
                 else:
                     # see if the advancement was already handled
                     if advance.is_completed(self._completed_advancements):
