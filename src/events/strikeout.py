@@ -52,7 +52,7 @@ class StrikeoutEvent(BaseEvent):
         if runner_saved:
             game_state.action_advance_runner("B", "1", False)
         else:
-            game_state.on_out()
+            game_state.on_out("B")
 
         # handle extra play events
         #op_detail = None

@@ -65,18 +65,27 @@ class DefensivePlayEvent(BaseEvent):
         # TODO Need to chain defensive plays.  1 runner on base.  3(B)3(1)/LDP
         # mark the position as out
         if non_advancing_out:
-            game_state.on_out()
+            game_state.on_out(base_out)
         else:
-            if base_out in ["B", 0]:
+            runner_for_original_base = game_state.get_runner_from_original_base(base_out)
+            if runner_for_original_base is None:
+                fail("Cannot find current runner for original base!  {base_out}")
+            current_base_for_out = runner_for_original_base.current_base
+            if base_out != current_base_for_out:
+                logger.info("Defensive Play resulting in an out for the runner originally at %s." + \
+                            "Currently on base: %s", base_out, current_base_for_out)
+
+            if current_base_for_out in ["B", 0]:
                 game_state.action_advance_runner("B", "1", True)
-            elif base_out in ["1", 1]:
+            elif current_base_for_out in ["1", 1]:
                 game_state.action_advance_runner("1", "2", True)
-            elif base_out in ["2", 2]:
+            elif current_base_for_out in ["2", 2]:
                 game_state.action_advance_runner("2", "3", True)
-            elif base_out in ["3", 3]:
+            elif current_base_for_out in ["3", 3]:
                 game_state.action_advance_runner("3", "H", True)
             else:
-                fail(f"Illegal Base Out on Defensive Play!  {base_out}")
+                fail(f"Illegal Base Out on Defensive Play!  Original={base_out} " + \
+                     f"Current={current_base_for_out}")
 
         # advance the runner
         #if runner is not None and runner in ["1", "2"]:

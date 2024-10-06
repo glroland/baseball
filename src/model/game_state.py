@@ -10,16 +10,13 @@ from utils.data import to_json_string, fail, get_base_as_int
 from utils.baseball import sort_play_advances_desc, base_after
 from events.constants import Parameters
 from model.advance_record import AdvanceRecord
+from model.runner import Runner
 
 logger = logging.getLogger(__name__)
 
 #pylint: disable=too-many-instance-attributes,protected-access
 class GameState(BaseModel):
     """ Baseball Game Model """
-
-    _first : bool = False
-    _second : bool = False
-    _third : bool = False
 
     _inning : int = 0
     _top_of_inning_flag : bool = True
@@ -30,6 +27,8 @@ class GameState(BaseModel):
 
     _completed_advancements : List[AdvanceRecord] = []
 
+    _runners : List[Runner] = []
+
     def clone(self) -> object:
         """ Duplicate object. """
         # validate parameters
@@ -38,9 +37,10 @@ class GameState(BaseModel):
 
         # create new game state
         result = GameState()
-        result._first = self._first
-        result._second = self._second
-        result._third = self._third
+        for runner in self._runners:
+            if not runner.is_out and runner.current_base in ["1", 1, "2", 2, "3", 3]:
+                runner_clone = runner.clone()
+                result._runners.append(runner_clone)
         result._inning = self._inning
         result._top_of_inning_flag = self._top_of_inning_flag
         result._outs = self._outs
@@ -54,7 +54,7 @@ class GameState(BaseModel):
             i.e. fly balls.
         """
         logger.debug("action_batter_out_non_progressing")
-        self.on_out()
+        self.on_out("B")
 
     #pylint: disable=too-many-branches,too-many-statements,too-many-arguments
     def action_advance_runner(self, base_from, base_to, is_out=False, parameter = ""):
@@ -73,20 +73,18 @@ class GameState(BaseModel):
                                    f"advancement to {base_to}.  Completed=" + \
                                    f"Match={completed_advancement}")
 
-        # ensure runner is actually on base for the requested advancement
-        # pylint: disable=too-many-boolean-expressions
-        if (base_from in ["1", 1] and not self._first) or \
-            (base_from in ["2", 2] and not self._second) or \
-            (base_from in ["3", 3] and not self._third):
+        # get runner for the base
+        runner = self.get_runner_on_base(base_from)
+        if runner is None:
             fail(f"Illegal Advancement - Runner not on base: {base_from}")
 
         # was this advancement already completed?
-        redundant_test = AdvanceRecord()
-        redundant_test.base_from = base_from
-        redundant_test.base_to = base_to
-        redundant_test.was_out = is_out
+        advance_record = AdvanceRecord()
+        advance_record.base_from = base_from
+        advance_record.base_to = base_to
+        advance_record.was_out = is_out
         logger.debug("Game State before check = %s", self.get_game_status_string())
-        if redundant_test.is_completed(self._completed_advancements):
+        if advance_record.is_completed(self._completed_advancements):
             logger.warning("Advancement already completed!  From=%s To=%s WasOut=%s GameStr=%s",
                         base_from, base_to, is_out, self.get_game_status_string())
             #return
@@ -95,10 +93,6 @@ class GameState(BaseModel):
                         base_from, base_to, is_out, self.get_game_status_string())
 
         # log the advancement request
-        advance_record = AdvanceRecord()
-        advance_record.base_from = base_from
-        advance_record.base_to = base_to
-        advance_record.was_out = is_out
         self._completed_advancements.append(advance_record)
 
         # validate inputs before entering more complex logic
@@ -115,56 +109,42 @@ class GameState(BaseModel):
         # -- first?
         if base_from_int == 0 \
             and base_to_int >= 1 \
-            and self._first:
+            and self.is_on_first():
             self.action_advance_runner("1", base_after(base_to), is_out=False)
 
         # -- second?
         elif base_from_int <= 1 \
             and base_to_int >= 2 \
-            and self._second:
+            and self.is_on_second():
             self.action_advance_runner("2", base_after(base_to), is_out=False)
 
         # -- third?
         elif base_from_int <= 2 \
             and base_to_int >= 3 \
-            and self._third:
+            and self.is_on_third():
             self.action_advance_runner("3", base_after(base_to), is_out=False)
 
         # progress runner
         if base_to_int == 1:
-            if self._first:
+            if self.is_on_first():
                 fail(f"Runner on first did not progress?!?!? {self.get_game_status_string()}")
-            self._first = True
+            runner.current_base = "1"
         elif base_to_int == 2:
-            self._first = False
-            if self._second:
+            if self.is_on_second():
                 fail(f"Runner on second did not progress?!?!? {self.get_game_status_string()}")
-            self._second = True
+            runner.current_base = "2"
         elif base_to_int == 3:
-            if base_from_int <= 1:
-                self._first = False
-            self._second = False
-            if self._second:
+            if self.is_on_third():
                 fail(f"Runner on third did not progress?!?!? {self.get_game_status_string()}")
-            self._third = True
+            runner.current_base = "3"
         elif base_to_int == 4:
-            if base_from_int <= 1:
-                self._first = False
-            if base_from_int == 2:
-                self._second = False
-            self._third = False
+            runner.current_base = "H"
             if not is_out:
                 self.on_score()
 
         # mark the runner out
         if is_out:
-            if base_to in ["1", 1]:
-                self._first = False
-            elif base_to in ["2", 2]:
-                self._second = False
-            elif base_to in ["3", 3]:
-                self._third = False
-            self.on_out()
+            self.on_out(base_to)
 
             # log extra info about event
             extra_text = ""
@@ -196,9 +176,7 @@ class GameState(BaseModel):
 
         # then clear
         self._outs = 0
-        self._first = False
-        self._second = False
-        self._third = False
+        self._runners = []
 
         # data sets the innings for us
         #if self._top_of_inning_flag:
@@ -234,39 +212,43 @@ class GameState(BaseModel):
             logger.error(msg)
             raise ValueError(msg)
 
+    def get_runner_on_base(self, base):
+        """ Find the runner on the specified base
+        
+            base - base to check
+        """
+        base_int = get_base_as_int(base)
+        logger.debug("# of runners on base: %s", len(self._runners))
+        for runner in self._runners:
+            logger.debug("Runner: %s", runner)
+            if not runner.is_out and get_base_as_int(runner.current_base) == base_int:
+                return runner
+        return None
+
     def is_on_first(self):
         """ Is the runner on first? """
-        return self._first
+        return self.get_runner_on_base("1") is not None
 
     def is_on_second(self):
         """ Is the runner on second? """
-        return self._second
+        return self.get_runner_on_base("2") is not None
 
     def is_on_third(self):
         """ Is the runner on third? """
-        return self._third
+        return self.get_runner_on_base("3") is not None
 
-    def on_out(self, base=None):
+    def on_out(self, base):
         """ Signal that there was an out.
         
             base - optional base (from - currently resides)
         """
         logger.debug("on_out()")
         self._outs += 1
-        if base in ["1", 1]:
-            if not self.is_on_first():
-                fail("Runner out but no one is on first.")
-            self._first = False
-        elif base in ["2", 2]:
-            if not self.is_on_second():
-                fail("Runner out but no one is on second.")
-            self._second = False
-        elif base in ["3", 3]:
-            if not self.is_on_third():
-                fail("Runner out but no one is on third.")
-            self._third = False
-        elif base is not None:
-            fail(f"Base runner out but specified base is unknown! {base}")
+        runner = self.get_runner_on_base(base)
+        if runner is None:
+            fail(f"No runner on the specified base for out!  Base={base} Runners={self._runners}")
+        runner.is_out = True
+        runner.current_base = None
 
     def get_outs(self):
         """ Get the number of outs this batting segment. """
@@ -356,6 +338,18 @@ class GameState(BaseModel):
                         logger.error("Unable to advance!  Requested=%s  Completed=%s Error=%s",
                                      advance, self._completed_advancements, e)
                         raise e
+
+    def get_runner_from_original_base(self, original_base):
+        """ For a given base, find where the runner is currently after a varying 
+            number of advances.
+            
+            original_base - original base
+        """
+        original_base_int = get_base_as_int(original_base)
+        for runner in self._runners:
+            if get_base_as_int(runner.original_base) == original_base_int:
+                return runner
+        fail(f"No runner exists for original base! Base={original_base} Runners={self._runners}")
 
     def __str__(self) -> str:
         """ Convert object to a JSON string """

@@ -12,6 +12,7 @@ from model.game_at_bat import GameAtBat
 from model.game_substitution import GameSubstitution
 from model.game_state import GameState
 from model.starter import Starter
+from model.runner import Runner
 from model.data import Data
 from events.event_factory import EventFactory
 from utils.data import to_json_string
@@ -79,6 +80,11 @@ class Game(BaseModel):
             if game_at_bat.game_state._top_of_inning_flag  != \
                 last_at_bat.game_state._top_of_inning_flag:
                 game_at_bat.game_state.on_batting_team_change()
+
+        # add batter to game state
+        batter = Runner("B")
+        batter.player_code = player_code
+        game_at_bat.game_state._runners.append(batter)
 
         # update values with incoming data values
         game_at_bat.player_code = player_code
