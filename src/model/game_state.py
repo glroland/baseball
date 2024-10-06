@@ -7,7 +7,7 @@ import re
 from typing import List
 from pydantic import BaseModel
 from utils.data import to_json_string, fail, get_base_as_int
-from utils.baseball import sort_play_advances_desc, base_after
+from utils.baseball import sort_play_advances_desc, base_after, is_action_str_defensive_error
 from events.constants import Parameters
 from model.advance_record import AdvanceRecord
 from model.runner import Runner
@@ -328,18 +328,30 @@ class GameState(BaseModel):
 
                 # see if the advancement was already handled
                 if advance.is_completed(self._completed_advancements):
-                    logger.warning("Advancement Requested F=%s T=%s Out=%s overlaps with " + \
-                                   "Completed Advancements! %s", base_from, base_to, was_out,
-                                   self._completed_advancements)
+                    fail(f"Advancement Requested F={base_from} T={base_to} Out={was_out} " + \
+                         f"overlaps with Completed Advancements! {self._completed_advancements}")
 
-                else:
-                    # advance the runner
-                    try:
-                        self.action_advance_runner(base_from, base_to, was_out)
-                    except ValueError as e:
-                        logger.error("Unable to advance!  Requested=%s  Completed=%s Error=%s",
-                                     advance, self._completed_advancements, e)
-                        raise e
+                # check for error
+                defensive_error = False
+                if len(advance.groups) > 0:
+                    for group in advance.groups:
+                        if is_action_str_defensive_error(group):
+                            defensive_error = True
+                            logger.debug("Error by defense on advance attempt! %s"), group
+
+                # override the out?
+                out_override = was_out
+                if defensive_error and was_out:
+                    logger.info("Overriding out due to error!")
+                    out_override = False
+
+                # advance the runner
+                try:
+                    self.action_advance_runner(base_from, base_to, out_override)
+                except ValueError as e:
+                    logger.error("Unable to advance!  Requested=%s  Completed=%s Error=%s",
+                                    advance, self._completed_advancements, e)
+                    raise e
 
     #pylint: disable=inconsistent-return-statements
     def get_runner_from_original_base(self, original_base):
