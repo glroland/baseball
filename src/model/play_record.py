@@ -55,7 +55,14 @@ class PlayRecord(BaseModel):
 
         multi_plays = play.split(";")
         for multi_play in multi_plays:
-            split_plays = multi_play.split("+")
+            # determine if plus is in play or in modifier
+            plus_index = multi_play.find("+")
+            slash_index = multi_play.find("/")
+            if plus_index == -1 or \
+               (slash_index != -1 and slash_index < plus_index):
+                split_plays = [multi_play]
+            else:
+                split_plays = multi_play.split("+")
 
             # determine if there is a need to chain
             chained_flag = False
@@ -64,8 +71,9 @@ class PlayRecord(BaseModel):
 
             # create all the action records
             for split_play in split_plays:
-                record = ActionRecord.create(split_play)
-                self.actions.append(record)
+                if len(split_play) > 0:
+                    record = ActionRecord.create(split_play)
+                    self.actions.append(record)
 
             # chain the actions together when +'ed
             if chained_flag:

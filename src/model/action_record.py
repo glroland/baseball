@@ -24,30 +24,28 @@ class ActionRecord(BaseModel):
         
             s - action string
         """
-        logger.debug("Parsing Action Record - Action<%s>", s)
+        logger.info("Parsing Action Record - Action<%s>", s)
 
         record = ActionRecord()
-        record.groups = extract_groups(s)
 
-        # Pull "action" from the input stream, whether before a group, mod, or standalone
-        paren_index = s.find("(")
-        if paren_index == -1:                       # no group
-            slash_index = s.find("/")
-            if slash_index == -1:                   # no mods
-                record.action = s                   # standalone
-            else:
-                record.action = s[0:slash_index]    # w/mod
+        # split by modifiers
+        components = s.split("/")
+        action = components[0]
+        record.groups = extract_groups(action)
+        index = action.find("(")
+        if index == -1:
+            record.action = action
         else:
-            record.action = s[0:paren_index]        # w/group
+            record.action = action[0:index]
+        modifiers = components[1:]
 
-        # Create list of modifiers
-        paren_index = s.find(")")
-        if paren_index != -1:
-            s = s[paren_index+1:]               # assumed after group ends
-        slash_index = s.find("/")
-        if slash_index != -1:
-            m_str = s[slash_index+1:]
-            record.modifiers = regex_split("/", m_str)
+        # create list of modifiers
+        for modifier in modifiers:
+            modifier_index = modifier.find("(")
+            if modifier_index == -1:
+                record.modifiers.append(modifier)
+            else:
+                record.modifiers.append(modifier[0:modifier_index])
 
         return record
 

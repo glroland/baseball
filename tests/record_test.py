@@ -485,6 +485,28 @@ def test_defensive_two_stolen_bases_semi_colon():
     assert(len(r.actions[1].groups) == 0)
     assert(len(r.actions[1].modifiers) == 0)
 
+def test_empty_chain():
+    s = "4/L4D+/DP.1X1(43)"
+
+    r = PlayRecord.create(s)
+    assert(r != None)
+    assert(not r.uncertainty_flag)
+    assert(not r.exceptional_play_flag)
+    assert(not r.softly_hit_ball_flag)
+    assert(not r.hard_hit_ball_flag)
+    assert(len(r.advances) == 1)
+    assert(r.advances[0].advance == "1X1")
+    assert(len(r.advances[0].groups) == 1)
+    print(f"{r}")
+    assert(r.advances[0].groups[0] == "43")
+    assert(len(r.actions) == 1)
+    assert(r.actions[0] != None)
+    assert(r.actions[0].action == "4")
+    assert(len(r.actions[0].groups) == 0)
+    assert(len(r.actions[0].modifiers) == 2)
+    assert(r.actions[0].modifiers[0] == "L4D+")
+    assert(r.actions[0].modifiers[1] == "DP")
+
 #                    # break apart the event for single, double, triple plays
 #                    chunks = regex_split("^([0-9]+\\([B123]\\))+$", a_str)
 #                    if chunks is None or len(chunks) == 0:
