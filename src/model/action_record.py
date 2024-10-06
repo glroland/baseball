@@ -24,7 +24,7 @@ class ActionRecord(BaseModel):
         
             s - action string
         """
-        logger.info("Parsing Action Record - Action<%s>", s)
+        logger.debug("Parsing Action Record - Action<%s>", s)
 
         record = ActionRecord()
 
