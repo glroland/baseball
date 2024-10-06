@@ -341,6 +341,7 @@ class GameState(BaseModel):
                                      advance, self._completed_advancements, e)
                         raise e
 
+    #pylint: disable=inconsistent-return-statements
     def get_runner_from_original_base(self, original_base):
         """ For a given base, find where the runner is currently after a varying 
             number of advances.

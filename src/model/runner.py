@@ -3,9 +3,7 @@
 Runner entity
 """
 import logging
-from typing import List
 from pydantic import BaseModel
-from model.advance_record import AdvanceRecord
 from utils.data import to_json_string
 from utils.baseball import validate_base
 
@@ -17,7 +15,6 @@ class Runner(BaseModel):
     original_base : str = None
     current_base : str = None
     is_out : bool = False
-    #TODO advances : List[AdvanceRecord] = []
 
     def __init__(self, starting_base):
         """ Default constructor

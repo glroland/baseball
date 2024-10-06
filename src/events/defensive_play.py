@@ -72,8 +72,8 @@ class DefensivePlayEvent(BaseEvent):
                 fail("Cannot find current runner for original base!  {base_out}")
             current_base_for_out = runner_for_original_base.current_base
             if base_out != current_base_for_out:
-                logger.info("Defensive Play resulting in an out for the runner originally at %s." + \
-                            "Currently on base: %s", base_out, current_base_for_out)
+                logger.info("Defensive Play resulting in an out for the runner originally at " + \
+                            "%s.  Currently on base: %s", base_out, current_base_for_out)
 
             if current_base_for_out in ["B", 0]:
                 game_state.action_advance_runner("B", "1", True)

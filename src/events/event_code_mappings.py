@@ -41,8 +41,8 @@ class EventCodeMappings:
 
         EventCodes.WILD_PITCH:
         {
-            EVENT_MODULE: "events.walk",
-            EVENT_CLASS: "WalkEvent"
+            EVENT_MODULE: "events.wild_pitch",
+            EVENT_CLASS: "WildPitchEvent"
         },
 
         EventCodes.FIELDERS_CHOICE:
