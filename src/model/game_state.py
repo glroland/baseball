@@ -72,11 +72,13 @@ class GameState(BaseModel):
                     logger.warning("Batter already advanced.  Ignoring requested " + \
                                    f"advancement to {base_to}.  Completed=" + \
                                    f"Match={completed_advancement}")
+                    return
 
         # get runner for the base
         runner = self.get_runner_on_base(base_from)
         if runner is None:
-            fail(f"Illegal Advancement - Runner not on base: {base_from}")
+            fail("Illegal Advancement - Runner not on base! " + \
+                 f"From={base_from} To={base_to}")
 
         # was this advancement already completed?
         advance_record = AdvanceRecord()

@@ -25,7 +25,7 @@ class Runner(BaseModel):
             starting_base - base
         """
         super().__init__()
-        logger.info("New Runner: %s", starting_base)
+        logger.debug("New Runner: %s", starting_base)
 
         # validate and save base
         validate_base(starting_base)

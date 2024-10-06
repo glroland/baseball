@@ -67,3 +67,4 @@ class Parameters:
     RBI_CREDITED = "RBI"
     RBI_NOT_CREDITED_1 = "NR"
     RBI_NOT_CREDITED_2 = "NORBI"
+    ERROR = "E"
