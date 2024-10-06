@@ -22,7 +22,7 @@ class StrikeoutEvent(BaseEvent):
 
         # Check for dropped putout
         if action.action == self.DROPPED_THIRD_STRIKE_PUTOUT:
-            runner_saved = True
+            #runner_saved = True
             due_to += "Dropped third stike putout. "
 
         # Unknown strikeout action
