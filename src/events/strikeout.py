@@ -48,9 +48,17 @@ class StrikeoutEvent(BaseEvent):
         #    else:
         #        raise ValueError(f"Unknown modifier on strikeout! {called}")
 
+        # did the batter already out from an advancement?
+        batter_already_out = False
+        for advance in game_state._completed_advancements:
+            if advance.base_from == "B" and advance.was_out:
+                batter_already_out = True
+
         # game play result
         if runner_saved:
             game_state.action_advance_runner("B", "1", False)
+        elif batter_already_out:
+            logger.info("Batter already out from advancement.  Skipping strikeout...")
         else:
             game_state.on_out("B")
 
