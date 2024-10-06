@@ -51,27 +51,33 @@ class PlayRecord(BaseModel):
             
             play - play string
         """
-        split_plays = play.split("+")
+        all_plays = []
 
-        # determine if there is a need to chain
-        chained_flag = False
-        if len(split_plays) > 1:
-            chained_flag = True
+        multi_plays = play.split(";")
+        for multi_play in multi_plays:
+            split_plays = multi_play.split("+")
 
-        # create all the action records
-        for split_play in split_plays:
-            record = ActionRecord.create(split_play)
-            self.actions.append(record)
+            # determine if there is a need to chain
+            chained_flag = False
+            if len(split_plays) > 1:
+                chained_flag = True
 
-        # chain the actions together when +'ed
-        if chained_flag:
-            prev_action = None
-            for action in self.actions:
-                if prev_action is not None:
-                    prev_action.chain_to = action
-                prev_action = action
+            # create all the action records
+            for split_play in split_plays:
+                record = ActionRecord.create(split_play)
+                self.actions.append(record)
 
-        return split_plays
+            # chain the actions together when +'ed
+            if chained_flag:
+                prev_action = None
+                for action in self.actions:
+                    if prev_action is not None:
+                        prev_action.chain_to = action
+                    prev_action = action
+
+            all_plays.extend(split_plays)
+
+        return all_plays
 
     # pylint: disable=unused-private-member
     def __break_up_play(self, s):

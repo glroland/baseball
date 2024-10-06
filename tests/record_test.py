@@ -465,6 +465,25 @@ def test_defensive_simple():
     assert(len(r.actions[0].groups) == 0)
     assert(len(r.actions[0].modifiers) == 0)
 
+def test_defensive_two_stolen_bases_semi_colon():
+    s = "SB3;SB2"
+
+    r = PlayRecord.create(s)
+    assert(r != None)
+    assert(not r.uncertainty_flag)
+    assert(not r.exceptional_play_flag)
+    assert(not r.softly_hit_ball_flag)
+    assert(not r.hard_hit_ball_flag)
+    assert(len(r.advances) == 0)
+    assert(len(r.actions) == 2)
+    assert(r.actions[0] != None)
+    assert(r.actions[0].action == "SB3")
+    assert(len(r.actions[0].groups) == 0)
+    assert(len(r.actions[0].modifiers) == 0)
+    assert(r.actions[1] != None)
+    assert(r.actions[1].action == "SB2")
+    assert(len(r.actions[1].groups) == 0)
+    assert(len(r.actions[1].modifiers) == 0)
 
 #                    # break apart the event for single, double, triple plays
 #                    chunks = regex_split("^([0-9]+\\([B123]\\))+$", a_str)
