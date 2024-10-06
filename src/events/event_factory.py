@@ -55,7 +55,7 @@ class EventFactory:
         logger.debug("Basic Play Code '%s' extracted from mapping: %s", code, mapping)
         if code not in EventCodeMappings.mappings:
             msg = f"Unknown Event Type!  EventCode=<{code}>, Mapping=<{mapping}>, " + \
-                  f"FullBasicPlayDetails=<{game_at_bat.basic_play}>"
+                  f"FullBasicPlayDetails=<{game_at_bat.play}>"
             logger.error(msg)
             raise ValueError(msg)
 

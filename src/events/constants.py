@@ -15,6 +15,7 @@ class EventCodes:
     DOUBLE = "D"
     TRIPLE = "T"
     CAUGHT_STEALING = "CS"
+    CAUGHT_STEALING_HOME = "CSH"
     PICKED_OFF_CAUGHT_STEALING = "POCS"
     STRIKEOUT = "K"
     HOMERUN = "HR"
