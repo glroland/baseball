@@ -8,6 +8,7 @@ from pipelines.base_pipeline import BasePipeline
 from model.game import Game
 from model.play_record import PlayRecord
 from model.game_play import GamePlay
+from utils.data import fail
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,8 @@ class GamePlayEventPipeline(BasePipeline):
     fielding_position : int = None
     players_team_home_flag : bool = None
 
+    adjusted_base : str = None
+
     def __handle_sub(self):
         logger.info("Handling substituion...")
         self.game_play_model = self.game.new_substitution(player_to=self.game.no_play_sub_player,
@@ -43,7 +46,7 @@ class GamePlayEventPipeline(BasePipeline):
     def __handle_new_play(self):
         # validate at bat metadata
         if self.play is None:
-            self.fail("Play is empty, meaning the NP record wasn't picked up prior to the sub " + \
+            fail("Play is empty, meaning the NP record wasn't picked up prior to the sub " + \
                       f"record! Game={self.game.game_id} " + \
                       f"SubFrom={self.player_code} " + \
                       f"SubToBe={self.sub_player_tobe} " + \
@@ -61,16 +64,29 @@ class GamePlayEventPipeline(BasePipeline):
                     play = self.play)
 
 
+    def __handle_runner_adjustment(self):
+        """ Runner Adjustment Event"""
+        logger.info("Adjusting Runner!  Player=%s to Base=%s", self.player_code, self.adjusted_base)
+        self.game_play_model = self.game.new_runner_adjustment(
+                    self.player_code,
+                    self.adjusted_base)
+
+
     def execute_pipeline(self):
         """ Orchestrate the end to end ingestion process associated with this pipeline. """
         # validate pipeline first
         if len(self.processed_records) > 0:
-            self.fail("Pipeline not designed for use of staged records!  " + \
+            fail("Pipeline not designed for use of staged records!  " + \
                       f"Count={len(self.processed_records)}")
 
         # handle substitutions
         if self.sub_player_tobe is not None and len(self.sub_player_tobe) > 0:
             self.__handle_sub()
+
+        # handle runner adjustment
+        elif self.player_code is not None and self.adjusted_base is not None:
+            self.__handle_runner_adjustment()
+
         else:
             # action play
             self.__handle_new_play()

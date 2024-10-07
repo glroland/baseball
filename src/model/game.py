@@ -10,6 +10,7 @@ from pybaseball import statcast
 from model.game_play import GamePlay
 from model.game_at_bat import GameAtBat
 from model.game_substitution import GameSubstitution
+from model.runner_adjustment import RunnerAdjustment
 from model.game_state import GameState
 from model.starter import Starter
 from model.runner import Runner
@@ -143,6 +144,44 @@ class Game(BaseModel):
         logger.info("Player <%s> substituted with <%s>", game_subst.player_from,
                     game_subst.player_to)
         return game_subst
+
+
+    def new_runner_adjustment(self, runner_id, base):
+        """ Implement a manual runner adjustment.
+
+            runner_id - runner
+            base - adjusted base
+        """
+        runner_adj = RunnerAdjustment()
+
+        last_at_bat = self.get_last_at_bat()
+        if last_at_bat is None:
+            runner_adj.game_state = GameState()
+        else:
+            runner_adj.game_state = last_at_bat.game_state.clone()
+
+        runner_adj.runner_code = runner_id
+        runner_adj.adjusted_base = base
+        self.game_plays.append(runner_adj)
+
+        if runner_adj.game_state._top_of_inning_flag:
+            runner_adj.game_state._top_of_inning_flag = False
+        else:
+            runner_adj.game_state._top_of_inning_flag = True
+            runner_adj.game_state._inning += 1
+        logger.info ("New Inning due to runner adjustment")
+
+        logger.info("Runner <%s> manually adjusted to base <%s>", runner_adj.runner_code,
+                    runner_adj.adjusted_base)
+
+        runner = Runner("B")
+        runner.player_code = runner_id
+        runner_adj.game_state._runners.append(runner)
+
+        runner_adj.game_state.action_advance_runner("B", base)
+
+        return runner_adj
+
 
     def get_score(self):
         """ Get the current score of the game.

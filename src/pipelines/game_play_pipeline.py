@@ -69,11 +69,18 @@ class GamePlayPipeline(BasePipeline):
                 logger.warning("Comment: %s", record[1])
 
             elif record[0] == "radj":
-                # TODO Implement runner adjustment event record
                 # start specified runner on speciifed base
                 runner_id = record[1]
                 base = record[2]
-                fail(f"Unhandled game record RADJ - Runner={runner_id} Base={base}")
+                logger.debug(f"Runner adjustment - Runner=%s Base=%s", runner_id, base)
+
+                event = GamePlayEventPipeline()
+                event.game = self.game
+                event.record = record
+                event.player_code = runner_id
+                event.adjusted_base = base
+
+                self.events.append(event)
 
             elif record[0] == "badj":
                 # mark plate appearance where the batter bats from the side that is not expected
