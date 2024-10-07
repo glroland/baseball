@@ -57,6 +57,9 @@ class DefensivePlayEvent(BaseEvent):
                 elif modifier[0] == Modifiers.LINE_DRIVE:
                     non_advancing_out = True
                     logger.info("Batter out due to catch from line drive.")
+                elif modifier[0:2] == Modifiers.LINE_DRIVE_BUNT:
+                    non_advancing_out = True
+                    logger.info("Batter out due to line drive bunt.")
                 elif (modifier[0] == Modifiers.FLY or modifier[0] == Modifiers.POP_FLY) and \
                     re.match("^[0-9]+$", modifier[1]):
                     non_advancing_out = True
