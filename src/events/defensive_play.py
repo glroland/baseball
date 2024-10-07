@@ -62,6 +62,12 @@ class DefensivePlayEvent(BaseEvent):
                     non_advancing_out = True
                     logger.info("Batter out due to fly ball.")
 
+        # check for an advancement reversal
+        for advance in game_state._completed_advancements:
+            if advance.base_from in ["1", 1] and advance.base_to in ["1", 1] and not advance.was_out:
+                non_advancing_out = True
+                logger.warning("Reversing advancement for first base due to manual advance.")
+
         # TODO Need to chain defensive plays.  1 runner on base.  3(B)3(1)/LDP
         # mark the position as out
         if non_advancing_out:

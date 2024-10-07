@@ -9,6 +9,7 @@ from pipelines.game_play_event_pipeline import GamePlayEventPipeline
 from model.game import Game
 from model.play_record import PlayRecord
 from events.constants import EventCodes
+from utils.data import fail
 
 logger = logging.getLogger(__name__)
 
@@ -68,26 +69,26 @@ class GamePlayPipeline(BasePipeline):
 
             elif record[0] == "radj":
                 # TODO Implement radj event record
-                self.fail(f"Unhandled game record event - {record[0]}")
+                fail(f"Unhandled game record event - {record[0]}")
 
             elif record[0] == "badj":
                 # TODO Implement badj event record
-                self.fail(f"Unhandled game record event - {record[0]}")
+                fail(f"Unhandled game record event - {record[0]}")
 
             elif record[0] == "presadj":
                 # TODO Implement presadj event record
-                self.fail(f"Unhandled game record event - {record[0]}")
+                fail(f"Unhandled game record event - {record[0]}")
 
             elif record[0] == "padj":
                 # TODO Implement padj event record
-                self.fail(f"Unhandled game record event - {record[0]}")
+                fail(f"Unhandled game record event - {record[0]}")
 
             elif record[0] == "ladj":
                 # TODO Implement ladj event record
-                self.fail(f"Unhandled game record event - {record[0]}")
+                fail(f"Unhandled game record event - {record[0]}")
 
             else:
-                self.fail(f"Unknown Game Event Row Type! {record[0]}")
+                fail(f"Unknown Game Event Row Type! {record[0]}")
 
     def execute_pipeline(self):
         """ Orchestrate the end to end ingestion process associated with this pipeline. """
