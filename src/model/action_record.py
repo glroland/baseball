@@ -5,7 +5,7 @@ Parser for the play action record string.
 import logging
 from typing import List
 from pydantic import BaseModel
-from utils.data import extract_groups, regex_split, to_json_string
+from utils.data import extract_groups, to_json_string
 
 logger = logging.getLogger(__name__)
 

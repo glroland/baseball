@@ -21,6 +21,7 @@ class GamePlayPipeline(BasePipeline):
     inning : int = 0
     home_team_flag : bool = None
 
+    # pylint: disable=too-many-statements
     def __setup_child_pipelines(self):
         # Process all the game level info records first
         while len(self.staged_records) > 0:
@@ -65,27 +66,48 @@ class GamePlayPipeline(BasePipeline):
                 self.game.no_play_sub_player = None
 
             elif record[0] == "com":
-                logger.info("Comment: %s", record[1])
+                logger.warning("Comment: %s", record[1])
 
             elif record[0] == "radj":
-                # TODO Implement radj event record
-                fail(f"Unhandled game record event - {record[0]}")
+                # TODO Implement runner adjustment event record
+                # start specified runner on speciifed base
+                runner_id = record[1]
+                base = record[2]
+                fail(f"Unhandled game record RADJ - Runner={runner_id} Base={base}")
 
             elif record[0] == "badj":
-                # TODO Implement badj event record
-                fail(f"Unhandled game record event - {record[0]}")
+                # mark plate appearance where the batter bats from the side that is not expected
+                batter_id = record[1]
+                hand = record[2]
+                logger.warning("Batter batting from an unexpected side!  Batter=%s Hand=%s",
+                               batter_id, hand)
 
             elif record[0] == "presadj":
-                # TODO Implement presadj event record
-                fail(f"Unhandled game record event - {record[0]}")
+                # Pitcher responsibility adjustment
+                pitcher_id = record[1]
+                occupied_base = record[2]
+                logger.warning("Pitcher Responsibility Adjustment!  Pitcher=%s Occupied_Base=%s",
+                               pitcher_id, occupied_base)
+                # TODO Investigate whether the charged runs impacts only stats or the game itself
 
             elif record[0] == "padj":
-                # TODO Implement padj event record
-                fail(f"Unhandled game record event - {record[0]}")
+                # pitcher pitches to a batter with the hand opposite the one in the roster file
+                pitcher_id = record[1]
+                hand = record[2]
+                logger.warning("Pitcher pitching from unexpected hand!  Pitcher=%s Hand=%s",
+                               pitcher_id, hand)
 
             elif record[0] == "ladj":
-                # TODO Implement ladj event record
-                fail(f"Unhandled game record event - {record[0]}")
+                # indicates that the next batter is the one listed in the 4th spot in the order for
+                # the visiting team although some other player was expected to bat next based on
+                # the current lineup.
+                batting_team = record[1]
+                batting_order_position = record[2]
+                logger.warning("Lineup Adjustment!  Team=%s Position=%s",
+                               batting_team, batting_order_position)
+                # TODO This needs to be handled to identify players accurately
+                #fail(f"Unhandled game record event LADJ - BT={batting_team} " + \
+                #     f"BOP={batting_order_position}")
 
             else:
                 fail(f"Unknown Game Event Row Type! {record[0]}")

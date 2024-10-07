@@ -354,7 +354,7 @@ class GameState(BaseModel):
                     for group in advance.groups:
                         if is_action_str_defensive_error(group):
                             defensive_error = True
-                            logger.debug("Error by defense on advance attempt! %s"), group
+                            logger.debug("Error by defense on advance attempt! %s", group)
 
                 # override the out?
                 out_override = was_out
