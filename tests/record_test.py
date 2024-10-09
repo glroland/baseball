@@ -507,6 +507,27 @@ def test_empty_chain():
     assert(r.actions[0].modifiers[0] == "L4D+")
     assert(r.actions[0].modifiers[1] == "DP")
 
+
+
+def test_infinite_loop_combo_modifier_within_group():
+    s = "PO1(E1/TH).1-2"
+
+    r = PlayRecord.create(s)
+    assert(r != None)
+    assert(not r.uncertainty_flag)
+    assert(not r.exceptional_play_flag)
+    assert(not r.softly_hit_ball_flag)
+    assert(not r.hard_hit_ball_flag)
+    assert(len(r.advances) == 1)
+    assert(r.advances[0].advance == "1-2")
+    assert(len(r.advances[0].groups) == 0)
+    assert(len(r.actions) == 1)
+    assert(r.actions[0] != None)
+    assert(r.actions[0].action == "PO1")
+    assert(len(r.actions[0].groups) == 1)
+    assert(r.actions[0].groups[0] == "E1/TH")
+    assert(len(r.actions[0].modifiers) == 0)
+
 #                    # break apart the event for single, double, triple plays
 #                    chunks = regex_split("^([0-9]+\\([B123]\\))+$", a_str)
 #                    if chunks is None or len(chunks) == 0:
