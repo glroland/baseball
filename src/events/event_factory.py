@@ -85,31 +85,25 @@ class EventFactory:
             a_str = action.action
             if action.handled_flag:
                 logger.info("Skipping Handled Action: %s", action.action)
+            elif len(a_str) == 0:
+                # TODO Investigate how an empty a_str can occur
+                logger.warning("Skipping empty Action String!")
             else:
-                action_handler_assigned = False
+                event = None
 
                 # Analyze Defensive Error
                 if is_action_str_defensive_error(a_str):
-                    action_handler_assigned = True
                     event = EventFactory.__create_event_by_name(
                         EventCodeMappings.MAPPING_DEFENSIVE_ERROR, game_at_bat)
-                    event.pre_handle(game_state, action)
-                    event.handle(game_state, action)
-                    event.post_handle(game_state, action)
 
                 # Analyze Defensive Play
                 if is_action_str_defensive_play(a_str):
-                    action_handler_assigned = True
                     event = EventFactory.__create_event_by_name(
                         EventCodeMappings.MAPPING_DEFENSIVE, game_at_bat)
-                    event.pre_handle(game_state, action)
-                    event.handle(game_state, action)
-                    event.post_handle(game_state, action)
 
                 # Analyze Offensive Play
                 regex = "(^[A-Z]+)(.*)"
                 if re.search(regex, a_str):
-                    action_handler_assigned = True
                     play_list = regex_split(regex, a_str)
                     op_event = play_list.pop(0)
                     for result in play_list:
@@ -117,12 +111,18 @@ class EventFactory:
                                     len(play_list), result)
 
                     event = EventFactory.__create_event_by_name(op_event, game_at_bat)
-                    event.pre_handle(game_state, action)
-                    event.handle(game_state, action)
-                    event.post_handle(game_state, action)
 
-                if not action_handler_assigned and len(a_str) > 0:
+                # fail on unhandled actions
+                if event is None:
                     fail(f"Action not handled!  '{a_str}'")
+
+                # handle event
+                event.game_state = game_state
+                event.action = action
+                event.play_record = play
+                event.pre_handle()
+                event.handle()
+                event.post_handle()
 
         # handle advances before other play actions
         game_state.handle_advances(play.advances)

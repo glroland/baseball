@@ -5,8 +5,6 @@ Runner striked out game event.
 import logging
 from events.base_event import BaseEvent
 from events.constants import EventCodes
-from model.action_record import ActionRecord
-from model.game_state import GameState
 from utils.data import fail
 
 logger = logging.getLogger(__name__)
@@ -16,26 +14,34 @@ class StrikeoutEvent(BaseEvent):
 
     DROPPED_THIRD_STRIKE_PUTOUT : str = "K23"
 
-    def handle(self, game_state : GameState, action : ActionRecord):
+    def handle(self):
         due_to = ""
         runner_saved = False
 
         # Check for dropped putout
-        if action.action == self.DROPPED_THIRD_STRIKE_PUTOUT:
+        if self.action.action == self.DROPPED_THIRD_STRIKE_PUTOUT:
             #runner_saved = True
             due_to += "Dropped third stike putout. "
 
         # Unknown strikeout action
-        elif len(action.action) > 1:
-            fail(f"Unknown action type: {action.action}")
+        elif len(self.action.action) > 1:
+            fail(f"Unknown action type: {self.action.action}")
 
         # review chained actions
-        chained_action = action.chain_to
+        chained_action = self.action.chain_to
         while chained_action is not None:
             if chained_action.action == EventCodes.WILD_PITCH:
                 due_to += "Wild Pitch, saving runner. "
-                runner_saved = True
+#                runner_saved = True
                 chained_action.handled_flag = True
+
+                # is there a base advance for the batter in the advances list?
+                batter_advanced = False
+                for advance in self.play_record.advances:
+                    if advance.base_from in ["B", 0] and not advance.was_out:
+                        batter_advanced = True
+                        break
+                runner_saved = batter_advanced
 
             elif chained_action.action == EventCodes.PASSED_BALL:
                 due_to += "Passed Ball, saving runner. "
@@ -56,17 +62,17 @@ class StrikeoutEvent(BaseEvent):
 
         # did the batter already out from an advancement?
         batter_already_out = False
-        for advance in game_state._completed_advancements:
+        for advance in self.game_state._completed_advancements:
             if advance.base_from == "B" and advance.was_out:
                 batter_already_out = True
 
         # game play result
         if runner_saved:
-            game_state.action_advance_runner("B", "1", False)
+            self.game_state.action_advance_runner("B", "1", False)
         elif batter_already_out:
             logger.info("Batter already out from advancement.  Skipping strikeout...")
         else:
-            game_state.on_out("B")
+            self.game_state.on_out("B")
 
         # handle extra play events
         #op_detail = None

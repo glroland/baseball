@@ -72,7 +72,7 @@ class GamePlayPipeline(BasePipeline):
                 # start specified runner on speciifed base
                 runner_id = record[1]
                 base = record[2]
-                logger.debug(f"Runner adjustment - Runner=%s Base=%s", runner_id, base)
+                logger.debug("Runner adjustment - Runner=%s Base=%s", runner_id, base)
 
                 event = GamePlayEventPipeline()
                 event.game = self.game

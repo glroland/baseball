@@ -5,7 +5,7 @@ Parser for the play action record string.
 import logging
 from typing import List
 from pydantic import BaseModel
-from utils.data import extract_groups, to_json_string, fail
+from utils.data import to_json_string, fail
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ class ActionRecord(BaseModel):
     chain_to : object = None
     handled_flag : bool = False
 
-    # pylint: disable=no-self-argument,self-cls-assignment
+    # pylint: disable=no-self-argument,self-cls-assignment,too-many-branches,too-many-statements
     def create(s : str):
         """ Instantiate an action record object from an action string.
         

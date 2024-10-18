@@ -4,15 +4,13 @@ Runner hit a single game event.
 """
 import logging
 from events.base_event import BaseEvent
-from model.action_record import ActionRecord
-from model.game_state import GameState
 
 logger = logging.getLogger(__name__)
 
 class SingleEvent(BaseEvent):
     """ Single Event """
 
-    def handle(self, game_state : GameState, action : ActionRecord):
+    def handle(self):
 
         #if len(op_details) > 0:
         #    game_at_bat.fielded_by = op_details.pop(0)
@@ -24,4 +22,4 @@ class SingleEvent(BaseEvent):
         #            game_at_bat.hit_to_location, game_at_bat.fielded_by)
         logger.info ("Batter hit single.")
 
-        game_state.action_advance_runner("B", "1")
+        self.game_state.action_advance_runner("B", "1")

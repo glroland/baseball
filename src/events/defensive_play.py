@@ -6,8 +6,6 @@ import logging
 import re
 from events.base_event import BaseEvent
 from events.constants import Modifiers
-from model.action_record import ActionRecord
-from model.game_state import GameState
 from utils.data import fail
 
 logger = logging.getLogger(__name__)
@@ -17,23 +15,18 @@ class DefensivePlayEvent(BaseEvent):
     """ Defensive Play Event """
 
     # pylint: disable=too-many-branches,too-many-statements
-    def handle(self, game_state : GameState, action : ActionRecord):
-        """ Handle defensive play based on provided action list.exc_info=
-        
-        game_at_bat - game at bat
-        play_list - list of offensive play components
-        """
-        fielded_by = action.action
+    def handle(self):
+        fielded_by = self.action.action
         base_out = "B"
-        if len(action.groups) > 0:
-            base_out = action.groups[0]
+        if len(self.action.groups) > 0:
+            base_out = self.action.groups[0]
         logger.info("Defensive Play.  Base=%s  Credit_to=%s", base_out, fielded_by)
 
         # Check for error or a specific runner
         is_out = True
         runner = None
-        if len(action.groups) > 0:
-            for group in action.groups:
+        if len(self.action.groups) > 0:
+            for group in self.action.groups:
                 if re.match("^[0-9]+E[0-9]*$", group):
                     logger.info("Defensive error overriding out")
                     is_out = False
@@ -46,7 +39,7 @@ class DefensivePlayEvent(BaseEvent):
 
         # check for non-advancing reasons in modifier list
         non_advancing_out = False
-        for modifier in action.modifiers:
+        for modifier in self.action.modifiers:
             if len(modifier) >= 2:
                 if modifier == Modifiers.FOUL:
                     non_advancing_out = True
@@ -69,7 +62,7 @@ class DefensivePlayEvent(BaseEvent):
                     logger.info("Batter out due to fly ball.")
 
         # check for an advancement reversal
-        for advance in game_state._completed_advancements:
+        for advance in self.game_state._completed_advancements:
             if advance.base_from in ["1", 1] and advance.base_to in ["1", 1] \
                     and not advance.was_out:
                 non_advancing_out = True
@@ -78,9 +71,9 @@ class DefensivePlayEvent(BaseEvent):
         # TODO Need to chain defensive plays.  1 runner on base.  3(B)3(1)/LDP
         # mark the position as out
         if non_advancing_out:
-            game_state.on_out(base_out)
+            self.game_state.on_out(base_out)
         else:
-            runner_for_original_base = game_state.get_runner_from_original_base(base_out)
+            runner_for_original_base = self.game_state.get_runner_from_original_base(base_out)
             if runner_for_original_base is None:
                 fail("Cannot find current runner for original base!  {base_out}")
             current_base_for_out = runner_for_original_base.current_base
@@ -89,16 +82,16 @@ class DefensivePlayEvent(BaseEvent):
                             "%s.  Currently on base: %s", base_out, current_base_for_out)
 
             if current_base_for_out in ["B", 0]:
-                game_state.action_advance_runner("B", "1", True)
+                self.game_state.action_advance_runner("B", "1", True)
             elif current_base_for_out in ["1", 1]:
-                game_state.action_advance_runner("1", "2", True)
+                self.game_state.action_advance_runner("1", "2", True)
             elif current_base_for_out in ["2", 2]:
-                game_state.action_advance_runner("2", "3", True)
+                self.game_state.action_advance_runner("2", "3", True)
             elif current_base_for_out in ["3", 3]:
-                game_state.action_advance_runner("3", "H", True)
+                self.game_state.action_advance_runner("3", "H", True)
             elif current_base_for_out in ["H", 4]:
                 # reverse the homerun
-                game_state.reverse_score_due_to_out(runner_for_original_base)
+                self.game_state.reverse_score_due_to_out(runner_for_original_base)
 
             else:
                 fail(f"Illegal Base Out on Defensive Play!  Original={base_out} " + \
@@ -122,7 +115,7 @@ class DefensivePlayEvent(BaseEvent):
 
         # analyze modifier
         due_to = ""
-        for modifier in action.modifiers:
+        for modifier in self.action.modifiers:
             if modifier in [Modifiers.GROUNDER, Modifiers.GROUNDER_UNKNOWN]:
                 due_to += "Due to Ground Ball"
             elif modifier == Modifiers.GROUNDER_DOUBLE_PLAY:

@@ -5,20 +5,13 @@ Fielding issue leading to walk game event.
 import logging
 from events.base_event import BaseEvent
 from events.constants import Modifiers
-from model.action_record import ActionRecord
-from model.game_state import GameState
 
 logger = logging.getLogger(__name__)
 
 class FieldersChoiceEvent(BaseEvent):
     """ Fielders Choice Event """
 
-    def handle(self, game_state : GameState, action : ActionRecord):
-        """ Walk the player
-        
-            game_at_bat - game at bat
-            details - offensive play details
-        """
+    def handle(self):
         # Identify due to
         fielder = ""
         #if len(details) > 0:
@@ -26,11 +19,11 @@ class FieldersChoiceEvent(BaseEvent):
 
         # Check Modifiers
         due_to = ""
-        if len(action.modifiers) > 0:
-            modifier = action.modifiers[0]
+        if len(self.action.modifiers) > 0:
+            modifier = self.action.modifiers[0]
             if modifier == Modifiers.DOUBLE_PLAY:
                 due_to = "Double Play"
 
         logger.info("Batter Walked due to Fielders Choice (Fielder = %s). %s ", fielder, due_to)
 
-        game_state.action_advance_runner("B", "1")
+        self.game_state.action_advance_runner("B", "1")
