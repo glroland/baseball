@@ -40,23 +40,27 @@ class DefensivePlayEvent(BaseEvent):
         # check for non-advancing reasons in modifier list
         non_advancing_out = False
         for modifier in self.action.modifiers:
-            if len(modifier) >= 2:
+            if len(modifier) >= 1:
                 if modifier == Modifiers.FOUL:
                     non_advancing_out = True
                     logger.info("Batter out due to catch from foul ball.")
                 elif modifier == Modifiers.SACRIFICE_FLY:
                     non_advancing_out = True
                     logger.info("Batter out due to catch from sacrifice fly.")
+                elif modifier == Modifiers.FLY:
+                    non_advancing_out = True
+                    logger.info("Batter out due to fly ball.")
                 elif modifier[0] == Modifiers.LINE_DRIVE:
                     non_advancing_out = True
                     logger.info("Batter out due to catch from line drive.")
-                elif modifier[0:2] == Modifiers.LINE_DRIVE_BUNT:
+                elif len(modifier) >= 2 and modifier[0:2] == Modifiers.LINE_DRIVE_BUNT:
                     non_advancing_out = True
                     logger.info("Batter out due to line drive bunt.")
-                elif modifier[0:2] == Modifiers.BUNT_POPUP:
+                elif len(modifier) >= 2 and modifier[0:2] == Modifiers.BUNT_POPUP:
                     non_advancing_out = True
                     logger.info("Batter out due to popup bunt.")
-                elif (modifier[0] == Modifiers.FLY or modifier[0] == Modifiers.POP_FLY) and \
+                elif len(modifier) >= 2 and \
+                     (modifier[0] == Modifiers.FLY or modifier[0] == Modifiers.POP_FLY) and \
                     re.match("^[0-9]+$", modifier[1]):
                     non_advancing_out = True
                     logger.info("Batter out due to fly ball.")
