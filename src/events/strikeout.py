@@ -36,6 +36,12 @@ class StrikeoutEvent(BaseEvent):
                 due_to += "Wild Pitch, saving runner. "
                 runner_saved = True
                 chained_action.handled_flag = True
+
+            elif chained_action.action == EventCodes.PASSED_BALL:
+                due_to += "Passed Ball, saving runner. "
+                runner_saved = True
+                chained_action.handled_flag = True
+
             chained_action = chained_action.chain_to
 
         called = ""
