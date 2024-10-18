@@ -71,7 +71,7 @@ class ActionRecord(BaseModel):
                 s = s[i+1:]
                 i = 0
             elif c == "/" and group_start == -1:
-                logger.info("s = %s", s)
+                logger.debug("s = %s", s)
                 if i == 0:
                     s = s[1:]
                 else:
