@@ -50,6 +50,9 @@ class DefensivePlayEvent(BaseEvent):
                 elif modifier == Modifiers.FLY:
                     non_advancing_out = True
                     logger.info("Batter out due to fly ball.")
+                elif modifier == Modifiers.POP_FLY:
+                    non_advancing_out = True
+                    logger.info("Batter out due to pop fly.")
                 elif modifier[0] == Modifiers.LINE_DRIVE:
                     non_advancing_out = True
                     logger.info("Batter out due to catch from line drive.")
