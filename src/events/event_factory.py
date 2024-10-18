@@ -121,8 +121,8 @@ class EventFactory:
                     event.handle(game_state, action)
                     event.post_handle(game_state, action)
 
-                if not action_handler_assigned:
-                    fail(f"Action not handled!  {a_str}")
+                if not action_handler_assigned and len(a_str) > 0:
+                    fail(f"Action not handled!  '{a_str}'")
 
         # handle advances before other play actions
         game_state.handle_advances(play.advances)
