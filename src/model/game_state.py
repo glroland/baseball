@@ -65,6 +65,9 @@ class GameState(BaseModel):
             is_out - whether or not the runner is out
             parameter - optional parameters
         """
+        logger.debug("action_advance_runner() From=%s, To=%s, IsOut=%s, Param=%s",
+                     base_from, base_to, is_out, parameter)
+
         # have there already been advancements from B?
         if base_from in ["B", 0]:
             for completed_advancement in self._completed_advancements:
@@ -104,8 +107,8 @@ class GameState(BaseModel):
             fail(f"Invalid value for base_from! {base_from_int}")
         if base_to_int not in [1, 2, 3, 4]:
             fail(f"Invalid value for base_to! {base_to_int}")
-        if base_from_int >= base_to_int:
-            fail(f"Illegal advancement!  From={base_from_int} To={base_to_int}")
+        #if base_from_int >= base_to_int:
+        #    fail(f"Illegal advancement!  From={base_from_int} To={base_to_int}")
 
         # which nearest base, if any, needs to advance?
         # -- first?
@@ -362,27 +365,40 @@ class GameState(BaseModel):
                     logger.info("Overriding out due to error!")
                     out_override = False
 
-                # check for situation where advancement is to itself
-                if base_from == base_to and not out_override:
-                    logger.info("Runner ran back to base.  Ignoring advancement...")
-                    self._completed_advancements.append(advance)
-                elif base_from == base_to and out_override:
-                    logger.info("Runner ran back to base but was still out!")
-                    self.on_out(base_from)
-                    self._completed_advancements.append(advance)
-                else:
-                    # see if the advancement was already handled
-                    if advance.is_completed(self._completed_advancements):
-                        fail(f"Advancement Requested F={base_from} T={base_to} Out={was_out} " + \
-                            f"overlaps with Completed Advancements! {self._completed_advancements}")
+                # get the new base from original runner
+                runner = self.get_runner_from_original_base(base_from)
+                if runner is None:
+                    fail("Unable to match runner based on original base! {base_from}")
+                logger.info("Runner: Original-%s, Current-%s, All_Runners-%s",
+                            base_from, runner.current_base, self._runners)
 
+                # check for situation where advancement is to itself
+                if runner.is_out:
+                    logger.info("Runner already out.  Ignoring advancement.")
+                elif runner.original_base == base_to:
+                    if out_override:
+                        logger.info("Runner ran back to base but still out.")
+                        self.on_out(runner.current_base)
+                    elif runner.current_base != runner.original_base:
+                        logger.info("Runner ran back to base.")
+                        self.action_advance_runner(runner.current_base, runner.original_base, False)
+                    else:
+                        logger.info("Runner ran to and from base.  Ignoring advancement...")
+                elif runner.current_base == base_to:
+                    if out_override:
+                        logger.info("Runner already on base but still out.")
+                        self.on_out(runner.current_base)
+                    else:
+                        logger.info("Runner already on base.  Ignoring advancement.")
+                else:
                     # advance the runner
                     try:
-                        self.action_advance_runner(base_from, base_to, out_override)
+                        self.action_advance_runner(runner.current_base, base_to, out_override)
                     except ValueError as e:
                         logger.error("Unable to advance!  Requested=%s  Completed=%s Error=%s",
                                         advance, self._completed_advancements, e)
                         raise e
+                self._completed_advancements.append(advance)
 
     #pylint: disable=inconsistent-return-statements
     def get_runner_from_original_base(self, original_base):

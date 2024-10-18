@@ -80,9 +80,6 @@ class EventFactory:
         if is_defensive_play(play):
             sort_defensive_play_actions_desc(play)
 
-        # handle advances before other play actions
-        game_state.handle_advances(play.advances)
-
         # process each play action
         for action in play.actions:
             a_str = action.action
@@ -126,6 +123,9 @@ class EventFactory:
 
                 if not action_handler_assigned:
                     fail(f"Action not handled!  {a_str}")
+
+        # handle advances before other play actions
+        game_state.handle_advances(play.advances)
 
         # ensure that at least one batter event exists
         if is_defensive_play(play):
