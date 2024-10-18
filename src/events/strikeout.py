@@ -14,6 +14,15 @@ class StrikeoutEvent(BaseEvent):
 
     DROPPED_THIRD_STRIKE_PUTOUT : str = "K23"
 
+    def is_batter_advance_in_advances(self):
+        """ Determine if there was a batter advance in the list of play
+            advances.
+        """
+        for advance in self.play_record.advances:
+            if advance.base_from in ["B", 0] and not advance.was_out:
+                return True
+        return False
+
     def handle(self):
         due_to = ""
         runner_saved = False
@@ -32,21 +41,17 @@ class StrikeoutEvent(BaseEvent):
         while chained_action is not None:
             if chained_action.action == EventCodes.WILD_PITCH:
                 due_to += "Wild Pitch, saving runner. "
-#                runner_saved = True
                 chained_action.handled_flag = True
 
                 # is there a base advance for the batter in the advances list?
-                batter_advanced = False
-                for advance in self.play_record.advances:
-                    if advance.base_from in ["B", 0] and not advance.was_out:
-                        batter_advanced = True
-                        break
-                runner_saved = batter_advanced
+                runner_saved = self.is_batter_advance_in_advances()
 
             elif chained_action.action == EventCodes.PASSED_BALL:
                 due_to += "Passed Ball, saving runner. "
-                runner_saved = True
                 chained_action.handled_flag = True
+
+                # is there a base advance for the batter in the advances list?
+                runner_saved = self.is_batter_advance_in_advances()
 
             chained_action = chained_action.chain_to
 
