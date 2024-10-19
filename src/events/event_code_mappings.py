@@ -135,6 +135,12 @@ class EventCodeMappings:
             EVENT_CLASS: "StolenBaseEvent"
         },
 
+        EventCodes.STOLEN_BASE_HOME:
+        {
+            EVENT_MODULE: "events.stolen_base",
+            EVENT_CLASS: "StolenBaseEvent"
+        },
+
         EventCodes.DEFENSIVE_INDIFFERENCE:
         {
             EVENT_MODULE: "events.defensive_indifference",

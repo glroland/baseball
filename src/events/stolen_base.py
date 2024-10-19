@@ -4,7 +4,7 @@ Stolen base game event.
 """
 import logging
 from events.base_event import BaseEvent
-from utils.data import split_leading_chars_from_numbers
+from utils.data import fail
 from utils.baseball import validate_base
 from model.advance_record import AdvanceRecord
 
@@ -38,11 +38,7 @@ class StolenBaseEvent(BaseEvent):
                     self.game_state.get_game_status_string())
 
         # Extract the tailing numbers
-        components = split_leading_chars_from_numbers(self.action.action)
-        if len(components) != 2:
-            self.fail(f"Illegal action for SB!  {self.action.action} " +
-                      f"ComponentLen={len(components)}")
-        base_to = components[1]
+        base_to = self.action.action[2:]
         validate_base(base_to, first_allowed=False)
 
         # determine if the advancement was already completed

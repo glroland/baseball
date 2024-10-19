@@ -23,6 +23,7 @@ class EventCodes:
     ERROR = "E"
     NO_PLAY_SUB_COMING = "NP"
     STOLEN_BASE = "SB"
+    STOLEN_BASE_HOME = "SBH"
     BATTER_HIT_BY_PITCH = "HP"
     FIELDERS_CHOICE = "FC"
     PICKED_OFF = "PO"
