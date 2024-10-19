@@ -375,6 +375,9 @@ class GameState(BaseModel):
                 # check for situation where advancement is to itself
                 if runner.is_out:
                     logger.info("Runner already out.  Ignoring advancement.")
+                elif out_override:
+                    logger.info("Runner out with advancement.  Ignoring progression")
+                    self.on_out(runner.current_base)
                 elif runner.original_base == base_to:
                     if out_override:
                         logger.info("Runner ran back to base but still out.")
