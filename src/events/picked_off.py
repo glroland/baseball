@@ -30,7 +30,8 @@ class PickedOffEvent(BaseEvent):
         credited_to = ""
         if len(self.action.groups) > 0:
             group = self.action.groups[0]
-            if len(group) > 0 and group[0] == Parameters.ERROR:
+            if (len(group) > 1 and group[1] == Parameters.ERROR) or \
+               (len(group) > 0 and group[0] == Parameters.ERROR):
                 logger.debug("Overriding pick off due to error")
                 override_po_due_to_error = True
 
