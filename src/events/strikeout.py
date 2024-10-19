@@ -43,24 +43,18 @@ class StrikeoutEvent(BaseEvent):
                 due_to += "Wild Pitch, saving runner. "
                 chained_action.handled_flag = True
 
-                # is there a base advance for the batter in the advances list?
-                runner_saved = self.is_batter_advance_in_advances()
-
             elif chained_action.action == EventCodes.PASSED_BALL:
                 due_to += "Passed Ball, saving runner. "
                 chained_action.handled_flag = True
-
-                # is there a base advance for the batter in the advances list?
-                runner_saved = self.is_batter_advance_in_advances()
 
             elif chained_action.action[0] == EventCodes.ERROR:
                 due_to += "Error, saving runner. "
                 chained_action.handled_flag = True
 
-                # is there a base advance for the batter in the advances list?
-                runner_saved = self.is_batter_advance_in_advances()
-
             chained_action = chained_action.chain_to
+
+        # is there a base advance for the batter in the advances list?
+        runner_saved = self.is_batter_advance_in_advances()
 
         called = ""
         #while len(game_at_bat.modifiers) > 0:
