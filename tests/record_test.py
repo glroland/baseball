@@ -314,7 +314,7 @@ def test_out_multi_mods_multi_adv_multi_groups_and_out():
     assert(r.advances[1].advance == "BX2")
     assert(r.advances[1].base_from == "B")
     assert(r.advances[1].base_to == "2")
-    assert(r.advances[1].was_out == True)
+    assert(r.advances[1].was_out == False)
     assert(len(r.advances[1].groups) == 1)
     assert(r.advances[1].groups[0] == "6E1")
     assert(len(r.actions) == 1)

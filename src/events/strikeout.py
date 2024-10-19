@@ -3,6 +3,7 @@
 Runner striked out game event.
 """
 import logging
+import re
 from events.base_event import BaseEvent
 from events.constants import EventCodes
 from utils.data import fail
@@ -26,9 +27,7 @@ class StrikeoutEvent(BaseEvent):
         runner_saved = False
 
         # Check for dropped putout
-        if len(self.action.action) >= 3 and \
-            self.action.action[0] == EventCodes.STRIKEOUT and \
-            self.action.action[2] == "3":
+        if re.match("^K[0-9]+$", self.action.action):
             #runner_saved = True
             due_to += "Dropped third stike putout. "
 

@@ -18,6 +18,7 @@ class AdvanceRecord(BaseModel):
     base_from : str = None
     base_to : str = None
     was_out : bool = False
+    was_error : bool = False
     groups : List[str] = []
 
     # pylint: disable=unused-private-member,too-many-branches
@@ -57,10 +58,13 @@ class AdvanceRecord(BaseModel):
                     logger.debug("Advancement Parameter - numbers plus AP - %s", group)
                 elif re.match("^[0-9]*E[0-9]/TH[123H]?$", group):
                     logger.debug("Advancement Parameter - error due to throw - %s", group)
+                    self.was_error = True
                 elif re.match("^[0-9]*E[0-9]/OBS?$", group):
                     logger.debug("Advancement Parameter - error due to OBS - %s", group)
+                    self.was_error = True
                 elif re.match("^[0-9]*E[0-9]$", group):
                     logger.debug("Advancement Parameter - error - %s", group)
+                    self.was_error = True
                 elif group == "ER":
                     logger.debug("Advancement Parameter - Earned Run")
                 elif group == "UR":
@@ -113,7 +117,7 @@ class AdvanceRecord(BaseModel):
         # extrapolate key fields
         record.base_from = record.advance[0]
         record.base_to = record.advance[2]
-        record.was_out = record.advance[1] == "X"
+        record.was_out = record.advance[1] == "X" and not record.was_error
 
         return record
 
