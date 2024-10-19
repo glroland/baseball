@@ -12,8 +12,6 @@ logger = logging.getLogger(__name__)
 class StrikeoutEvent(BaseEvent):
     """ Strikeout Event """
 
-    DROPPED_THIRD_STRIKE_PUTOUT : str = "K23"
-
     def is_batter_advance_in_advances(self):
         """ Determine if there was a batter advance in the list of play
             advances.
@@ -28,7 +26,9 @@ class StrikeoutEvent(BaseEvent):
         runner_saved = False
 
         # Check for dropped putout
-        if self.action.action == self.DROPPED_THIRD_STRIKE_PUTOUT:
+        if len(self.action.action) >= 3 and \
+            self.action.action[0] == EventCodes.STRIKEOUT and \
+            self.action.action[2] == "3":
             #runner_saved = True
             due_to += "Dropped third stike putout. "
 
@@ -48,6 +48,13 @@ class StrikeoutEvent(BaseEvent):
 
             elif chained_action.action == EventCodes.PASSED_BALL:
                 due_to += "Passed Ball, saving runner. "
+                chained_action.handled_flag = True
+
+                # is there a base advance for the batter in the advances list?
+                runner_saved = self.is_batter_advance_in_advances()
+
+            elif chained_action.action[0] == EventCodes.ERROR:
+                due_to += "Error, saving runner. "
                 chained_action.handled_flag = True
 
                 # is there a base advance for the batter in the advances list?
