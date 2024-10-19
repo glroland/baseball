@@ -70,6 +70,15 @@ class DefensivePlayEvent(BaseEvent):
                     re.match("^[0-9]+$", modifier[1]):
                     non_advancing_out = True
                     logger.info("Batter out due to fly ball.")
+                elif modifier == Modifiers.BATTER_INTERFERENCE:
+                    for advance in self.play_record.advances:
+                        if advance.base_from == advance.base_to:
+                            non_advancing_out = True
+                            break
+                    if non_advancing_out:
+                        logger.info("Batter Interferance and runners not advancing.")
+                    else:
+                        logger.info("Batter Interferance (runners advancing).")
 
         # check for an advancement reversal
         for advance in self.game_state._completed_advancements:

@@ -62,6 +62,7 @@ class Modifiers:
     PICKED_OFF = "PO"
     GROUND_BALL_BUNT = "BG"
     LINE_DRIVE_BUNT = "BL"
+    BATTER_INTERFERENCE = "BINT"
 
 #pylint: disable=too-few-public-methods
 class Parameters:
