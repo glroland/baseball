@@ -8,12 +8,22 @@ that we can more easily use to build training data for the models.
 import logging
 import os
 import csv
+import shutil
 from pipelines.event_file_pipeline import EventFilePipeline
 
 logger = logging.getLogger(__name__)
 
 ROSTER_FILE_EXTENSION_AMERICAN = ".EVA"
 ROSTER_FILE_EXTENSION_NATIONAL = ".EVN"
+
+def move_to_done(file_with_path, done_dir):
+    """ Moves a file considered processed to the completed directory.
+    
+        file_with_path - file with path
+        done_dir - where the file should be moved to
+    """
+    logger.info("Moving file to processed directory.  Old=%s New=%s", file_with_path, done_dir)
+    shutil.move(file_with_path, done_dir)
 
 def import_event_file(file_with_path):
     """ Imports the specified event file.
@@ -42,6 +52,10 @@ def import_event_file(file_with_path):
 
     # Save Games
     event_file_pipeline.save()
+    # TODO - Moving to hard coded directory is temporary
+    move_to_done(file_with_path, "../data/done")
+#            logger.debug("Deleting file after successful processing: %s", file)
+#            os.remove(file)
 
 def import_all_event_data_files(directory):
     """ Imports all event data files stored in the specified directory.
@@ -55,6 +69,4 @@ def import_all_event_data_files(directory):
             file_with_path = directory + file
             import_event_file(file_with_path)
 
-#            logger.debug("Deleting file after successful processing: %s", file)
-#            os.remove(file)
-    logger.debug("All files imported")
+    logger.info("All files imported")
