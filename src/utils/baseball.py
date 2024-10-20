@@ -167,6 +167,12 @@ def __comparator_play_advances(advance1, advance2):
     if not isinstance(advance2, AdvanceRecord):
         fail(f"Input action1 is wrong type. {type(advance2)}")
 
+    # prioritize outs
+    if advance1.was_out and not advance2.was_out:
+        return 1
+    if not advance1.was_out and advance2.was_out:
+        return -1
+
     # extract base from values
     advance1_int = get_base_as_int(advance1.base_from[0])
     advance2_int = get_base_as_int(advance2.base_from[0])

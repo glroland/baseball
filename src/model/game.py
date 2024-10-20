@@ -103,7 +103,9 @@ class Game(BaseModel):
             logger.info("Inning %s / Bottom - Home Team at Bat", inning)
 
         # process each action under the play record
+        logger.debug("(Before Play) Runners - %s", game_at_bat.game_state._runners)
         EventFactory.create(game_at_bat)
+        logger.info("(After Play) Runners - %s", game_at_bat.game_state._runners)
 
         # validate the game after each at bat
         #self.validate()
