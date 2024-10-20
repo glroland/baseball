@@ -13,5 +13,7 @@ GAMES_TO_SKIP : List[str] = \
     "NYA201508170",
 
     # skipping these due to various data issues that need to be supported somehow
-    "CIN201005170"      # 'S9/G.2-3;1X3(936);B-2(TH3)' when runners on 12-
+    "CIN201005170",     # 'S9/G.2-3;1X3(936);B-2(TH3)' when runners on 12-
+    "OAK202009081",     # Innings out of order and for some reason its confusing the load
+    "OAK202009262"      # Innings out of order and for some reason its confusing the load
 ]
