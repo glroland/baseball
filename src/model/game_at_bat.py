@@ -5,6 +5,7 @@ Baseball data structures used throughout the application.
 import logging
 from model.game_play import GamePlay
 from model.play_record import PlayRecord
+from utils.data import to_json_string
 
 logger = logging.getLogger(__name__)
 
@@ -13,8 +14,12 @@ logger = logging.getLogger(__name__)
 class GameAtBat(GamePlay):
     """ At Bat Record for a Game """
     player_code : str = None
-    count : int = None
-    pitches : int = None
+    count : str = None
+    pitches : str = None
     play : PlayRecord = None
     hit_to_location : int = None
     fielded_by : str = None
+
+    def __str__(self) -> str:
+        """ Create JSON string representation of the object. """
+        return to_json_string(self)

@@ -22,6 +22,7 @@ class StrikeoutEvent(BaseEvent):
                 return True
         return False
 
+    # pylint: disable=too-many-branches
     def handle(self):
         due_to = ""
         runner_saved = False

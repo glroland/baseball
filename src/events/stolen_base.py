@@ -4,7 +4,6 @@ Stolen base game event.
 """
 import logging
 from events.base_event import BaseEvent
-from utils.data import fail
 from utils.baseball import validate_base
 from model.advance_record import AdvanceRecord
 

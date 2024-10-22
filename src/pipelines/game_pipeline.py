@@ -10,6 +10,7 @@ from model.game import Game
 from model.starter import Starter
 from model.data import Data
 from utils.data import fail
+from ingest.save_event_data import save_game
 
 logger = logging.getLogger(__name__)
 
@@ -81,14 +82,14 @@ class GamePipeline(BasePipeline):
         for game_events_pipeline in self.game_events_pipelines:
             game_events_pipeline.execute_pipeline()
 
-
     def save(self, sql_connection):
         """ Save this game record to the database 
         
             sql_connection - sql connection to use for tx
         """
         logger.info("Saving Game #%s", self.game.game_id)
-
+        save_game(sql_connection, self.game)
+        logger.debug("Game saved!  %s", self.game.game_id)
 
     def processing_complete(self):
         """ Formally acknowledges that the feed is loaded """

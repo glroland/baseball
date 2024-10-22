@@ -18,7 +18,7 @@ def save_game_base_record(sql_connection, game):
     logger.debug("Saving Base Game Record!  ID=%s", game.game_id)
 
     # get game score
-    score_visitor, score_home = game.score()
+    score_visitor, score_home = game.get_score()
 
     # Save Game
     sql = """
@@ -238,7 +238,7 @@ def save_pitches(sql_cursor, game_id, play_index, pitches):
             ]
         )
 
-
+# pylint: disable=protected-access
 def save_game_play_atbat(sql_connection, game_id, index, atbat):
     """ Save the Game Play record.
     
@@ -249,17 +249,30 @@ def save_game_play_atbat(sql_connection, game_id, index, atbat):
     """
     logger.debug("Saving At Bat!  ID=%s, Index=%s, AtBat=%s", game_id, index, atbat)
 
+    # retrieve runners
+    runner_1b = None
+    r = atbat.game_state.get_runner_on_base("1")
+    if r is not None and not r.is_out:
+        runner_1b = r.player_code
+    runner_2b = None
+    r = atbat.game_state.get_runner_on_base("2")
+    if r is not None and not r.is_out:
+        runner_2b = r.player_code
+    runner_3b = None
+    r = atbat.game_state.get_runner_on_base("3")
+    if r is not None and not r.is_out:
+        runner_3b = r.player_code
+
     # Save Game Play
     sql = """
         insert into game_play_atbat
         (
             id, play_index, inning, home_team_flag, player_code, count, pitches,
-            basic_play, modifiers, advance, outs, runner_on_1b, runner_on_2b,
-            runner_on_3b, score_home, score_visitor
+            full_action_str, outs, runner_1b, runner_2b, runner_3b, score_home, score_visitor
         )
         values 
         (
-            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
         )
            """
     with sql_connection.cursor() as sql_cursor:
@@ -267,20 +280,18 @@ def save_game_play_atbat(sql_connection, game_id, index, atbat):
             [
                 game_id,
                 index,
-                atbat.inning,
-                atbat.home_team_flag,
+                atbat.game_state._inning,
+                atbat.game_state._top_of_inning_flag,
                 atbat.player_code,
                 atbat.count,
                 atbat.pitches,
-                atbat.basic_play,
-                atbat.modifiers,
-                atbat.advance,
-                atbat.outs,
-                atbat.runner_on_1b,
-                atbat.runner_on_2b,
-                atbat.runner_on_3b,
-                atbat.score_home,
-                atbat.score_visitor
+                atbat.play.original_play_record,
+                atbat.game_state._outs,
+                runner_1b,
+                runner_2b,
+                runner_3b,
+                atbat.game_state._score_home,
+                atbat.game_state._score_visitor
             ]
         )
         save_pitches(sql_cursor, game_id, index, atbat.pitches)
@@ -296,6 +307,11 @@ def save_game_play_sub(sql_connection, game_id, index, sub):
         sub - substitution record
     """
     logger.debug("Saving Substitution!  ID=%s, Index=%s, Sub=%s", game_id, index, sub)
+
+    # TODO Fix issue causing empty player to values
+    player_to = sub.player_to
+    if player_to is None:
+        player_to = "UNKNOWN"
 
     # Save Game Play
     sql = """
@@ -320,7 +336,7 @@ def save_game_play_sub(sql_connection, game_id, index, sub):
                 game_id,
                 index,
                 sub.player_from,
-                sub.player_to,
+                player_to, #TODO sub.player_to,
                 sub.players_team_home_flag,
                 sub.batting_order,
                 sub.fielding_position

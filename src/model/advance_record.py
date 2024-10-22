@@ -21,7 +21,7 @@ class AdvanceRecord(BaseModel):
     was_error : bool = False
     groups : List[str] = []
 
-    # pylint: disable=unused-private-member,too-many-branches
+    # pylint: disable=unused-private-member,too-many-branches,too-many-statements
     def __parse_advancement_str(self, a):
         """ Parse Advancement String.
         

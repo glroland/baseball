@@ -45,8 +45,11 @@ class ColorOutputFormatter(logging.Formatter):
               help='whether or not to skip files with errors or abort')
 @click.option('--delete', default=False, is_flag=True,
               help='whether or not to delete files after processing')
+@click.option('--no-save', default=False, is_flag=True,
+              help='whether or not to skip saving of game data')
 # pylint: disable=too-many-arguments
-def cli(event_file_or_dir, truncate, log_file, move_to_dir, skip_errors, delete):
+def cli(event_file_or_dir, truncate, log_file, move_to_dir,
+        skip_errors=False, delete=False, no_save=False):
     """ CLI utility for importing Retrosheet event files into the game
         history database.  This tool assumes that team and roster data
         has already been imported.
@@ -83,10 +86,10 @@ def cli(event_file_or_dir, truncate, log_file, move_to_dir, skip_errors, delete)
 
     if os.path.isfile(event_file_or_dir):
         # Import event file
-        import_event_file(event_file_or_dir, move_to_dir, delete)
+        import_event_file(event_file_or_dir, move_to_dir, delete, no_save)
     elif os.path.isdir(event_file_or_dir):
         # Import all files in directory
-        import_all_event_data_files(event_file_or_dir, move_to_dir, skip_errors, delete)
+        import_all_event_data_files(event_file_or_dir, move_to_dir, skip_errors, delete, no_save)
     else:
         logger.error("Input events location is neither a file nor a directory! %s",
                      event_file_or_dir)

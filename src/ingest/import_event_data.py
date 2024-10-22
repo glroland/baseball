@@ -26,7 +26,7 @@ def move_to_done(file_with_path, done_dir):
     logger.info("Moving file after successful processing: From%s To=%s", file_with_path, done_dir)
     shutil.move(file_with_path, done_dir)
 
-def import_event_file(file_with_path, move_to_dir, delete):
+def import_event_file(file_with_path, move_to_dir, delete, nosave):
     """ Imports the specified event file.
     
         file_with_path - file to import
@@ -56,7 +56,10 @@ def import_event_file(file_with_path, move_to_dir, delete):
     event_file_pipeline.execute_pipeline()
 
     # Save Games
-    event_file_pipeline.save()
+    if nosave:
+        logger.info("Skipping save per CLI directive.")
+    else:
+        event_file_pipeline.save()
 
     # Move file upon successful processing
     if move_to_dir is not None:
@@ -67,7 +70,7 @@ def import_event_file(file_with_path, move_to_dir, delete):
         logger.info("Deleting file after successful processing: %s", file_with_path)
         os.remove(file_with_path)
 
-def import_all_event_data_files(directory, move_to_dir, skip_errors, delete):
+def import_all_event_data_files(directory, move_to_dir, skip_errors, delete, nosave):
     """ Imports all event data files stored in the specified directory.
     
         directory - directory to import roster files from
@@ -79,7 +82,7 @@ def import_all_event_data_files(directory, move_to_dir, skip_errors, delete):
             file_with_path = directory + file
 
             try:
-                import_event_file(file_with_path, move_to_dir, delete)
+                import_event_file(file_with_path, move_to_dir, delete, nosave)
             except ValueError as e:
                 if skip_errors:
                     logger.warning("Skipping processing error!  %s", e)
