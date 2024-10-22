@@ -10,6 +10,7 @@ import os
 import csv
 import shutil
 from pipelines.event_file_pipeline import EventFilePipeline
+from utils.data import fail
 
 logger = logging.getLogger(__name__)
 
@@ -22,15 +23,19 @@ def move_to_done(file_with_path, done_dir):
         file_with_path - file with path
         done_dir - where the file should be moved to
     """
-    logger.info("Moving file to processed directory.  Old=%s New=%s", file_with_path, done_dir)
+    logger.info("Moving file after successful processing: From%s To=%s", file_with_path, done_dir)
     shutil.move(file_with_path, done_dir)
 
-def import_event_file(file_with_path):
+def import_event_file(file_with_path, move_to_dir, delete):
     """ Imports the specified event file.
     
         file_with_path - file to import
     """
     logger.info("Importing Event File: %s", file_with_path)
+
+    # Validate argumnets
+    if move_to_dir is not None and delete:
+        fail("Cannot both move and delete file!")
 
     # Ensure file exists
     if not os.path.isfile(file_with_path):
@@ -52,12 +57,17 @@ def import_event_file(file_with_path):
 
     # Save Games
     event_file_pipeline.save()
-    # TODO - Moving to hard coded directory is temporary
-    move_to_done(file_with_path, "../data/done")
-#            logger.debug("Deleting file after successful processing: %s", file)
-#            os.remove(file)
 
-def import_all_event_data_files(directory):
+    # Move file upon successful processing
+    if move_to_dir is not None:
+        move_to_done(file_with_path, move_to_dir)
+
+    # Delete file upon successful processing
+    if delete:
+        logger.info("Deleting file after successful processing: %s", file_with_path)
+        os.remove(file_with_path)
+
+def import_all_event_data_files(directory, move_to_dir, skip_errors, delete):
     """ Imports all event data files stored in the specified directory.
     
         directory - directory to import roster files from
@@ -67,6 +77,13 @@ def import_all_event_data_files(directory):
         if file.endswith(ROSTER_FILE_EXTENSION_AMERICAN) or \
            file.endswith(ROSTER_FILE_EXTENSION_NATIONAL):
             file_with_path = directory + file
-            import_event_file(file_with_path)
+
+            try:
+                import_event_file(file_with_path, move_to_dir, delete)
+            except ValueError as e:
+                if skip_errors:
+                    logger.warning("Skipping processing error!  %s", e)
+                else:
+                    raise e
 
     logger.info("All files imported")

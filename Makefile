@@ -36,8 +36,17 @@ help:
 etest:
 	cd src && BASEBALL_DB_CONN_STRING=$(db_connection_string) python import_events_app.py ../data/raw/2000ANA.EVA --debug ../import_events_apps.log --truncate
 
+edev:
+	mkdir -p data/done
+	cd src && BASEBALL_DB_CONN_STRING=$(db_connection_string) python import_events_app.py ../data/raw/ --debug ../import_events_apps.log --truncate --move ../data/done
+
+erestore:
+	mkdir -p data/done
+	mv data/done/* data/raw/
+
 events:
-	cd src && BASEBALL_DB_CONN_STRING=$(db_connection_string) python import_events_app.py ../data/raw/ --debug ../import_events_apps.log --truncate
+	mkdir -p data/done
+	cd src && BASEBALL_DB_CONN_STRING=$(db_connection_string) python import_events_app.py ../data/raw/ --debug ../import_events_apps.log --truncate --skip-errors --move ../data/done
 
 test:
 	pytest

@@ -35,11 +35,18 @@ class ColorOutputFormatter(logging.Formatter):
 
 @click.command()
 @click.argument('event_file_or_dir')
-@click.option('--truncate', '-t', default=False, is_flag=True,
-              help='whether or not to truncate all the game tables before import')
-@click.option('--debug', '-d', 'log_file', default=None,
+@click.option('--truncate', default=False, is_flag=True,
+              help='whether or not to truncate game tables before import')
+@click.option('--debug', 'log_file', nargs=1, default=None,
               help='enable debug level logging or keep as info')
-def cli(event_file_or_dir, truncate, log_file):
+@click.option('--move', 'move_to_dir', nargs=1, default=None,
+              help='move files to another directory after processing')
+@click.option('--skip-errors', default=False, is_flag=True,
+              help='whether or not to skip files with errors or abort')
+@click.option('--delete', default=False, is_flag=True,
+              help='whether or not to delete files after processing')
+# pylint: disable=too-many-arguments
+def cli(event_file_or_dir, truncate, log_file, move_to_dir, skip_errors, delete):
     """ CLI utility for importing Retrosheet event files into the game
         history database.  This tool assumes that team and roster data
         has already been imported.
@@ -61,6 +68,14 @@ def cli(event_file_or_dir, truncate, log_file):
         file_handler.setFormatter(formatter)
         logging.getLogger().addHandler(file_handler)
 
+    # Validate arguments
+    if delete and move_to_dir is not None:
+        logger.error("Cannot both delete file and move to another directory after processing!")
+        sys.exit(1)
+    if os.path.isfile(event_file_or_dir) and skip_errors:
+        logger.error("Skipping errors is only allowed when the input is a directory, not a file!")
+        sys.exit(1)
+
     # (Optional) Truncate all game event data in the database
     if truncate:
         logger.warning("Truncating game table!")
@@ -68,10 +83,14 @@ def cli(event_file_or_dir, truncate, log_file):
 
     if os.path.isfile(event_file_or_dir):
         # Import event file
-        import_event_file(event_file_or_dir)
+        import_event_file(event_file_or_dir, move_to_dir, delete)
     elif os.path.isdir(event_file_or_dir):
         # Import all files in directory
-        import_all_event_data_files(event_file_or_dir)
+        import_all_event_data_files(event_file_or_dir, move_to_dir, skip_errors, delete)
+    else:
+        logger.error("Input events location is neither a file nor a directory! %s",
+                     event_file_or_dir)
+        sys.exit(2)
 
 if __name__ == '__main__':
-    cli(None, None, None)
+    cli(None, None, None, None, None)
