@@ -141,8 +141,8 @@ create table game_starter
 
     unique (id, home_team_flag, batting_order),
 
-    constraint pk_game_starter 
-            primary key (id, player_code),
+--    constraint pk_game_starter 
+--            primary key (id, player_code),
 
     constraint fk_game
             foreign key (id) 
