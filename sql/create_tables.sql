@@ -94,7 +94,7 @@ create table game
     ump_1b varchar(20) not null,
     ump_2b varchar(20) not null,
     ump_3b varchar(20) not null,
-    official_scorer varchar(20) not null,
+    official_scorer varchar(20),
     temperature int not null,
     wind_direction varchar(10) not null,
     wind_speed int not null,

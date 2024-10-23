@@ -6,6 +6,7 @@ import logging
 import psycopg
 from model.game_at_bat import GameAtBat
 from model.game_substitution import GameSubstitution
+from utils.data import get_optional_value
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +74,7 @@ def save_game_base_record(sql_connection, game):
                 game.info_attributes["ump1b"],
                 game.info_attributes["ump2b"],
                 game.info_attributes["ump3b"],
-                game.info_attributes["oscorer"],
+                get_optional_value(game.info_attributes, "oscorer"),
                 game.info_attributes["temp"],
                 game.info_attributes["winddir"],
                 game.info_attributes["windspeed"],

@@ -132,3 +132,21 @@ def get_base_as_int(base):
         return 4
 
     fail(f"get_base_as_int failing due to illegal parameter!  {base}")
+
+def get_optional_value(map, key):
+    """ Gets the value of the key in the set or none, if not present.
+    
+        key - key name
+    """
+    # validate arguments
+    if map is None:
+        fail("Input map value is None!")
+    if key is None:
+        fail("Input key for map is None!")
+
+    # handle non-existent key
+    if key not in map:
+        logger.debug("Key not present in map!  Key=%s", key)
+        return None
+
+    return map[key]
