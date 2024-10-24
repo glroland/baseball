@@ -29,17 +29,17 @@ endif
 	cd src && jupyter nbconvert --to python ingest/ingest_retrosheet_data.ipynb --stdout  | BASEBALL_DB_CONN_STRING=$(db_connection_string) python
 
 run:
-	cd src && BASEBALL_DB_CONN_STRING=$(db_connection_string) python import_events_app.py
+	cd src && python import_events_app.py
 
 help:
-	cd src && BASEBALL_DB_CONN_STRING=$(db_connection_string) python import_events_app.py --help
+	cd src && python import_events_app.py --help
 
 etest:
-	cd src && BASEBALL_DB_CONN_STRING=$(db_connection_string) python import_events_app.py ../data/raw/2000ANA.EVA --debug ../import_events_apps.log --truncate
+	cd src && python import_events_app.py ../data/raw/2000ANA.EVA  --save $(db_connection_string) --truncate --debug ../import_events_apps.log
 
 edev:
 	mkdir -p data/done
-	cd src && BASEBALL_DB_CONN_STRING=$(db_connection_string) python import_events_app.py ../data/raw/ --debug ../import_events_apps.log --truncate --move ../data/done --no-save
+	cd src && python import_events_app.py ../data/raw/ --debug ../import_events_apps.log --move ../data/done
 
 erestore:
 	mkdir -p data/done
@@ -47,7 +47,7 @@ erestore:
 
 events:
 	mkdir -p data/done
-	cd src && BASEBALL_DB_CONN_STRING=$(db_connection_string) python import_events_app.py ../data/raw/ --debug ../import_events_apps.log --truncate --skip-errors --move ../data/done
+	cd src && python import_events_app.py ../data/raw/  --save $(db_connection_string) --truncate --debug ../import_events_apps.log --skip-errors --move ../data/done
 
 test:
 	pytest

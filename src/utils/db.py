@@ -4,6 +4,7 @@ import os
 import subprocess
 # import pyodbc
 import psycopg
+from utils.data import fail
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +15,8 @@ DEFAULT_DB_CONN_STRING = "postgresql://baseball_app:baseball123@tools/baseball_d
 def connect_to_db_with_conn_str(connection_string):
     """ Connects to the baseball database """
     logger.debug("Connecting to database.  ConnectionString=%s", connection_string)
+    if connection_string is None or len(connection_string) == 0:
+        fail ("Empty connection string provided.  Cannot connect to database!")
 
     #return pyodbc.connect(connection_string)
     return psycopg.connect(connection_string)

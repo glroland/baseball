@@ -26,10 +26,13 @@ def move_to_done(file_with_path, done_dir):
     logger.info("Moving file after successful processing: From%s To=%s", file_with_path, done_dir)
     shutil.move(file_with_path, done_dir)
 
-def import_event_file(file_with_path, move_to_dir, delete, nosave):
+def import_event_file(file_with_path, db_conn_str, move_to_dir, delete):
     """ Imports the specified event file.
     
         file_with_path - file to import
+        db_conn_str - db connection string, or None if we shouldn't save
+        move_to_dir - where to move the file to, or None if file shouldn't be moved
+        delete - whether or not to delete the file
     """
     logger.info("Importing Event File: %s", file_with_path)
 
@@ -56,10 +59,10 @@ def import_event_file(file_with_path, move_to_dir, delete, nosave):
     event_file_pipeline.execute_pipeline()
 
     # Save Games
-    if nosave:
+    if db_conn_str is None:
         logger.info("Skipping save per CLI directive.")
     else:
-        event_file_pipeline.save()
+        event_file_pipeline.save(db_conn_str)
 
     # Move file upon successful processing
     if move_to_dir is not None:
@@ -70,10 +73,14 @@ def import_event_file(file_with_path, move_to_dir, delete, nosave):
         logger.info("Deleting file after successful processing: %s", file_with_path)
         os.remove(file_with_path)
 
-def import_all_event_data_files(directory, move_to_dir, skip_errors, delete, nosave):
+def import_all_event_data_files(directory, skip_errors, db_conn_str, move_to_dir, delete):
     """ Imports all event data files stored in the specified directory.
     
         directory - directory to import roster files from
+        skip_errors - flag indicating whether to skip files upon error
+        db_conn_str - database connection string, or None if don't save
+        move_to_dir - where to move the files to after processing, or None if dont' move
+        delete - flag indicating whether to delete the files after processing
     """
     logger.info("Importing Roster Data Files from Directory: %s", directory)
     for file in os.listdir(directory):
@@ -82,7 +89,7 @@ def import_all_event_data_files(directory, move_to_dir, skip_errors, delete, nos
             file_with_path = directory + file
 
             try:
-                import_event_file(file_with_path, move_to_dir, delete, nosave)
+                import_event_file(file_with_path, db_conn_str, move_to_dir, delete)
             except ValueError as e:
                 if skip_errors:
                     logger.warning("Skipping processing error!  %s", e)

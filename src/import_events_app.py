@@ -3,7 +3,7 @@ import logging
 import sys
 import os
 import click
-from utils.db import truncate_table, connect_to_db
+from utils.db import truncate_table, connect_to_db_with_conn_str
 from ingest.import_event_data import import_event_file, import_all_event_data_files
 
 logger = logging.getLogger(__name__)
@@ -35,6 +35,8 @@ class ColorOutputFormatter(logging.Formatter):
 
 @click.command()
 @click.argument('event_file_or_dir')
+@click.option('--save', 'db_conn_str', default=None, nargs=1,
+              help='whether or not to truncate game tables before import')
 @click.option('--truncate', default=False, is_flag=True,
               help='whether or not to truncate game tables before import')
 @click.option('--debug', 'log_file', nargs=1, default=None,
@@ -45,11 +47,9 @@ class ColorOutputFormatter(logging.Formatter):
               help='whether or not to skip files with errors or abort')
 @click.option('--delete', default=False, is_flag=True,
               help='whether or not to delete files after processing')
-@click.option('--no-save', default=False, is_flag=True,
-              help='whether or not to skip saving of game data')
 # pylint: disable=too-many-arguments
-def cli(event_file_or_dir, truncate, log_file, move_to_dir,
-        skip_errors=False, delete=False, no_save=False):
+def cli(db_conn_str, event_file_or_dir, truncate, log_file, move_to_dir,
+        skip_errors=False, delete=False):
     """ CLI utility for importing Retrosheet event files into the game
         history database.  This tool assumes that team and roster data
         has already been imported.
@@ -72,24 +72,27 @@ def cli(event_file_or_dir, truncate, log_file, move_to_dir,
         logging.getLogger().addHandler(file_handler)
 
     # Validate arguments
+    if truncate and db_conn_str is None:
+        logger.error("Cannot truncate tables if no connection string was provided!")
+        sys.exit(1)
     if delete and move_to_dir is not None:
         logger.error("Cannot both delete file and move to another directory after processing!")
-        sys.exit(1)
+        sys.exit(2)
     if os.path.isfile(event_file_or_dir) and skip_errors:
         logger.error("Skipping errors is only allowed when the input is a directory, not a file!")
-        sys.exit(1)
+        sys.exit(3)
 
     # (Optional) Truncate all game event data in the database
     if truncate:
         logger.warning("Truncating game table!")
-        truncate_table(connect_to_db(), "game", True)
+        truncate_table(connect_to_db_with_conn_str(db_conn_str), "game", True)
 
     if os.path.isfile(event_file_or_dir):
         # Import event file
-        import_event_file(event_file_or_dir, move_to_dir, delete, no_save)
+        import_event_file(event_file_or_dir, db_conn_str, move_to_dir, delete)
     elif os.path.isdir(event_file_or_dir):
         # Import all files in directory
-        import_all_event_data_files(event_file_or_dir, move_to_dir, skip_errors, delete, no_save)
+        import_all_event_data_files(event_file_or_dir, skip_errors, db_conn_str, move_to_dir, delete)
     else:
         logger.error("Input events location is neither a file nor a directory! %s",
                      event_file_or_dir)

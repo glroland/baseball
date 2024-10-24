@@ -7,7 +7,7 @@ from typing import List
 import psycopg
 from pipelines.base_pipeline import BasePipeline
 from pipelines.game_pipeline import GamePipeline
-from utils.db import connect_to_db
+from utils.db import connect_to_db_with_conn_str
 from utils.data import fail
 from games_to_skip import GAMES_TO_SKIP
 
@@ -87,10 +87,19 @@ class EventFilePipeline(BasePipeline):
             self.inflight = None
 
 
-    def save(self):
-        """ Save all the encompassing game records to the database """
+    def save(self, db_conn_str):
+        """ Save all the encompassing game records to the database.
+        
+            db_conn_str - database connection string
+        """
         logger.info("Saving Games.  List is %s games long.", len(self.game_pipelines))
-        sql_connection = connect_to_db()
+
+        # Validate parameters
+        if db_conn_str is None:
+            fail("Save failed due to invalid DB Connection String!  (none)")
+
+        # Save all the game pipeline records
+        sql_connection = connect_to_db_with_conn_str(db_conn_str)
         try:
             for game_pipeline in self.game_pipelines:
                 game_pipeline.save(sql_connection)
