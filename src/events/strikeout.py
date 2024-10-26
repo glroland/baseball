@@ -13,6 +13,10 @@ logger = logging.getLogger(__name__)
 class StrikeoutEvent(BaseEvent):
     """ Strikeout Event """
 
+    def get_play_type_code(self) -> str:
+        """ Get the play type code. """
+        return "K"
+
     def is_batter_advance_in_advances(self):
         """ Determine if there was a batter advance in the list of play
             advances.

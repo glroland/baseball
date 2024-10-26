@@ -10,6 +10,10 @@ logger = logging.getLogger(__name__)
 class HomerunEvent(BaseEvent):
     """ Homerun Event """
 
+    def get_play_type_code(self) -> str:
+        """ Get the play type code. """
+        return "H"
+
     def handle(self):
         logger.info("Out of Park Home Run hit by batter")
 

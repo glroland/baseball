@@ -12,6 +12,10 @@ logger = logging.getLogger(__name__)
 class CaughtStealingEvent(BaseEvent):
     """ Caught Stealing Event """
 
+    def get_play_type_code(self) -> str:
+        """ Get the play type code. """
+        return "B"
+
     def handle(self):
         base = ""
         if self.action.action in [EventCodes.CAUGHT_STEALING_HOME,

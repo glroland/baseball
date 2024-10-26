@@ -19,6 +19,8 @@ class GameAtBat(GamePlay):
     play : PlayRecord = None
     hit_to_location : int = None
     fielded_by : str = None
+    pitcher : str = None
+    primary_play_type_cd : str = None
 
     def __str__(self) -> str:
         """ Create JSON string representation of the object. """

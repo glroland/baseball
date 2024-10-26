@@ -269,11 +269,12 @@ def save_game_play_atbat(sql_connection, game_id, index, atbat):
         insert into game_play_atbat
         (
             id, play_index, inning, home_team_flag, player_code, count, pitches,
-            full_action_str, outs, runner_1b, runner_2b, runner_3b, score_home, score_visitor
+            full_action_str, outs, runner_1b, runner_2b, runner_3b, score_home, score_visitor,
+            pitcher, primary_play_type_cd
         )
         values 
         (
-            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
         )
            """
     with sql_connection.cursor() as sql_cursor:
@@ -292,7 +293,9 @@ def save_game_play_atbat(sql_connection, game_id, index, atbat):
                 runner_2b,
                 runner_3b,
                 atbat.game_state._score_home,
-                atbat.game_state._score_visitor
+                atbat.game_state._score_visitor,
+                atbat.pitcher,
+                atbat.primary_play_type_cd
             ]
         )
         save_pitches(sql_cursor, game_id, index, atbat.pitches)

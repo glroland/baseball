@@ -141,8 +141,8 @@ create table game_starter
 
     unique (id, home_team_flag, batting_order),
 
---    constraint pk_game_starter 
---            primary key (id, player_code),
+    constraint pk_game_starter 
+            primary key (id, player_code, fielding_position),
 
     constraint fk_game
             foreign key (id) 
@@ -168,6 +168,36 @@ create table game_play
             references game (id)
 );
 
+create table play_type
+(
+    play_type_cd char(1) not null,
+    play_type_desc varchar(200) not null,
+
+    constraint pk_play_type
+            primary key (play_type_cd)
+);
+
+insert into play_type (play_type_cd, play_type_desc) values ('K', 'Strikeout');
+insert into play_type (play_type_cd, play_type_desc) values ('L', 'Wild Pitch');
+insert into play_type (play_type_cd, play_type_desc) values ('W', 'Walk');
+insert into play_type (play_type_cd, play_type_desc) values ('3', 'Triple');
+insert into play_type (play_type_cd, play_type_desc) values ('2', 'Double');
+insert into play_type (play_type_cd, play_type_desc) values ('1', 'Single');
+insert into play_type (play_type_cd, play_type_desc) values ('0', 'Stolen Base');
+insert into play_type (play_type_cd, play_type_desc) values ('H', 'Homerun');
+insert into play_type (play_type_cd, play_type_desc) values ('E', 'Defensive Error');
+insert into play_type (play_type_cd, play_type_desc) values ('D', 'Defensive Play');
+insert into play_type (play_type_cd, play_type_desc) values ('P', 'Picked Off');
+insert into play_type (play_type_cd, play_type_desc) values ('A', 'Base Runner Advance');
+insert into play_type (play_type_cd, play_type_desc) values ('C', 'Fielders Choice');
+insert into play_type (play_type_cd, play_type_desc) values ('X', 'Hit By Pitch');
+insert into play_type (play_type_cd, play_type_desc) values ('I', 'Catcher Interference');
+insert into play_type (play_type_cd, play_type_desc) values ('N', 'Defensive Indifference');
+insert into play_type (play_type_cd, play_type_desc) values ('G', 'Ground Rule Double');
+insert into play_type (play_type_cd, play_type_desc) values ('F', 'Fly Ball Error');
+insert into play_type (play_type_cd, play_type_desc) values ('O', 'Passed Ball');
+insert into play_type (play_type_cd, play_type_desc) values ('B', 'Caught Stealing');
+
 create table game_play_atbat
 (
     id varchar(12) not null,
@@ -175,9 +205,11 @@ create table game_play_atbat
     inning int not null,
     home_team_flag boolean not null,
     player_code varchar(20) not null,
+    pitcher varchar(20),
     count varchar(2) not null,
     pitches varchar(100) not null,
     full_action_str varchar(100) not null,
+    primary_play_type_cd char(1),
     outs int not null,
     runner_1b varchar(20),
     runner_2b varchar(20),
@@ -190,7 +222,11 @@ create table game_play_atbat
 
     constraint fk_game_play
             foreign key (id, play_index) 
-            references game_play (id, play_index)
+            references game_play (id, play_index),
+
+    constraint fk_play_type
+            foreign key (primary_play_type_cd) 
+            references play_type (play_type_cd)
 );
 
 create table game_play_sub
@@ -219,38 +255,39 @@ create table pitch_type
 (
     pitch_type_cd char(1) not null,
     pitch_type_desc varchar(150) not null,
+    ball_or_strike char(1),
 
     constraint pk_pitch_type
             primary key (pitch_type_cd)
 );
 
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('+', 'following pickoff throw by the catcher');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('*', 'indicates the following pitch was blocked by the catcher');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('.', 'marker for play not involving the batter');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('1', 'pickoff throw to first');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('2', 'pickoff throw to second');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('3', 'pickoff throw to third');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('>', 'Indicates a runner going on the pitch');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('A', 'automatic strike, usually for pitch timer violation');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('B', 'ball');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('C', 'called strike');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('F', 'foul');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('H', 'hit batter');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('I', 'intentional ball');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('K', 'strike (unknown type)');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('L', 'foul bunt');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('M', 'missed bunt attempt');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('N', 'no pitch (on balks and interference calls)');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('O', 'foul tip on bunt');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('P', 'pitchout');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('Q', 'swinging on pitchout');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('R', 'foul ball on pitchout');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('S', 'swinging strike');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('T', 'foul tip');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('U', 'unknown or missed pitch');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('V', 'called ball because pitcher went to his mouth or automatic ball on intentional walk or pitch timer violation');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('X', 'ball put into play by batter');
-insert into pitch_type (pitch_type_cd, pitch_type_desc) values ('Y', 'ball put into play on pitchout');
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('+', 'following pickoff throw by the catcher', NULL);
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('*', 'indicates the following pitch was blocked by the catcher', NULL);
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('.', 'marker for play not involving the batter', NULL);
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('1', 'pickoff throw to first', NULL);
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('2', 'pickoff throw to second', NULL);
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('3', 'pickoff throw to third', NULL);
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('>', 'Indicates a runner going on the pitch', NULL);
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('A', 'automatic strike, usually for pitch timer violation', 'S');
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('B', 'ball', 'B');
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('C', 'called strike', 'S');
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('F', 'foul', 'S');
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('H', 'hit batter', 'B');
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('I', 'intentional ball', 'B');
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('K', 'strike (unknown type)', 'S');
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('L', 'foul bunt', 'S');
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('M', 'missed bunt attempt', 'S');
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('N', 'no pitch (on balks and interference calls)', NULL);
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('O', 'foul tip on bunt', 'S');
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('P', 'pitchout', 'B');
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('Q', 'swinging on pitchout', 'S');
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('R', 'foul ball on pitchout', 'S');
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('S', 'swinging strike', 'S');
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('T', 'foul tip', 'S');
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('U', 'unknown or missed pitch', 'B');
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('V', 'called ball because pitcher went to his mouth or automatic ball on intentional walk or pitch timer violation', 'B');
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('X', 'ball put into play by batter', 'S');
+insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('Y', 'ball put into play on pitchout', 'S');
 
 create table game_play_atbat_pitch
 (

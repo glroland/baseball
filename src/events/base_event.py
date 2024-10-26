@@ -18,6 +18,10 @@ class BaseEvent(BaseModel):
     action : ActionRecord = None
     play_record : PlayRecord = None
 
+    def get_play_type_code(self) -> str:
+        """ Return the play type code. """
+        return None
+
     def handle(self):
         """ Each Game Event Class should implement this method."""
         raise NotImplementedError()

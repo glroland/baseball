@@ -10,6 +10,10 @@ logger = logging.getLogger(__name__)
 class SingleEvent(BaseEvent):
     """ Single Event """
 
+    def get_play_type_code(self) -> str:
+        """ Get the play type code. """
+        return "1"
+
     def handle(self):
 
         #if len(op_details) > 0:

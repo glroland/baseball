@@ -16,7 +16,7 @@ from model.starter import Starter
 from model.runner import Runner
 from model.data import Data
 from events.event_factory import EventFactory
-from utils.data import to_json_string
+from utils.data import to_json_string, fail
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +32,25 @@ class Game(BaseModel):
     game_plays : List[GamePlay] = []
     data : List[Data] = []
     no_play_sub_player : str = None
+    current_pitcher_visitor : str = None
+    current_pitcher_home : str = None
+
+    def get_pitcher(self, home_team_flag):
+        """ Get the starting pitcher for the specified team:
+        
+            home_team_flag - true for home
+        """
+        if home_team_flag and self.current_pitcher_home is not None:
+            return self.current_pitcher_home
+        if not home_team_flag and self.current_pitcher_visitor is not None:
+            return self.current_pitcher_visitor
+
+        for starter in self.starters:
+            if home_team_flag == starter.home_team_flag and starter.fielding_position == 1:
+                return starter.player_code
+
+        fail("Unable to identify pitcher for game!  %s", self.game_id)
+        return None
 
     def get_last_at_bat(self) -> GameAtBat:
         """ Locate and return the last at bat record.  """
@@ -81,6 +100,10 @@ class Game(BaseModel):
             if game_at_bat.game_state._top_of_inning_flag  != \
                 last_at_bat.game_state._top_of_inning_flag:
                 game_at_bat.game_state.on_batting_team_change()
+
+        # add current pitcher to game at baat
+        game_at_bat.pitcher = self.get_pitcher(not game_at_bat.game_state._top_of_inning_flag)
+        logger.debug("Current Pitcher = %s", game_at_bat.pitcher)
 
         # add batter to game state
         batter = Runner("B")
@@ -145,6 +168,16 @@ class Game(BaseModel):
 
         logger.info("Player <%s> substituted with <%s>", game_subst.player_from,
                     game_subst.player_to)
+
+        if home_team_flag and player_from == self.current_pitcher_home:
+            self.current_pitcher_home = player_to
+            logger.info("New Pitcher for Home Team.  From=%s  To=%s", player_from, player_to)
+        elif not home_team_flag and player_from == self.current_pitcher_visitor:
+            self.current_pitcher_visitor = player_to
+            logger.info("New Pitcher for Visiting Team.  From=%s  To=%s", player_from, player_to)
+        elif fielding_position == 1:
+            fail("Pitcher was changed but the prior checks did not fire!  From=%s  To=%s", player_from, player_to)
+
         return game_subst
 
 

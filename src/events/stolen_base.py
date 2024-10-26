@@ -12,6 +12,10 @@ logger = logging.getLogger(__name__)
 class StolenBaseEvent(BaseEvent):
     """ Stolen Base Event """
 
+    def get_play_type_code(self) -> str:
+        """ Get the play type code. """
+        return "0"
+
     def advance_if_not_already_handled(self, game_state, base_from, base_to):
         """ Advance the runner, if this event has not already been handled
             through an explicit advance

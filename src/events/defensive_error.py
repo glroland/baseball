@@ -10,6 +10,10 @@ logger = logging.getLogger(__name__)
 class DefensiveErrorEvent(BaseEvent):
     """ Defensive Error Event """
 
+    def get_play_type_code(self) -> str:
+        """ Get the play type code. """
+        return "E"
+
     def handle(self):
         #fb = ""
         #if len(op_details) > 0:

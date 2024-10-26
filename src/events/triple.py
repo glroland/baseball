@@ -10,6 +10,10 @@ logger = logging.getLogger(__name__)
 class TripleEvent(BaseEvent):
     """ Triple Event """
 
+    def get_play_type_code(self) -> str:
+        """ Get the play type code. """
+        return "3"
+
     def handle(self):
         logger.info("Player Hit Triple.")
 

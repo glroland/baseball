@@ -13,6 +13,10 @@ logger = logging.getLogger(__name__)
 class PickedOffEvent(BaseEvent):
     """ Picked Off Event """
 
+    def get_play_type_code(self) -> str:
+        """ Get the play type code. """
+        return "P"
+
     def handle(self):
         logger.info("Runner Picked Off - %s - %s", self.action.action,
                     self.game_state.get_game_status_string())

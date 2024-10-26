@@ -11,6 +11,10 @@ logger = logging.getLogger(__name__)
 class FieldersChoiceEvent(BaseEvent):
     """ Fielders Choice Event """
 
+    def get_play_type_code(self) -> str:
+        """ Get the play type code. """
+        return "C"
+
     def handle(self):
         # Identify due to
         fielder = ""

@@ -10,6 +10,10 @@ logger = logging.getLogger(__name__)
 class FlyBallErrorEvent(BaseEvent):
     """ Fly Ball Error Event """
 
+    def get_play_type_code(self) -> str:
+        """ Get the play type code. """
+        return "F"
+
     def handle(self):
         """ Fielding team made an error on a fly ball.  Putting the batter on base.
         """

@@ -14,6 +14,10 @@ logger = logging.getLogger(__name__)
 class DefensivePlayEvent(BaseEvent):
     """ Defensive Play Event """
 
+    def get_play_type_code(self) -> str:
+        """ Get the play type code. """
+        return "D"
+
     # pylint: disable=too-many-branches,too-many-statements
     def handle(self):
         fielded_by = self.action.action

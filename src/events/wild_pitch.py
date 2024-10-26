@@ -10,6 +10,10 @@ logger = logging.getLogger(__name__)
 class WildPitchEvent(BaseEvent):
     """ Wild Pitch Event """
 
+    def get_play_type_code(self) -> str:
+        """ Get the play type code. """
+        return "L"
+
     def handle(self):
         """ Wild pitch event
         
