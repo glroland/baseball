@@ -8,3 +8,6 @@ click
 pydantic
 pybaseball
 pytest
+torch
+pandas
+scikit-learn
