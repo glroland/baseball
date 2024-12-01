@@ -65,7 +65,8 @@ ifeq "$(OS)" "Windows_NT"
 else
 	mkdir -p data/done
 endif
-	cd src && python import_events_app.py ../data/raw/  --save "$(db_connection_string)" --truncate --debug ../import_events_apps.log --skip-errors --move ../data/done
+#	cd src && python import_events_app.py ../data/raw/  --save "$(db_connection_string)" --truncate --debug ../import_events_apps.log --skip-errors --move ../data/done
+	cd src && python import_events_app.py ../data/raw/  --save "$(db_connection_string)" --debug ../import_events_apps.log --skip-errors --move ../data/done
 
 test:
 	pytest

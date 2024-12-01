@@ -1,0 +1,10 @@
+Instructions for backup/restore:
+https://www.postgresql.org/docs/8.1/backup.html
+
+Backup:
+pg_dump baseball_db > backup.sql
+zip 20241128.zip backup.sql
+rm backup.sql
+
+Restore:
+psql dbname < infile

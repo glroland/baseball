@@ -11,3 +11,6 @@ pytest
 torch
 pandas
 scikit-learn
+onnx
+onnxscript
+onnxruntime
