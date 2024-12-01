@@ -28,9 +28,11 @@ endif
 	psql -v ON_ERROR_STOP=1 "$(db_connection_string)" -w -f sql/create_tables.sql
 ifeq "$(OS)" "Windows_NT"
 	if not exist data\zips md data\zips
+	if not exist output md output
 	cd src && set "BASEBALL_DB_CONN_STRING=$(db_connection_string)" && jupyter nbconvert --to python ingest/ingest_retrosheet_data.ipynb --stdout  | python
 else
 	mkdir -p data/zips
+	mkdir -p output
 	cd src && jupyter nbconvert --to python ingest/ingest_retrosheet_data.ipynb --stdout  | BASEBALL_DB_CONN_STRING="$(db_connection_string)" python
 endif
 
