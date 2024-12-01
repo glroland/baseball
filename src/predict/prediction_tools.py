@@ -239,13 +239,14 @@ def drop_column(df, column):
     """
     df.drop(column, axis=1, inplace=True)
 
-def evaluate_model(model, test_x, test_y, roc_filename=None):
+def evaluate_model(model, test_x, test_y, roc_filename=None, label_descs=None):
     """ Evaluate the performance of the provided model.
 
         model - pytorch model
         test_x - test data set (input)
         test_y - test data set (expected output)
         roc_filename - if provided, save the roc curve to an image file
+        label_descs - array of the label descriptions
     """
     model.eval()
     with torch.no_grad():
@@ -265,7 +266,10 @@ def evaluate_model(model, test_x, test_y, roc_filename=None):
         i = 0
         while i < size_y:
             fpr, tpr, thresholds = roc_curve(test_y[:, i : i+1], y_pred[:, i : i+1])
-            plt.plot(fpr, tpr, label=str(i))        # ROC curve = TPR vs FPR
+            label = str(i)
+            if label_descs is not None and len(label_descs) >= i:
+                label = label_descs[i]
+            plt.plot(fpr, tpr, label=label)        # ROC curve = TPR vs FPR
             i += 1
         if i > 0:
             plt.legend(loc=0)
