@@ -1,16 +1,14 @@
 """ SQL Utilities"""
 import logging
-import os
 import subprocess
 # import pyodbc
 import psycopg
-from utils.data import fail
+from utils.data import fail, get_env_value
 
 logger = logging.getLogger(__name__)
 
 ENV_BASEBALL_DB_CONN_STRING = "BASEBALL_DB_CONN_STRING"
 DEFAULT_DB_CONN_STRING = "postgresql://baseball_app:baseball123@tools/baseball_db"
-
 
 def connect_to_db_with_conn_str(connection_string):
     """ Connects to the baseball database """
@@ -26,13 +24,7 @@ def connect_to_db():
     """ Connects to the baseball database """
     logger.debug("Connecting to database.")
 
-    connection_string = DEFAULT_DB_CONN_STRING
-    if ENV_BASEBALL_DB_CONN_STRING in os.environ:
-        connection_string = os.environ[ENV_BASEBALL_DB_CONN_STRING]
-        logger.info("Using Database Connection String from Environment Variable.")
-    else:
-        logger.warning("No DB Connection Info provided.  Using Default Connection String!!!")
-
+    connection_string = get_env_value(ENV_BASEBALL_DB_CONN_STRING, DEFAULT_DB_CONN_STRING)
     return connect_to_db_with_conn_str(connection_string)
 
 
@@ -105,9 +97,7 @@ def bulk_import_csv_file(data_file, table_name, sql_columns_mapping,
     logger.info("Bulk Importing Data File <%s> into Table <%s>", data_file, table_name)
 
     # Connect to database
-    connection_string = ENV_BASEBALL_DB_CONN_STRING
-    if ENV_BASEBALL_DB_CONN_STRING in os.environ:
-        connection_string = os.environ[ENV_BASEBALL_DB_CONN_STRING]
+    connection_string = get_env_value(ENV_BASEBALL_DB_CONN_STRING, DEFAULT_DB_CONN_STRING)
     sql_connection = connect_to_db_with_conn_str(connection_string)
 
     # Truncate load table

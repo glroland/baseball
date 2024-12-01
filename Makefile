@@ -10,6 +10,9 @@ db_connection_string ?= postgresql://$(db_user):$(db_password)@$(db_host):$(db_p
 db_dba_user ?= postgres
 db_dba_password ?= d8nnyr0cks
 db_dba_connection_string ?= postgresql://$(db_dba_user):$(db_dba_password)@$(db_host):$(db_port)
+model_registry_url ?= https://my-model-registry-rest.apps.ocpprod.home.glroland.com
+model_registry_token ?= $(shell oc whoami -t)
+model_registry_author ?= Baseball Author
 
 install:
 	pip install -r requirements.txt
@@ -69,6 +72,9 @@ else
 endif
 #	cd src && python import_events_app.py ../data/raw/  --save "$(db_connection_string)" --truncate --debug ../import_events_apps.log --skip-errors --move ../data/done
 	cd src && python import_events_app.py ../data/raw/  --save "$(db_connection_string)" --debug ../import_events_apps.log --skip-errors --move ../data/done
+
+model_server.test:
+	cd src && MODEL_REGISTRY_URL="$(model_registry_url)" MODEL_REGISTRY_AUTHOR="$(model_registry_author)" MODEL_REGISTRY_TOKEN="$(model_registry_token)" python utils/model_server_client.py
 
 test:
 	pytest
