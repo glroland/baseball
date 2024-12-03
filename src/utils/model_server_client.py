@@ -1,9 +1,10 @@
 """ Client utilities for connecting to the model server """
 import sys
 import logging
-import requests
 from urllib.parse import quote_plus
-#from utils.data import get_env_value
+import urllib3
+import requests
+from kubernetes import client, config
 from data import get_env_value, fail
 
 logger = logging.getLogger(__name__)
@@ -14,11 +15,24 @@ ENV_MODEL_REGISTRY_AUTHOR = "MODEL_REGISTRY_AUTHOR"
 
 BASE_MODEL_REGISTRY_API = "/api/model_registry/v1alpha3/"
 
-def invoke_model_registry_api(api, query_params = {}, data = {}):
-    """ Connect to the configured model registry. """
+REG_API_TIMEOUT = 30 # seconds
+
+def invoke_model_registry_api(api, query_params = None, data = None):
+    """ Connect to the configured model registry. 
+    
+        api - model registry api to invoke
+        query_params - optional query string parameters
+        data - optional post parameters
+    """
     url = get_env_value(ENV_MODEL_REGISTRY_URL)
     token = get_env_value(ENV_MODEL_REGISTRY_TOKEN)
     author = get_env_value(ENV_MODEL_REGISTRY_AUTHOR)
+
+    # set parameter defaults in a more safe way according to pylint
+    if query_params is None:
+        query_params = {}
+    if data is None:
+        data = {}
 
     endpoint = url + BASE_MODEL_REGISTRY_API + api
     if len(query_params) > 0:
@@ -32,7 +46,8 @@ def invoke_model_registry_api(api, query_params = {}, data = {}):
 
     response = requests.get(url=endpoint,
                             headers=headers,
-                            data=data)
+                            data=data,
+                            timeout=REG_API_TIMEOUT)
     if response.status_code != 200:
         fail(f"invoke_model_registry_api() failed! API={api} Code={response.status_code}")
 
@@ -74,6 +89,10 @@ def get_model(name):
     
         name - model name
     """
+    # validate parameters
+    if name is None or len(name) == 0:
+        fail("get_model() - No model name provided.")
+
     query_params = \
     {
         "name": name
@@ -86,6 +105,8 @@ def get_model_versions(model_id):
     
         model_id - model id
     """
+    if model_id is None or len(model_id) == 0:
+        fail("get_model_versions() - ID for Model with name is empty!")
     results = invoke_model_registry_api("registered_models/" + model_id + "/versions")
     return results["items"]
 
@@ -97,50 +118,180 @@ def get_model_version_artifacts(version_id):
     results = invoke_model_registry_api("model_versions/" + version_id + "/artifacts")
     return results["items"]
 
+def get_inference_services(namespace, model_id, model_version_id, inference_label_selector=None):
+    """ Gets the inference URL for the specified model.
+
+        model_id - model id
+        model_version_id - model version id
+        inference_label_selector - additional inference label selectors
+    """
+
+    # Configs can be set in Configuration class directly or using helper utility
+    config.load_kube_config()
+
+    # build label selector string
+    label_selector = f"modelregistry.opendatahub.io/model-version-id = {model_version_id}, " + \
+                     f"modelregistry.opendatahub.io/registered-model-id = {model_id}"
+    if inference_label_selector is not None:
+        label_selector += ", " + inference_label_selector
+
+    # query kubernetes api
+    v1 = client.CustomObjectsApi()
+    results = v1.list_namespaced_custom_object(group="serving.kserve.io",
+                                               version="v1beta1",
+                                               namespace=namespace,
+                                               plural="inferenceservices",
+                                               label_selector=label_selector,
+                                               watch=False,
+                                               pretty="true")
+
+    return results["items"]
+
+def do_labels_match(ref_labels, obj_labels):
+    """ Analyzes label inputs to determine if there is a match in obj.
+    
+        ref_labels - master reference values
+        obj_labels - object labels
+    """
+    # null or no reference labels is assumed to be a match
+    if ref_labels is None or len(ref_labels) == 0:
+        logger.debug("No reference labels provided.  Assuming match.")
+        return True
+
+    # null or no object labels is assumed to be a mismatch
+    if obj_labels is None or len(obj_labels) == 0:
+        logger.debug("No object labels provided.  Assumed a mismatch since ref labels exist.")
+        return False
+
+    # Create a list of label keys that must be matched to be considered matching overall
+    keys = []
+    if ref_labels is not None:
+        keys = list(ref_labels.keys())
+
+    # search labels
+    for custom_property in obj_labels:
+        pname = custom_property
+        pvalue = obj_labels[custom_property]["string_value"]
+
+        # remove from list if found
+        if pname in ref_labels:
+            expected_value = ref_labels[pname]
+            if expected_value == pvalue:
+                keys.remove(pname)
+
+    # determine if match
+    match = len(keys) == 0
+    logger.debug("Was match?  %s", match)
+    return match
+
+def get_model_inference_endpoint(namespace, model_name, version_name=None, version_dict=None,
+                                 inference_label_selector=None):
+    """ Gets the inference endpoint for the specified model matching the provided selectors.
+    
+        namespace - namespace
+        model_name - name of model
+        version_name - (optional) version number
+        version_dict - dictionary of strings containing property, value values for the label
+        inference_label_selector - k8s selector string for the inference service
+    """
+    logger.info("get_model_inference_endpoint() NS=%s Model=%s Version=%s VLs=%s, ILs=%s",
+                namespace, model_name, version_name, version_dict, inference_label_selector)
+
+    # get model id - validations occuring in get_model
+    model = get_model(model_name)
+    if model is None:
+        fail(f"get_model_inference_endpoint() - Could not find model matching name. {model_name}")
+    model_id = model["id"]
+
+    # get model_version - validations in get_model_versions
+    model_versions = get_model_versions(model_id)
+    if model_versions is None or len(model_versions) == 0:
+        fail("get_model_inference_endpoint() No matching model versions available for the " + \
+             f"specified model. {model_id}")
+
+    # find matching version
+    matching_model_version = None
+    for model_version in model_versions:
+        # match version name
+        if do_labels_match(version_dict, model_version["customProperties"]):
+            logger.debug("Labels Matched...  MN=%s", model_name)
+
+            # if version name is provided, it must also match
+            if version_name is not None and len(version_name) > 0:
+                logger.debug("Name provided - must also match.  In=%s Out=%s",
+                             version_name, model_version["name"])
+                if version_name == model_version["name"]:
+                    logger.debug("Version Name provided and matches.")
+                    if matching_model_version is None:
+                        logger.info("Matching Model Version.  MV=%s", model_version)
+                        matching_model_version = model_version
+                    else:
+                        fail("get_model_inference_endpoint() - multiple matching model " + \
+                             f"versions! {model_id}")
+            else:
+                logger.debug("No name provided and we have a match.")
+                if matching_model_version is None:
+                    logger.debug("Matching Model Version.  MV=%s", model_version)
+                    matching_model_version = model_version
+                else:
+                    fail("get_model_inference_endpoint() - multiple matching model versions! " + \
+                         f"{model_id}")
+
+    # ensure that a matching version was found
+    if matching_model_version is None:
+        fail(f"get_model_inference_endpoint() - no matching model version found!  M={model_id}")
+    model_version_id = matching_model_version["id"]
+    logger.debug("Matching Model Version # %s", model_version_id)
+
+    # get inference services
+    inference_services = get_inference_services(namespace,
+                                                model_id,
+                                                model_version_id,
+                                                inference_label_selector)
+    urls = []
+    for svc in inference_services:
+        url = svc["status"]["address"]["url"]
+        urls.append(url)
+
+    # validate list
+    if len(urls) == 0:
+        logger.debug("No match - empty urls list")
+        return None
+    if len(urls) > 1:
+        fail("get_model_inference_endpoint - Multiple urls available for model/version! " + \
+             f"M={model_id} MV={model_version_id}")
+
+    logger.info("Matching Inference URL:  %s", urls[0])
+    return urls[0]
+
 
 def main():
+    """ Main Method for Testing Purposes """
     # Default to not set
     logging.getLogger().setLevel(logging.NOTSET)
 
     # Log info and higher to the console
     console = logging.StreamHandler(sys.stdout)
+#    console.setLevel(logging.DEBUG)
     console.setLevel(logging.INFO)
     logging.getLogger().addHandler(console)
 
+    # disable urllib warnings
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
     print ("Starting")
 
-    set = get_all_models()
-    print ("SET:")
-    print(set)
-    print ()
-    for item in set:
-        print ("ITEM:")
-        print (item)
-        print()
+    results = get_model_inference_endpoint(namespace="fraud-detection",
+                                           model_name="Fraud Detection",
+                                           version_name="1")
+    print ("Test #1 Results - " + str(results))
 
-        childset = get_model_versions(item["id"])
-        print ("CHILD SET:")
-        print(childset)
-        print ()
+    version_labels = { "baseball_release": "production" }
+    results = get_model_inference_endpoint(namespace="fraud-detection",
+                                           model_name="Fraud Detection",
+                                           version_dict=version_labels)
+    print ("Test #2 Results - " + str(results))
 
-        for childitem in childset:
-            print ("CHILD ITEM:")
-            print (childitem)
-            print()
-
-
-            grandchildset = get_model_version_artifacts(childitem["id"])
-            print ("GRAND CHILD SET:")
-            print(grandchildset)
-            print ()
-
-            for grandchilditem in grandchildset:
-                print ("GRAND CHILD ITEM:")
-                print (grandchilditem)
-                print()
-
-
-    
 
 if __name__ == "__main__":
     main()

@@ -176,7 +176,8 @@ class Game(BaseModel):
             self.current_pitcher_visitor = player_to
             logger.info("New Pitcher for Visiting Team.  From=%s  To=%s", player_from, player_to)
         elif fielding_position == 1:
-            fail("Pitcher was changed but the prior checks did not fire!  From=%s  To=%s", player_from, player_to)
+            fail("Pitcher was changed but the prior checks did not fire!  From=%s  To=%s",
+                 player_from, player_to)
 
         return game_subst
 

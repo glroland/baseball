@@ -259,12 +259,13 @@ def evaluate_model(model, test_x, test_y, roc_filename=None, label_descs=None):
         plt.title("Receiver Operating Characteristics")
         plt.xlabel("False Positive Rate")
         plt.ylabel("True Positive Rate")
-    
+
         # Plot the ROC curve
         size_y = y_pred.shape[1]
         y_pred = model(test_x)
         i = 0
         while i < size_y:
+            # pylint: disable=unused-variable
             fpr, tpr, thresholds = roc_curve(test_y[:, i : i+1], y_pred[:, i : i+1])
             label = str(i)
             if label_descs is not None and len(label_descs) >= i:

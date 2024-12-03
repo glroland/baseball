@@ -129,7 +129,7 @@ class EventFactory:
                 if is_first_action:
                     game_at_bat.primary_play_type_cd = event.get_play_type_code()
                     logger.debug("Primary Play Type Code = %s", game_at_bat.primary_play_type_cd)
-            
+
             is_first_action = False
 
         # handle advances before other play actions
