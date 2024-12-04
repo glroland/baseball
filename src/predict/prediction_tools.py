@@ -2,6 +2,7 @@
 import os
 import copy
 import logging
+import joblib
 import pandas as pd
 from pandas.api.typing import NAType
 import numpy as np
@@ -280,6 +281,36 @@ def evaluate_model(model, test_x, test_y, roc_filename=None, label_descs=None):
 
         # must be last - after show a new figure is created
         plt.show()
+
+def save_scaler(scaler, filename):
+    """ Saves the provided scaler for later use.
+
+        scaler - scaler
+        filename - filename
+    """
+    # validate parameters
+    if scaler is None:
+        fail("save_scaler() cannot persist a null scaler")
+    if filename is None or len(filename) == 0:
+        fail("save_scaler() No filename provided")
+
+    # save a scaler
+    joblib.dump(scaler, filename)
+
+def load_scaler(filename):
+    """ Loads a previously persisted scaler.
+
+        filename - filename
+    """
+    # validate parameters
+    if filename is None or len(filename) == 0:
+        fail("load_scaler() No filename provided")
+
+    # load the previously persisted scaler
+    scaler = joblib.load(filename)
+    if scaler is None:
+        fail("load_scaler() Resulting scaler after load is null!")
+    return scaler
 
 #def onnx_infer(filename, torch_input):
 #    onnx_input = onnx_program.adapt_torch_inputs_to_onnx(torch_input)

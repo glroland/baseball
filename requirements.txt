@@ -15,3 +15,4 @@ onnx
 onnxscript
 onnxruntime
 kubernetes
+joblib
