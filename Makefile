@@ -1,7 +1,7 @@
 #
 # Configuration
 #
-db_host ?= localhost
+db_host ?= db
 db_port ?= 5432
 db_user ?= baseball_app
 db_password ?= baseball123
@@ -75,6 +75,9 @@ endif
 
 model_server.test:
 	cd src && MODEL_REGISTRY_URL="$(model_registry_url)" MODEL_REGISTRY_AUTHOR="$(model_registry_author)" MODEL_REGISTRY_TOKEN="$(model_registry_token)" python utils/model_server_client.py
+
+api.dev:
+	cd src && MODEL_REGISTRY_URL="$(model_registry_url)" MODEL_REGISTRY_AUTHOR="$(model_registry_author)" MODEL_REGISTRY_TOKEN="$(model_registry_token)" fastapi dev prediction_api.py
 
 test:
 	pytest

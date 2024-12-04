@@ -16,3 +16,5 @@ onnxscript
 onnxruntime
 kubernetes
 joblib
+fastapi[standard]
+
