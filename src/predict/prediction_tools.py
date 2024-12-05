@@ -215,7 +215,7 @@ def extract_categorical_columns(df, categorical_cols):
     """
     return pd.get_dummies(df, columns=categorical_cols, prefix=categorical_cols)
 
-def scale_int_values(df, old_column, new_column, drop_column_flag=False):
+def scale_int_values(df, old_column, new_column, drop_column_flag=False, save_scaler_file=None):
     """ For a dataframe, create a column with a scaled numerical range between 1 and 0.  Uses
         StandardScaler.
         
@@ -223,6 +223,7 @@ def scale_int_values(df, old_column, new_column, drop_column_flag=False):
         old_column - existing column name
         new_column - name of column to receive the new values
         drop_column_flag - whether to drop the old column after processing
+        save_scaler_file - where to save the scaler file (optional)
     """
     scaler = StandardScaler()
     scaler.fit(df.iloc[:, df.columns.get_loc(old_column) : df.columns.get_loc(old_column) + 1])
@@ -231,6 +232,8 @@ def scale_int_values(df, old_column, new_column, drop_column_flag=False):
 
     if drop_column_flag:
         df.drop(old_column, axis=1, inplace=True)
+
+    save_scaler(scaler, save_scaler_file)
 
 def drop_column(df, column):
     """ Drop the column from the dataframe.
