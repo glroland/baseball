@@ -153,8 +153,8 @@ def save_model(model, num_features, filename):
 
     # save the model
     torch_input = torch.randn(1, 1, num_features, num_features)
-    onnx_program = torch.onnx.dynamo_export(model, torch_input)
-    onnx_program.save(filename)
+    onnx_program = torch.onnx.export(model, torch_input, filename, dynamo=False)
+#    onnx_program.save(filename)
 
 def load_model(filename):
     """ Load a persisted onnx model from disk.
