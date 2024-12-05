@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from predict.predict_pitch_service import PredictPitchRequest, predict_pitch
+from predict.predict_play_service import PredictPlayRequest, predict_play
 from utils.data import get_env_value
 
 logger = logging.getLogger(__name__)
@@ -11,7 +12,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 ENV_MODEL_DIR = "MODEL_DIR"
-DEFAULT_MODEL_DIR = "../output/predict_pitch/"
+DEFAULT_MODEL_DIR = "../output/predict_play/"
 ENV_ENDPOINT_URL = "ENDPOINT_URL"
 DEFAULT_ENDPOINT_URL = ""
 ENV_MODEL_NAME = "MODEL_NAME"
@@ -50,4 +51,19 @@ async def predict_pitch_api(request : PredictPitchRequest):
 
     # perform operation
     result = predict_pitch(infer_endpoint, deployed_model_name, model_dir, request)
+    return { "result": result }
+
+@app.get("/predict_play")
+async def predict_play_api(request : PredictPlayRequest):
+    """ Fulfills a Predict Play API request
+    
+        request - request data structure
+    """
+    # get configured directory for model and scalers
+    model_dir = get_env_value(ENV_MODEL_DIR, DEFAULT_MODEL_DIR)
+    infer_endpoint = get_env_value(ENV_ENDPOINT_URL, DEFAULT_ENDPOINT_URL)
+    deployed_model_name = get_env_value(ENV_MODEL_NAME, DEFAULT_MODEL_NAME)
+
+    # perform operation
+    result = predict_play(infer_endpoint, deployed_model_name, model_dir, request)
     return { "result": result }

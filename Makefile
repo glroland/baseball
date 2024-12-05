@@ -13,9 +13,9 @@ db_dba_connection_string ?= postgresql://$(db_dba_user):$(db_dba_password)@$(db_
 model_registry_url ?= https://my-model-registry-rest.apps.ocpprod.home.glroland.com
 model_registry_token ?= $(shell oc whoami -t)
 model_registry_author ?= Baseball Author
-model_dir ?= ../output/predict_pitch/
-model_name ?= model.onnx
-endpoint_url ?= http://localhost:8080
+model_dir ?= ../output/predict_play/
+model_name ?= Baseball Predict Play - 20241204-1 - 2024-12-05T03:12:36.754Z metrics
+endpoint_url ?= https://baseball-predict-play-20241204-1-2024-12-05t031236754z-baseball.apps.ocpprod.home.glroland.com/v2/models/baseball-predict-play-20241204-1-2024-12-05t031236754z/infer
 
 install:
 	pip install -r requirements.txt
@@ -82,8 +82,11 @@ model_server.test:
 api.dev:
 	cd src && MODEL_REGISTRY_URL="$(model_registry_url)" MODEL_REGISTRY_AUTHOR="$(model_registry_author)" MODEL_REGISTRY_TOKEN="$(model_registry_token)" MODEL_DIR="$(model_dir)" ENDPOINT_URL="$(endpoint_url)" MODEL_NAME="$(model_name)" fastapi dev prediction_api.py
 
-api.test:
+api.test.pitch:
 	curl -X 'GET' 'http://localhost:8000/predict_pitch' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{ "pitch_index": 2, "pitch_count": 43, "runner_1b": "John", "runner_2b": "",  "runner_3b": "Jane", "is_home": true, "is_night": true, "score_deficit": -4}'
+
+api.test.play:
+	curl -X 'GET' 'http://localhost:8000/predict_play' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{ "pitch_index": 3, "pitch_count": 45, "score_deficit": 4, "runner_1b": "", "runner_2b": "John", "runner_3b": "Jane", "batting_hand": "L", "pitching_hand": "R", "outs": 2 }'
 
 test:
 	pytest
