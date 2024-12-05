@@ -92,7 +92,11 @@ def cli(db_conn_str, event_file_or_dir, truncate, log_file, move_to_dir,
         import_event_file(event_file_or_dir, db_conn_str, move_to_dir, delete)
     elif os.path.isdir(event_file_or_dir):
         # Import all files in directory
-        import_all_event_data_files(event_file_or_dir, skip_errors, db_conn_str, move_to_dir, delete)
+        import_all_event_data_files(event_file_or_dir,
+                                    skip_errors,
+                                    db_conn_str,
+                                    move_to_dir,
+                                    delete)
     else:
         logger.error("Input events location is neither a file nor a directory! %s",
                      event_file_or_dir)

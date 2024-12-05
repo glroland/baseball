@@ -19,6 +19,8 @@ import matplotlib.pyplot as plt
 
 logger = logging.getLogger(__name__)
 
+SCALER_SUFFIX = "_scaler.gz"
+
 # pylint: disable=too-few-public-methods
 class PredictionConstants:
     """ Constants used by the prediction tools. """
@@ -178,6 +180,16 @@ def one_for_true(row, label):
         return PredictionConstants.VALUE_TRUE
     return PredictionConstants.VALUE_FALSE
 
+def get_tf_num_for_value(x):
+    """ Gets the true/false numeric value for a given variable, based on whether it 
+        has been populated with something.
+        
+        x - value to test
+    """
+    if not isinstance(x, NAType) and len(x) > 0:
+        return PredictionConstants.VALUE_TRUE
+    return PredictionConstants.VALUE_FALSE
+
 def replace_populated_values_with_tf_num(df, old_column, new_column, drop_column_flag=False):
     """ For a dataframe, replace column value with a 1 or 0, depending on whether or not
         it is populated.
@@ -187,11 +199,19 @@ def replace_populated_values_with_tf_num(df, old_column, new_column, drop_column
         new_column - name of column to receive the new values
         drop_column_flag - whether to drop the old column after processing
     """
-    df[new_column] = df[old_column].apply(lambda x: PredictionConstants.VALUE_TRUE
-                if not isinstance(x, NAType) and len(x) > 0 else PredictionConstants.VALUE_FALSE)
+    df[new_column] = df[old_column].apply(lambda x: get_tf_num_for_value(x))
 
     if drop_column_flag:
         df.drop(old_column, axis=1, inplace=True)
+
+def get_tf_num_for_bool(x):
+    """ Gets the true/false numeric value for a given boolean.
+        
+        x - value to test
+    """
+    if x:
+        return PredictionConstants.VALUE_TRUE
+    return PredictionConstants.VALUE_FALSE
 
 def replace_boolean_values_with_tf_num(df, old_column, new_column, drop_column_flag=False):
     """ For a dataframe, replace a boolean value with a 1 or 0, depending on whether true or false.
@@ -234,6 +254,15 @@ def scale_int_values(df, old_column, new_column, drop_column_flag=False, save_sc
         df.drop(old_column, axis=1, inplace=True)
 
     save_scaler(scaler, save_scaler_file)
+
+def scale_single_value(scaler, value):
+    """ Scales a single value
+    
+        scaler - scaler
+        value - value
+    """
+    npa = scaler.transform(np.array([value]).reshape(-1, 1))
+    return npa.tolist()[0][0]
 
 def drop_column(df, column):
     """ Drop the column from the dataframe.
