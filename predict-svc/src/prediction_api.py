@@ -3,9 +3,9 @@ import logging
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from predict.predict_pitch_service import PredictPitchRequest, predict_pitch
-from predict.predict_play_service import PredictPlayRequest, predict_play
-from utils.data import get_env_value
+from predict_pitch_service import PredictPitchRequest, predict_pitch
+from predict_play_service import PredictPlayRequest, predict_play
+from utils import get_env_value
 
 logger = logging.getLogger(__name__)
 

@@ -50,6 +50,7 @@ insert into field_pos (field_pos_cd, field_pos_num, field_pos_desc) values ('OF'
 insert into field_pos (field_pos_cd, field_pos_num, field_pos_desc) values ('A', null, 'UNKNOWN (ACE?)');
 -- TODO - Not confident that 11 is PH
 insert into field_pos (field_pos_cd, field_pos_num, field_pos_desc) values ('PH', 11, 'Pinch Hitter');
+insert into field_pos (field_pos_cd, field_pos_num, field_pos_desc) values ('U', null, 'Unknown');
 
 create table team
 (

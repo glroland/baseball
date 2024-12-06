@@ -1,7 +1,7 @@
 #
 # Configuration
 #
-db_host ?= db
+db_host ?= localhost
 db_port ?= 5432
 db_user ?= baseball_app
 db_password ?= baseball123
@@ -18,69 +18,72 @@ model_name ?= Baseball Predict Play - 20241204-1 - 2024-12-05T03:12:36.754Z metr
 endpoint_url ?= https://baseball-predict-play-20241204-1-2024-12-05t031236754z-baseball.apps.ocpprod.home.glroland.com/v2/models/baseball-predict-play-20241204-1-2024-12-05t031236754z/infer
 
 install:
-	pip install -r requirements.txt
+	pip install -r data/requirements.txt
+	pip install -r import-app/requirements.txt
+	pip install -r predict-svc/requirements.txt
 
 lint:
-	pylint --recursive y src
+	pylint --recursive y --exit-zero data/src
+	pylint --recursive y --exit-zero import-app/src
+	pylint --recursive y --exit-zero predict-svc/src
 
-db:
-ifneq "$(db_dba_password)" "" 
-	psql "$(db_dba_connection_string)" -f sql/drop_db.sql
-	psql "$(db_dba_connection_string)" -f sql/create_db.sql
-else
-	psql -v ON_ERROR_STOP=1 -h $(db_host) -p $(db_port) -w -f sql/drop_db.sql
-	psql -v ON_ERROR_STOP=1 -h $(db_host) -p $(db_port) -w -f sql/create_db.sql
-endif
-	psql -v ON_ERROR_STOP=1 "$(db_connection_string)" -w -f sql/create_tables.sql
+init:
 ifeq "$(OS)" "Windows_NT"
-	if not exist data\zips md data\zips
-	if not exist output md output
-	cd src && set "BASEBALL_DB_CONN_STRING=$(db_connection_string)" && jupyter nbconvert --to python ingest/ingest_retrosheet_data.ipynb --stdout  | python
+	if not exist target md target
+	if not exist target\zips md target\zips
+	if not exist target\raw md target\raw
+	if not exist target\done md target\done
+else
+	mkdir -p target/zips
+	mkdir -p target/raw
+	mkdir -p target/done
+endif
+
+db: init
+ifneq "$(db_dba_password)" "" 
+	psql "$(db_dba_connection_string)" -f data/sql/drop_db.sql
+	psql "$(db_dba_connection_string)" -f data/sql/create_db.sql
+else
+	psql -v ON_ERROR_STOP=1 -h $(db_host) -p $(db_port) -w -f data/sql/drop_db.sql
+	psql -v ON_ERROR_STOP=1 -h $(db_host) -p $(db_port) -w -f data/sql/create_db.sql
+endif
+	psql -v ON_ERROR_STOP=1 "$(db_connection_string)" -w -f data/sql/create_tables.sql
+ifeq "$(OS)" "Windows_NT"
+	cd data/src/ingest && set "BASEBALL_DB_CONN_STRING=$(db_connection_string)" && jupyter nbconvert --to python ingest_retrosheet_data.ipynb --stdout  | python
 else
 	mkdir -p data/zips
 	mkdir -p output
-	cd src && jupyter nbconvert --to python ingest/ingest_retrosheet_data.ipynb --stdout  | BASEBALL_DB_CONN_STRING="$(db_connection_string)" python
+	cd data/src/ingest && jupyter nbconvert --to python ingest_retrosheet_data.ipynb --stdout  | BASEBALL_DB_CONN_STRING="$(db_connection_string)" python
 endif
 
 run:
-	cd src && python import_events_app.py
+	cd import-app/src && python import_events_app.py
 
 help:
-	cd src && python import_events_app.py --help
+	cd import-app/src && python import_events_app.py --help
 
-etest:
-	cd src && python import_events_app.py ../data/raw/2000ANA.EVA  --save "$(db_connection_string)" --truncate --debug ../import_events_apps.log
+etest: init
+	cd import-app/src && python import_events_app.py ../../target/raw/2000ANA.EVA  --save "$(db_connection_string)" --truncate --debug ../../target/import_events_apps.log
 
-edev:
+edev: init
+	cd import-app/src && python import_events_app.py ../../target/raw/ --debug ../../target/import_events_apps.log --move ../../target/done
+
+erestore: init
 ifeq "$(OS)" "Windows_NT"
-	if not exist data\done md data\done
+	move target/done/* target/raw/
 else
-	mkdir -p data/done
+	mv target/done/* target/raw/
 endif
-	cd src && python import_events_app.py ../data/raw/ --debug ../import_events_apps.log --move ../data/done
 
-erestore:
-ifeq "$(OS)" "Windows_NT"
-	if not exist data\done md data\done
-else
-	mkdir -p data/done
-endif
-	mv data/done/* data/raw/
-
-events:
-ifeq "$(OS)" "Windows_NT"
-	if not exist data\done md data\done
-else
-	mkdir -p data/done
-endif
+events: init
 #	cd src && python import_events_app.py ../data/raw/  --save "$(db_connection_string)" --truncate --debug ../import_events_apps.log --skip-errors --move ../data/done
-	cd src && python import_events_app.py ../data/raw/  --save "$(db_connection_string)" --debug ../import_events_apps.log --skip-errors --move ../data/done
+	cd import-app/src && python import_events_app.py ../../target/raw/  --save "$(db_connection_string)" --debug ../../target/import_events_apps.log --skip-errors --move ../../target/done
 
 model_server.test:
-	cd src && MODEL_REGISTRY_URL="$(model_registry_url)" MODEL_REGISTRY_AUTHOR="$(model_registry_author)" MODEL_REGISTRY_TOKEN="$(model_registry_token)" python utils/model_server_client.py
+	cd predict-svc/src && MODEL_REGISTRY_URL="$(model_registry_url)" MODEL_REGISTRY_AUTHOR="$(model_registry_author)" MODEL_REGISTRY_TOKEN="$(model_registry_token)" python model_server_client.py
 
 api.dev:
-	cd src && MODEL_REGISTRY_URL="$(model_registry_url)" MODEL_REGISTRY_AUTHOR="$(model_registry_author)" MODEL_REGISTRY_TOKEN="$(model_registry_token)" MODEL_DIR="$(model_dir)" ENDPOINT_URL="$(endpoint_url)" MODEL_NAME="$(model_name)" fastapi dev prediction_api.py
+	cd predict-svc/src && MODEL_REGISTRY_URL="$(model_registry_url)" MODEL_REGISTRY_AUTHOR="$(model_registry_author)" MODEL_REGISTRY_TOKEN="$(model_registry_token)" MODEL_DIR="$(model_dir)" ENDPOINT_URL="$(endpoint_url)" MODEL_NAME="$(model_name)" fastapi dev prediction_api.py
 
 api.test.pitch:
 	curl -X 'GET' 'http://localhost:8000/predict_pitch' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{ "pitch_index": 2, "pitch_count": 43, "runner_1b": "John", "runner_2b": "",  "runner_3b": "Jane", "is_home": true, "is_night": true, "score_deficit": -4}'
@@ -89,4 +92,4 @@ api.test.play:
 	curl -X 'GET' 'http://localhost:8000/predict_play' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{ "pitch_index": 3, "pitch_count": 45, "score_deficit": 4, "runner_1b": "", "runner_2b": "John", "runner_3b": "Jane", "batting_hand": "L", "pitching_hand": "R", "outs": 2 }'
 
 test:
-	pytest
+	cd import-app && pytest

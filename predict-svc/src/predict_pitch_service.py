@@ -1,11 +1,10 @@
 """ Attempts to predict whether a baseball pitch will be a ball or a strike. """
 import logging
 from pydantic import BaseModel
-from utils.data import fail, to_json_string
-from predict.prediction_tools import load_scaler, get_tf_num_for_value, get_tf_num_for_bool
-from predict.prediction_tools import SCALER_SUFFIX, scale_single_value
-from predict.inference_gateway import predict_via_rest
-import numpy as np
+from utils import fail, to_json_string
+from prediction_tools import load_scaler, get_tf_num_for_value, get_tf_num_for_bool
+from prediction_tools import SCALER_SUFFIX, scale_single_value
+from inference_gateway import predict_via_rest
 
 logger = logging.getLogger(__name__)
 

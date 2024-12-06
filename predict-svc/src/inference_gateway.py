@@ -1,7 +1,7 @@
 """ Service Gateway for invoking a hosted predictive model. """
 import logging
 import requests
-from utils.data import fail
+from utils import fail
 
 logger = logging.getLogger(__name__)
 

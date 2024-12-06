@@ -1,13 +1,10 @@
 ipykernel
 pylint
+pytest
 jupyter
 #pymssql --no-binary=pymssql
-pyodbc
+#pyodbc
 psycopg[binary]
-click
-pydantic
-pybaseball
-pytest
 torch
 pandas
 scikit-learn
@@ -16,5 +13,3 @@ onnxscript
 onnxruntime
 kubernetes
 joblib
-fastapi[standard]
-

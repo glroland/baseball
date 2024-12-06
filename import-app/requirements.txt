@@ -1,0 +1,9 @@
+ipykernel
+pylint
+pytest
+#pymssql --no-binary=pymssql
+#pyodbc
+psycopg[binary]
+click
+pydantic
+pybaseball

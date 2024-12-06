@@ -1,0 +1,16 @@
+ipykernel
+pylint
+#pymssql --no-binary=pymssql
+#pyodbc
+psycopg[binary]
+pydantic
+pytest
+torch
+pandas
+scikit-learn
+onnx
+onnxscript
+onnxruntime
+kubernetes
+joblib
+fastapi[standard]

@@ -1,16 +1,18 @@
 """ Config Management Utilities """
 import logging
 import configparser
-from utils.data import fail
+from utils import fail
 
 logger = logging.getLogger(__name__)
 
-config = None
+config = configparser.ConfigParser()
 
+# pylint: disable=too-few-public-methods
 class ConfigSections:
     """ Constants for valid config sections """
     SERVING = "SERVING"
 
+# pylint: disable=too-few-public-methods
 class ConfigKeys:
     """ Constants for valid config keys """
 
@@ -23,13 +25,7 @@ def init(filename):
     if filename is None or len(filename) == 0:
         fail("Config Management provided an empty filename.")
 
-    # check for re-initialization
-    if config is not None:
-        logger.warning("Config Management has already been initialized.  " +
-                       "Reinitialization may yield unexpected results.")
-
     # initialize config
-    config = configparser.ConfigParser()
     config.read(filename)
 
 def get_config_str(section, key):

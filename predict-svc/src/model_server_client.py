@@ -5,7 +5,7 @@ from urllib.parse import quote_plus
 import urllib3
 import requests
 from kubernetes import client, config
-from data import get_env_value, fail
+from utils import get_env_value, fail
 
 logger = logging.getLogger(__name__)
 
