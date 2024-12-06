@@ -58,7 +58,7 @@ pipeline
             {
                docker.withRegistry('https://registry.home.glroland.com/', 'quay') 
                {
-                  sh 'docker load -i predict-svc/storefront-dockerimage.tar'
+                  sh 'docker load -i predict-svc/predict-svc-dockerimage.tar'
                   sh 'docker tag predict-svc:$BUILD_NUMBER registry.home.glroland.com/baseball/predict-svc:$BUILD_NUMBER'
                   sh 'docker rmi predict-svc:$BUILD_NUMBER'
                   sh 'docker push registry.home.glroland.com/baseball/predict-svc:$BUILD_NUMBER'
