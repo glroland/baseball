@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "baseball.fullname" . }}
+  labels:
+    {{- include "baseball.labels" . | nindent 4 }}
+immutable: false
+data:
+  NUM_WORKERS: "5"

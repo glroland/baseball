@@ -1,0 +1,75 @@
+pipeline 
+{
+   agent any
+   
+   options 
+   {
+      disableConcurrentBuilds()
+      buildDiscarder(logRotator(numToKeepStr: '3'))
+      timestamps()
+   }
+
+   tools 
+   {
+   }
+
+   stages
+   {
+      stage('Prepare') 
+      {
+         steps 
+         {
+            sh '''
+                    echo "PATH = ${PATH}"
+                '''
+
+            git branch: 'main', 
+                    url: 'https://github.com/glroland/baseball.git'
+         }
+      }
+
+      stage('Create Docker Image for predict-svc') 
+      {
+         steps 
+         {
+            sh 'cd predict-svc ; docker build . --tag predict-svc:$BUILD_NUMBER'
+            sh 'cd predict-svc ; docker save predict-svc:$BUILD_NUMBER > predict-svc-dockerimage.tar'
+            step(followSymlinks: false, artifacts: 'predict-svc/predict-svc-dockerimage.tar', $class: 'ArtifactArchiver')
+            sh 'cd predict-svc ; docker rmi predict-svc:$BUILD_NUMBER'
+         }
+      }
+
+      stage('Scan for OWASP Issues in Dependencies') 
+      {
+         steps 
+         {
+            dependencyCheck additionalArguments: ''' 
+                       -o "./" 
+                       -s "./"
+                       -f "ALL" 
+                       --prettyPrint''', odcInstallation: 'OWASP Dependency-Check'
+   
+            dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+            step(followSymlinks: false, artifacts: '**/dependency-check-report.*', $class: 'ArtifactArchiver')
+         }
+      }
+
+      stage('Reload then push images to quay') 
+      {
+         steps 
+         {
+            script 
+            {
+               docker.withRegistry('https://registry.home.glroland.com/', 'quay') 
+               {
+                  sh 'docker load -i predict-svc/storefront-dockerimage.tar'
+                  sh 'docker tag predict-svc:$BUILD_NUMBER registry.home.glroland.com/baseball/predict-svc:$BUILD_NUMBER'
+                  sh 'docker rmi predict-svc:$BUILD_NUMBER'
+                  sh 'docker push registry.home.glroland.com/baseball/predict-svc:$BUILD_NUMBER'
+                  sh 'docker rmi registry.home.glroland.com/baseball/predict-svc:$BUILD_NUMBER'
+               }
+            }
+         }
+      }
+   }
+}
