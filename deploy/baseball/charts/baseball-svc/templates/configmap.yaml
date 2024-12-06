@@ -7,3 +7,24 @@ metadata:
 immutable: false
 data:
   NUM_WORKERS: "5"
+  config.ini: |-
+[DEFAULT]
+debug = False
+
+[Database]
+db_connection_string = postgresql://baseball_app:baseball123@db:5432/baseball_db
+
+[ModelRegistry]
+model_registry_url = https://my-model-registry-rest.apps.ocpprod.home.glroland.com
+model_registry_token = none
+model_registry_author = Baseball Author
+
+[PredictPitch]
+model_dir = ../output/predict_play/
+model_name = Baseball Predict Play - 20241204-1 - 2024-12-05T03:12:36.754Z metrics
+endpoint_url = https://baseball-predict-play-20241204-1-2024-12-05t031236754z-baseball.apps.ocpprod.home.glroland.com/v2/models/baseball-predict-play-20241204-1-2024-12-05t031236754z/infer
+
+[PredictPlay]
+model_dir = ../output/predict_play/
+model_name = Baseball Predict Play - 20241204-1 - 2024-12-05T03:12:36.754Z metrics
+endpoint_url = https://baseball-predict-play-20241204-1-2024-12-05t031236754z-baseball.apps.ocpprod.home.glroland.com/v2/models/baseball-predict-play-20241204-1-2024-12-05t031236754z/infer

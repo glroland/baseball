@@ -6,8 +6,17 @@ from fastapi.responses import JSONResponse
 from predict_pitch_service import PredictPitchRequest, predict_pitch
 from predict_play_service import PredictPlayRequest, predict_play
 from utils import get_env_value
+from health import health_api_handler
+from config import init
 
 logger = logging.getLogger(__name__)
+
+# Setup Logging
+logging.basicConfig(level=logging.DEBUG,
+    handlers=[
+        # no need from a docker container - logging.FileHandler("prediction_api.log"),
+        logging.StreamHandler()
+    ])
 
 app = FastAPI()
 
@@ -17,13 +26,11 @@ ENV_ENDPOINT_URL = "ENDPOINT_URL"
 DEFAULT_ENDPOINT_URL = ""
 ENV_MODEL_NAME = "MODEL_NAME"
 DEFAULT_MODEL_NAME = ""
+ENV_CONFIG_FILE = "CONFIG_FILE"
+DEFAULT_CONFIG_FILE = "config.ini"
 
-# Setup Logging
-logging.basicConfig(level=logging.DEBUG,
-    handlers=[
-        # no need from a docker container - logging.FileHandler("prediction_api.log"),
-        logging.StreamHandler()
-    ])
+# Setup Config
+init(get_env_value(ENV_CONFIG_FILE, DEFAULT_CONFIG_FILE))
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -67,3 +74,8 @@ async def predict_play_api(request : PredictPlayRequest):
     # perform operation
     result = predict_play(infer_endpoint, deployed_model_name, model_dir, request)
     return { "result": result }
+
+@app.get("/health", response_model=str)
+def health():
+    """ Provide a basic response indicating the app is available for consumption. """
+    return health_api_handler()

@@ -1,4 +1,5 @@
 """ Config Management Utilities """
+import os.path
 import logging
 import configparser
 from utils import fail
@@ -25,8 +26,14 @@ def init(filename):
     if filename is None or len(filename) == 0:
         fail("Config Management provided an empty filename.")
 
+    # verify config file exists
+    logger.info("Loading Configuration: %s", filename)
+    if not os.path.isfile(filename):
+        fail (f"Config file does not exist!  {filename}")
+
     # initialize config
-    config.read(filename)
+    results = config.read(filename)
+    logger.info("Configuration Loaded. %s", results)
 
 def get_config_str(section, key):
     """ Gets config value as a string.

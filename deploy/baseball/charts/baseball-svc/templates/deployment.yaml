@@ -46,6 +46,10 @@ spec:
                   key: NUM_WORKERS
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /projects
+            name: config.ini
+            readOnly: true
           readinessProbe:
             httpGet:
               path: /health
@@ -75,6 +79,14 @@ spec:
             failureThreshold: 3
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+      - configMap:
+          defaultMode: 511
+          items:
+          - key: config.ini
+            path: config.ini
+          name: {{ include "sudoku.fullname" . }}
+        name: config.ini
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
