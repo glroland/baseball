@@ -88,6 +88,9 @@ api.build:
 api.dev:
 	cd predict-svc/src && MODEL_REGISTRY_URL="$(model_registry_url)" MODEL_REGISTRY_AUTHOR="$(model_registry_author)" MODEL_REGISTRY_TOKEN="$(model_registry_token)" MODEL_DIR="$(model_dir)" ENDPOINT_URL="$(endpoint_url)" MODEL_NAME="$(model_name)" CONFIG_FILE="../config.ini" fastapi dev app.py
 
+api.run:
+	cd predict-svc/src && MODEL_REGISTRY_URL="$(model_registry_url)" MODEL_REGISTRY_AUTHOR="$(model_registry_author)" MODEL_REGISTRY_TOKEN="$(model_registry_token)" MODEL_DIR="$(model_dir)" ENDPOINT_URL="$(endpoint_url)" MODEL_NAME="$(model_name)" CONFIG_FILE="../config.ini" fastapi run app.py
+
 api.test.pitch:
 	curl -X 'GET' 'http://localhost:8000/predict_pitch' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{ "pitch_index": 2, "pitch_count": 43, "runner_1b": "John", "runner_2b": "",  "runner_3b": "Jane", "is_home": true, "is_night": true, "score_deficit": -4}'
 
