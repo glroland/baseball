@@ -1,0 +1,19 @@
+ipykernel
+pylint
+#pymssql --no-binary=pymssql
+#pyodbc
+psycopg[binary]
+pydantic
+pytest
+
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torch==2.3.1+cpu
+
+pandas
+scikit-learn
+onnx
+onnxscript
+onnxruntime
+kubernetes
+joblib
+fastapi[standard]

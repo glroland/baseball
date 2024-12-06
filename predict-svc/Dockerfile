@@ -7,7 +7,7 @@ EXPOSE 8080/tcp
 WORKDIR /projects
 
 # Copy the dependencies file to the working directory
-COPY requirements.txt .
+COPY requirements.txt.docker ./requirements.txt
 
 # Install any dependencies
 RUN pip install --no-cache-dir -r requirements.txt
