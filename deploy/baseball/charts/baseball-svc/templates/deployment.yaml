@@ -85,7 +85,7 @@ spec:
           items:
           - key: config.ini
             path: config.ini
-          name: {{ include "sudoku.fullname" . }}
+          name: {{ include "baseball.fullname" . }}
         name: config.ini
       {{- with .Values.nodeSelector }}
       nodeSelector:
