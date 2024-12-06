@@ -48,7 +48,7 @@ spec:
           terminationMessagePolicy: File
           volumeMounts:
           - mountPath: /projects
-            name: config.ini
+            name: config-ini
             readOnly: true
           readinessProbe:
             httpGet:
@@ -86,7 +86,7 @@ spec:
           - key: config.ini
             path: config.ini
           name: {{ include "baseball.fullname" . }}
-        name: config_ini
+        name: config-ini
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
