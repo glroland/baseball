@@ -9,10 +9,6 @@ pipeline
       timestamps()
    }
 
-   tools 
-   {
-   }
-
    stages
    {
       stage('Prepare') 
