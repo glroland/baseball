@@ -10,7 +10,7 @@ global:
 
   image:
     repository: registry.home.glroland.com/baseball/
-    tag: 6
+    tag: 8
     pullPolicy: IfNotPresent
     usePullSecret: true
 
