@@ -44,10 +44,12 @@ spec:
                 configMapKeyRef:
                   name: {{ include "baseball.fullname" . }}
                   key: NUM_WORKERS
+            - name: CONFIG_FILE
+              value: /projects/config/config.ini
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           volumeMounts:
-          - mountPath: /projects
+          - mountPath: /projects/config
             name: config-ini
             readOnly: true
           readinessProbe:
