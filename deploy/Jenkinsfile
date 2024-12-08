@@ -31,6 +31,8 @@ pipeline
             sh '''#!/usr/bin/env bash
                   eval "$(/opt/anaconda3/bin/conda shell.bash hook)"
                   conda activate baseball_train
+                  set
+                  pwd
                   cd data ; make install
                   pip install -r data/requirements.txt
                   make train
