@@ -33,7 +33,6 @@ pipeline
                   conda activate baseball_train
                   set
                   pwd
-                  cd data ; make install
                   pip install -r data/requirements.txt
                   make train
                 '''
