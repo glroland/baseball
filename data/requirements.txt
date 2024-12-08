@@ -13,3 +13,4 @@ onnxscript
 onnxruntime
 kubernetes
 joblib
+tqdm
