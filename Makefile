@@ -1,7 +1,7 @@
 #
 # Configuration
 #
-db_host ?= localhost
+db_host ?= db
 db_port ?= 5432
 db_user ?= baseball_app
 db_password ?= baseball123
