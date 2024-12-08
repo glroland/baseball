@@ -58,6 +58,10 @@ else
 	cd data/src/ingest && jupyter nbconvert --to python ingest_retrosheet_data.ipynb --stdout  | BASEBALL_DB_CONN_STRING="$(db_connection_string)" python
 endif
 
+train:
+	cd data/src/train && jupyter nbconvert --to python train_predict_pitch_model.ipynb --stdout  | BASEBALL_DB_CONN_STRING="$(db_connection_string)" OUTPUT_DIR="../../../target/output/predict_pitch/" python
+	cd data/src/train && jupyter nbconvert --to python train_predict_play_model.ipynb --stdout  | BASEBALL_DB_CONN_STRING="$(db_connection_string)" OUTPUT_DIR="../../../target/output/predict_play/" python
+
 run:
 	cd import-app/src && python import_events_app.py
 
