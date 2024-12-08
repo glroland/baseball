@@ -51,8 +51,10 @@ endif
 ifeq "$(OS)" "Windows_NT"
 	cd data/src/ingest && set "BASEBALL_DB_CONN_STRING=$(db_connection_string)" && jupyter nbconvert --to python ingest_retrosheet_data.ipynb --stdout  | python
 else
-	mkdir -p data/zips
-	mkdir -p output
+	mkdir -p target/zips
+	mkdir -p target/raw
+	mkdir -p target/done
+	mkdir -p target/output
 	cd data/src/ingest && jupyter nbconvert --to python ingest_retrosheet_data.ipynb --stdout  | BASEBALL_DB_CONN_STRING="$(db_connection_string)" python
 endif
 

@@ -208,8 +208,6 @@ create table game_play_atbat
     player_code varchar(20) not null,
     pitcher varchar(20),
     count varchar(2) not null,
-    pitches varchar(100) not null,
-    full_action_str varchar(100) not null,
     primary_play_type_cd char(1),
     outs int not null,
     runner_1b varchar(20),
