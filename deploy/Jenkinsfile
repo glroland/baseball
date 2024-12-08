@@ -24,6 +24,20 @@ pipeline
          }
       }
 
+      stage('Train AI Models') 
+      {
+         steps 
+         {
+            sh '''#!/usr/bin/env bash
+                  eval "$(/opt/anaconda3/bin/conda shell.bash hook)"
+                  conda activate baseball_train
+                  cd data ; make install
+                  pip install -r data/requirements.txt
+                  make train
+                '''
+         }
+      }
+
       stage('Create Docker Image for predict-svc') 
       {
          steps 

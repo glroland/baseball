@@ -15,6 +15,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the content of the local src directory to the working directory
 COPY ./src/ .
 
+# Copy AI Models into container
+COPY ../target/models/ .
+
 # Environment variable for number of workers
 ENV NUM_WORKERS "10"
 
