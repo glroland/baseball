@@ -83,7 +83,8 @@ create table roster
 
 create table game
 (
-    id varchar(12) not null,
+    game_id serial not null,
+    retrosheet_id varchar(12) not null,
     game_date date not null,
     game_time time not null,
     game_number_that_day int not null,
@@ -113,41 +114,44 @@ create table game
     save_code varchar(20),
 
     constraint pk_game 
-            primary key (id)
+            primary key (game_id),
+
+    constraint unique_retrosheet_id
+            unique (retrosheet_id)
 );
 
 create table game_data
 (
-    id varchar(12) not null,
+    game_id int not null,
     data_type varchar(2) not null,
     pitcher_player_code varchar(20) not null,
     quantity int not null,
 
     constraint pk_game_data 
-            primary key (id, data_type, pitcher_player_code),
+            primary key (game_id, data_type, pitcher_player_code),
 
     constraint fk_game
-            foreign key (id) 
-            references game (id)
+            foreign key (game_id) 
+            references game (game_id)
 );
 
 create table game_starter
 (
-    id varchar(12) not null,
+    game_id int not null,
     player_code varchar(20) not null,
     player_name varchar(200) not null,
     home_team_flag boolean not null,
     batting_order int not null,
     fielding_position int not null,
 
-    unique (id, home_team_flag, batting_order),
+    unique (game_id, home_team_flag, batting_order),
 
     constraint pk_game_starter 
-            primary key (id, player_code, fielding_position),
+            primary key (game_id, player_code, fielding_position),
 
     constraint fk_game
-            foreign key (id) 
-            references game (id),
+            foreign key (game_id) 
+            references game (game_id),
 
     constraint field_pos
             foreign key (fielding_position) 
@@ -156,17 +160,17 @@ create table game_starter
 
 create table game_play
 (
-    id varchar(12) not null,
+    game_id int not null,
     play_index int not null,
 
     check (play_index >= 1),
 
     constraint pk_game_play
-            primary key (id, play_index),
+            primary key (game_id, play_index),
 
     constraint fk_game
-            foreign key (id) 
-            references game (id)
+            foreign key (game_id) 
+            references game (game_id)
 );
 
 create table play_type
@@ -201,7 +205,7 @@ insert into play_type (play_type_cd, play_type_desc) values ('B', 'Caught Steali
 
 create table game_play_atbat
 (
-    id varchar(12) not null,
+    game_id int not null,
     play_index int not null,
     inning int not null,
     home_team_flag boolean not null,
@@ -217,11 +221,11 @@ create table game_play_atbat
     score_visitor int not null,
 
     constraint pk_game_play_atbat 
-            primary key (id, play_index),
+            primary key (game_id, play_index),
 
     constraint fk_game_play
-            foreign key (id, play_index) 
-            references game_play (id, play_index),
+            foreign key (game_id, play_index) 
+            references game_play (game_id, play_index),
 
     constraint fk_play_type
             foreign key (primary_play_type_cd) 
@@ -230,7 +234,7 @@ create table game_play_atbat
 
 create table game_play_sub
 (
-    id varchar(12) not null,
+    game_id int not null,
     play_index int not null,
     player_from varchar(20) not null,
     player_to varchar(20) not null,
@@ -239,11 +243,11 @@ create table game_play_sub
     fielding_position int not null,
 
     constraint pk_game_play_sub 
-            primary key (id, play_index),
+            primary key (game_id, play_index),
 
     constraint fk_game_play 
-            foreign key (id, play_index) 
-            references game_play (id, play_index),
+            foreign key (game_id, play_index) 
+            references game_play (game_id, play_index),
 
     constraint field_pos
             foreign key (fielding_position) 
@@ -290,7 +294,7 @@ insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values (
 
 create table game_play_atbat_pitch
 (
-    id varchar(12) not null,
+    game_id int not null,
     play_index int not null,
     pitch_index int not null,
     pitch_type_cd char(1) not null,
@@ -298,11 +302,11 @@ create table game_play_atbat_pitch
     check (pitch_index >= 1),
 
     constraint pk_game_play_atbat_pitch
-            primary key (id, play_index, pitch_index),
+            primary key (game_id, play_index, pitch_index),
 
     constraint fk_game_play_atbat
-            foreign key (id, play_index) 
-            references game_play_atbat (id, play_index),
+            foreign key (game_id, play_index) 
+            references game_play_atbat (game_id, play_index),
 
     constraint fk_pitch_type
             foreign key (pitch_type_cd) 
@@ -311,13 +315,13 @@ create table game_play_atbat_pitch
 
 create table game_play_atbat_field_event
 (
-    id varchar(12) not null,
+    game_id int not null,
     play_index int not null,
     
     constraint pk_game_play_atbat_field_event
-            primary key (id, play_index),
+            primary key (game_id, play_index),
 
     constraint fk_game_play_atbat
-            foreign key (id, play_index) 
-            references game_play_atbat (id, play_index)
+            foreign key (game_id, play_index) 
+            references game_play_atbat (game_id, play_index)
 );
