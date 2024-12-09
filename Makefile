@@ -13,9 +13,9 @@ db_dba_connection_string ?= postgresql://$(db_dba_user):$(db_dba_password)@$(db_
 model_registry_url ?= https://my-model-registry-rest.apps.ocpprod.home.glroland.com
 model_registry_token ?= $(shell oc whoami -t)
 model_registry_author ?= Baseball Author
-model_dir ?= ../output/predict_play/
-model_name ?= Baseball Predict Play - 20241204-1 - 2024-12-05T03:12:36.754Z metrics
-endpoint_url ?= https://baseball-predict-play-20241204-1-2024-12-05t031236754z-baseball.apps.ocpprod.home.glroland.com/v2/models/baseball-predict-play-20241204-1-2024-12-05t031236754z/infer
+model_dir ?= ../../target/models/predict_play/
+model_name ?= predictplay
+endpoint_url ?= https://predictplay-baseball.apps.ocpprod.home.glroland.com
 
 install:
 	pip install -r data/requirements.txt
@@ -59,7 +59,7 @@ else
 endif
 
 train:
-	cd data/src/train && jupyter nbconvert --to python train_predict_pitch_model.ipynb --stdout  | DB_CONNECTION_STRING="$(db_connection_string)" OUTPUT_DIR="../../../target/models/predict_pitch/" python
+#	cd data/src/train && jupyter nbconvert --to python train_predict_pitch_model.ipynb --stdout  | DB_CONNECTION_STRING="$(db_connection_string)" OUTPUT_DIR="../../../target/models/predict_pitch/" python
 	cd data/src/train && jupyter nbconvert --to python train_predict_play_model.ipynb --stdout  | DB_CONNECTION_STRING="$(db_connection_string)" OUTPUT_DIR="../../../target/models/predict_play/" python
 
 run:

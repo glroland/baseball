@@ -11,11 +11,17 @@ config = configparser.ConfigParser()
 # pylint: disable=too-few-public-methods
 class ConfigSections:
     """ Constants for valid config sections """
-    SERVING = "SERVING"
+    DEFAULT = "DEFAULT"
+    PREDICT_PITCH = "PredictPitch"
+    PREDICT_PLAY = "PredictPlay"
 
 # pylint: disable=too-few-public-methods
 class ConfigKeys:
     """ Constants for valid config keys """
+    USE_LOCAL_MODELS = "use_local_models"
+    MODEL_DIR = "model_dir"
+    MODEL_NAME = "model_name"
+    ENDPOINT_URL = "endpoint_url"
 
 def init(filename):
     """ Initializes configuration from INI file.
@@ -49,3 +55,16 @@ def get_config_str(section, key):
     if section is None:
         return config[key]
     return config[section][key]
+
+def get_config_bool(section, key):
+    """ Gets config value as a boolean.
+    
+        section - optional section name
+        key - key name
+    """
+    # get config value
+    val_str = get_config_str(section, key)
+    if val_str is None or len(val_str) == 0:
+        return None
+
+    return bool(val_str)

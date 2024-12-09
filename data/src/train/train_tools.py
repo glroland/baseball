@@ -154,8 +154,12 @@ def save_model(model, num_features, filename):
         fail("save_model() - output filename is empty")
 
     # save the model
-    torch_input = torch.randn(1, 1, num_features, num_features)
-    onnx_program = torch.onnx.export(model, torch_input, filename, dynamo=False)
+    torch_input_tensor = torch.randn(num_features, dtype=torch.float32)
+    onnx_program = torch.onnx.export(model,
+                                     (torch_input_tensor,),
+                                     filename,
+                                     input_names=["input"],
+                                     dynamo=False)
 #    onnx_program.save(filename)
 
 def load_model(filename):

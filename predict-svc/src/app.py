@@ -66,14 +66,12 @@ async def predict_play_api(request : PredictPlayRequest):
     
         request - request data structure
     """
-    # get configured directory for model and scalers
-    model_dir = get_env_value(ENV_MODEL_DIR, DEFAULT_MODEL_DIR)
-    infer_endpoint = get_env_value(ENV_ENDPOINT_URL, DEFAULT_ENDPOINT_URL)
-    deployed_model_name = get_env_value(ENV_MODEL_NAME, DEFAULT_MODEL_NAME)
-
     # perform operation
-    result = predict_play(infer_endpoint, deployed_model_name, model_dir, request)
-    return { "result": result }
+    result = predict_play(request)
+    logger.info("predict_play response: %s", result)
+    response = { "result": result }
+    logger.info("predict_play_api response: %s", response)
+    return response
 
 @app.get("/health", response_model=str)
 def health():

@@ -25,7 +25,7 @@ def predict_via_rest(infer_endpoint, deployed_model_name, data):
 
     # build inference url
     infer_url = f"{infer_endpoint}/v2/models/{deployed_model_name}/infer"
-    logger.debug("Inference URL: %s", infer_url)
+    logger.info("Inference URL: %s", infer_url)
 
     # how many features?
     num_features = len(data)
