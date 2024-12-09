@@ -11,7 +11,7 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      {{- include "baseball.selectorLabels" . | nindent 6 }}
+      app: "{{ include "baseball.fullname" . }}"
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -19,6 +19,10 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
+        app: "{{ include "baseball.fullname" . }}"
+        deployment: {{ include "baseball.fullname" . }}
+        app.kubernetes.io/part-of: "{{ .Release.Name }}-baseball"
+        {{- include "baseball.labels" . | nindent 8 }}
         {{- include "baseball.selectorLabels" . | nindent 8 }}
     spec:
       {{- if .Values.global.image.usePullSecret }}

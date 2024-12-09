@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: {{ include "baseball.fullname" . }}
   labels:
+    app.kubernetes.io/part-of: "{{ .Release.Name }}-baseball"
     {{- include "baseball.labels" . | nindent 4 }}
 spec:
   ipFamilies:
