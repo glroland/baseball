@@ -23,6 +23,16 @@ pipeline
                     url: 'https://github.com/glroland/baseball.git'
          }
       }
+   
+      stage('Ensure output directories are clean') 
+      {
+         steps 
+         {
+            sh '''
+                  rm -rf target
+                '''
+         }
+      }
 
       stage('Train AI Models') 
       {

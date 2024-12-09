@@ -59,7 +59,7 @@ else
 endif
 
 train:
-#	cd data/src/train && jupyter nbconvert --to python train_predict_pitch_model.ipynb --stdout  | DB_CONNECTION_STRING="$(db_connection_string)" OUTPUT_DIR="../../../target/models/predict_pitch/" python
+	cd data/src/train && jupyter nbconvert --to python train_predict_pitch_model.ipynb --stdout  | DB_CONNECTION_STRING="$(db_connection_string)" OUTPUT_DIR="../../../target/models/predict_pitch/" python
 	cd data/src/train && jupyter nbconvert --to python train_predict_play_model.ipynb --stdout  | DB_CONNECTION_STRING="$(db_connection_string)" OUTPUT_DIR="../../../target/models/predict_play/" python
 
 run:

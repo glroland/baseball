@@ -1,9 +1,12 @@
 """ Attempts to predict whether a baseball pitch will be a ball or a strike. """
 import logging
-from pydantic import BaseModel
+import numpy as np
+from pydantic import BaseModel, Field
 from utils import fail, to_json_string
+from config import get_config_bool, get_config_str, ConfigSections, ConfigKeys
 from prediction_tools import load_scaler, get_tf_num_for_value, get_tf_num_for_bool
 from prediction_tools import SCALER_SUFFIX, scale_single_value
+from prediction_tools import start_local_model_session, local_infer
 from inference_gateway import predict_via_rest
 
 logger = logging.getLogger(__name__)
@@ -22,15 +25,23 @@ class PredictPitchRequest(BaseModel):
     def __str__(self) -> str:
         return to_json_string(self)
 
-def predict_pitch(infer_endpoint, deployed_model_name, model_dir,
-                  request : PredictPitchRequest):
+class PredictPitchResponse(BaseModel):
+    """ Inference Response Values """
+    probability_of_strike : float = Field(default=None)
+
+    def __str__(self) -> str:
+        return to_json_string(self)
+
+def predict_pitch(request : PredictPitchRequest) -> PredictPitchResponse:
     """ Predicts whether a pitch will be a ball or a strike. """
     # validate parameters
     if request is None:
         fail ("predict_pitch() was passed an empty request object.")
-    if model_dir is None or len(model_dir) == 0:
-        fail("predict_pitch() - No Model Dir configured.")
-    logger.info("Predict Pitch - ModelDir=%s Request=%s", model_dir, request)
+    logger.info("Predict Pitch - Request=%s", request)
+
+    # get configured model directory
+    model_dir = get_config_str(ConfigSections.PREDICT_PITCH, ConfigKeys.MODEL_DIR)
+    logger.info("Configured Model Directory: %s", model_dir)
 
     # load scalers
     score_deficit_scaler = load_scaler(model_dir + "score_deficit" + SCALER_SUFFIX)
@@ -50,7 +61,20 @@ def predict_pitch(infer_endpoint, deployed_model_name, model_dir,
 
     # perform the prediction
     logger.info("Invoking Predict Pitch w/input array: %s", data)
-    result = predict_via_rest(infer_endpoint, deployed_model_name, data)
-    logger.info("Prediction Response: Value=%s   Type=%s", result, type(result))
+    if get_config_bool(ConfigSections.DEFAULT, ConfigKeys.USE_LOCAL_MODELS):
+        predict_pitch_filename = model_dir + "/model.onnx"
+        onnx_runtime_session = start_local_model_session(predict_pitch_filename)
+        torch_input = np.array(data, dtype='float32')
+        
+        infer_result = local_infer(onnx_runtime_session, torch_input)[0]
+    else:
+        infer_endpoint = get_config_str(ConfigSections.PREDICT_PITCH, ConfigKeys.ENDPOINT_URL)
+        deployed_model_name = get_config_str(ConfigSections.PREDICT_PITCH, ConfigKeys.MODEL_NAME)
+    
+        infer_result = predict_via_rest(infer_endpoint, deployed_model_name, data)
+    logger.info("Prediction Response: Value=%s   Type=%s", infer_result, type(infer_result))
 
-    return result
+    response = PredictPitchResponse()
+    response.probability_of_strike = infer_result[0].item()
+
+    return response

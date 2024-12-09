@@ -1,7 +1,6 @@
 """ Attempts to predict what the next play will be. """
 import logging
 from pydantic import BaseModel, Field
-import torch
 import numpy as np
 from utils import fail, to_json_string
 from config import get_config_bool, get_config_str, ConfigSections, ConfigKeys
@@ -56,7 +55,7 @@ class PredictPlayResponse(BaseModel):
     def __str__(self) -> str:
         return to_json_string(self)
 
-def predict_play(request : PredictPlayRequest):
+def predict_play(request : PredictPlayRequest) -> PredictPlayResponse:
     """ Predicts what the next play will be. 
     
         request - play state to evaluate

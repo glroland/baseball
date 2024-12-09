@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from predict_pitch_service import PredictPitchRequest, predict_pitch
-from predict_play_service import PredictPlayRequest, predict_play
+from predict_play_service import PredictPlayRequest, PredictPlayResponse, predict_play
 from utils import get_env_value
 from health import health_api_handler
 from config import init
@@ -51,17 +51,15 @@ async def predict_pitch_api(request : PredictPitchRequest):
     
         request - request data structure
     """
-    # get configured directory for model and scalers
-    model_dir = get_env_value(ENV_MODEL_DIR, DEFAULT_MODEL_DIR)
-    infer_endpoint = get_env_value(ENV_ENDPOINT_URL, DEFAULT_ENDPOINT_URL)
-    deployed_model_name = get_env_value(ENV_MODEL_NAME, DEFAULT_MODEL_NAME)
-
     # perform operation
-    result = predict_pitch(infer_endpoint, deployed_model_name, model_dir, request)
-    return { "result": result }
+    result = predict_pitch(request)
+    logger.info("predict_play response: %s", result)
+    response = { "result": result }
+    logger.info("predict_play_api response: %s", response)
+    return response
 
 @app.get("/predict_play")
-async def predict_play_api(request : PredictPlayRequest):
+async def predict_play_api(request : PredictPlayRequest) -> PredictPlayResponse:
     """ Fulfills a Predict Play API request
     
         request - request data structure
