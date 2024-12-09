@@ -43,7 +43,7 @@ pipeline
       {
          steps 
          {
-            sh 'cd predict-svc ; docker build . --tag predict-svc:$BUILD_NUMBER'
+            sh 'docker build -f predict-svc/Dockerfile --tag predict-svc:$BUILD_NUMBER .'
             sh 'cd predict-svc ; docker save predict-svc:$BUILD_NUMBER > predict-svc-dockerimage.tar'
             step(followSymlinks: false, artifacts: 'predict-svc/predict-svc-dockerimage.tar', $class: 'ArtifactArchiver')
             sh 'cd predict-svc ; docker rmi predict-svc:$BUILD_NUMBER'

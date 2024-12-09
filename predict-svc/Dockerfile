@@ -7,16 +7,16 @@ EXPOSE 8080/tcp
 WORKDIR /projects
 
 # Copy the dependencies file to the working directory
-COPY requirements.txt.docker ./requirements.txt
+COPY predict-svc/requirements.txt.docker ./requirements.txt
 
 # Install any dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the content of the local src directory to the working directory
-COPY ./src/ .
+COPY ./predict-svc/src/ .
 
 # Copy AI Models into container
-COPY ../target/models/ .
+COPY ./target/models/ .
 
 # Environment variable for number of workers
 ENV NUM_WORKERS "10"

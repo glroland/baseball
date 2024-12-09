@@ -89,7 +89,7 @@ model_server.test:
 	cd predict-svc/src && MODEL_REGISTRY_URL="$(model_registry_url)" MODEL_REGISTRY_AUTHOR="$(model_registry_author)" MODEL_REGISTRY_TOKEN="$(model_registry_token)" python model_server_client.py
 
 api.build:
-	cd predict-svc && podman build . --tag=predict-svc:latest
+	podman build -f predict-svc/Dockerfile --tag=predict-svc:latest .
 
 api.dev:
 	cd predict-svc/src && MODEL_REGISTRY_URL="$(model_registry_url)" MODEL_REGISTRY_AUTHOR="$(model_registry_author)" MODEL_REGISTRY_TOKEN="$(model_registry_token)" MODEL_DIR="$(model_dir)" ENDPOINT_URL="$(endpoint_url)" MODEL_NAME="$(model_name)" CONFIG_FILE="../config.ini" fastapi dev app.py
