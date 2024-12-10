@@ -21,10 +21,10 @@ data:
 
       [PredictPitch]
       model_dir = ./predict_pitch/
-      model_name = predictpitch
-      endpoint_url = http://modelmesh-serving.baseball:8008
+      model_name = pitch
+      endpoint_url = https://pitch.baseball.svc.cluster.local
 
       [PredictPlay]
       model_dir = ./predict_play/
-      model_name = predictplay
-      endpoint_url = http://modelmesh-serving.baseball:8008
+      model_name = play
+      endpoint_url = https://play.baseball.svc.cluster.local
