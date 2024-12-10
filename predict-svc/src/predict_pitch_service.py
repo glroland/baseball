@@ -4,7 +4,7 @@ import os
 import numpy as np
 from pydantic import BaseModel, Field
 from utils import fail, to_json_string
-from config import get_config_bool, get_config_str, ConfigSections, ConfigKeys
+from config import get_config_str, ConfigSections, ConfigKeys
 from prediction_tools import load_scaler, get_tf_num_for_value, get_tf_num_for_bool
 from prediction_tools import SCALER_SUFFIX, scale_single_value, get_item_float
 from prediction_tools import start_local_model_session, local_infer
@@ -41,7 +41,7 @@ def predict_pitch(request : PredictPitchRequest) -> PredictPitchResponse:
     logger.info("Predict Pitch - Request=%s", request)
 
     # get configured model directory
-    model_dir_str = get_config_str(ConfigSections.PREDICT_PITCH, ConfigKeys.MODEL_DIR)
+    model_dir_str = get_config_str(ConfigSections.PREDICT_PITCH, ConfigKeys.DIR)
     model_dir = os.path.abspath(model_dir_str)
     logger.info("Configured Model Directory: %s", model_dir)
 
@@ -63,7 +63,7 @@ def predict_pitch(request : PredictPitchRequest) -> PredictPitchResponse:
 
     # perform the prediction
     logger.info("Invoking Predict Pitch w/input array: %s", data)
-    if get_config_bool(ConfigSections.DEFAULT, ConfigKeys.USE_LOCAL_MODELS):
+    if get_config_str(ConfigSections.DEFAULT, ConfigKeys.MODEL_SOURCE) == "local":
         logger.info("Using Local Models")
 
         predict_pitch_filename = model_dir + "/model.onnx"
@@ -74,8 +74,8 @@ def predict_pitch(request : PredictPitchRequest) -> PredictPitchResponse:
     else:
         logger.info("Using Remote Inference Services")
 
-        infer_endpoint = get_config_str(ConfigSections.PREDICT_PITCH, ConfigKeys.ENDPOINT_URL)
-        deployed_model_name = get_config_str(ConfigSections.PREDICT_PITCH, ConfigKeys.MODEL_NAME)
+        infer_endpoint = get_config_str(ConfigSections.PREDICT_PITCH, ConfigKeys.URL)
+        deployed_model_name = get_config_str(ConfigSections.PREDICT_PITCH, ConfigKeys.NAME)
     
         infer_result = predict_via_rest(infer_endpoint, deployed_model_name, data)
     logger.info("Prediction Response: Value=%s   Type=%s", infer_result, type(infer_result))

@@ -110,5 +110,8 @@ api.test.ocpprod:
 	curl -X 'GET' 'https://baseball-predict-svc-baseball-prod.apps.ocpprod.home.glroland.com/predict_play' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{ "pitch_index": 3, "pitch_count": 45, "score_deficit": 4, "runner_1b": "", "runner_2b": "John", "runner_3b": "Jane", "batting_hand": "L", "pitching_hand": "R", "outs": 2 }'
 	curl -X 'GET' 'https://baseball-predict-svc-baseball-prod.apps.ocpprod.home.glroland.com/predict_pitch' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{ "pitch_index": 2, "pitch_count": 43, "runner_1b": "John", "runner_2b": "",  "runner_3b": "Jane", "is_home": true, "is_night": true, "score_deficit": -4}'
 
+api.test.get_endpoint:
+	curl -X 'GET' 'http://localhost:8000/model_endpoint?namespace=baseball&model_name=Baseball%20Predict%20Play'
+
 test:
 	cd import-app && pytest

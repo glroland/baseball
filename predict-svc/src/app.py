@@ -1,5 +1,6 @@
 """ API provider for baseball game/event predictions. """
 import logging
+from typing import List
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -8,6 +9,7 @@ from predict_play_service import PredictPlayRequest, PredictPlayResponse, predic
 from utils import get_env_value
 from health import health_api_handler
 from config import init
+from registry_gateway import get_model_inference_endpoint
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +46,18 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 async def root():
     """ Default API Request """
     return { "message": "Welcome to the Baseball Prediction Service!" }
+
+@app.get("/model_endpoint")
+async def get_model_endpoint(namespace : str, model_name : str):
+    """ Get the correct inference endpoint and URL for an inference.
+    
+        namespace - namespace expected to be hosting the models
+        model_name - name of model
+    """
+    result = get_model_inference_endpoint(namespace=namespace,
+                                           model_name=model_name)
+
+    return { "url":result }
 
 @app.get("/predict_pitch")
 async def predict_pitch_api(request : PredictPitchRequest):

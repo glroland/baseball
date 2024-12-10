@@ -9,22 +9,23 @@ data:
   NUM_WORKERS: "5"
   config.ini: |-
       [DEFAULT]
-      use_local_models = False
+      # local, api, registry
+      model_source = api
 
       [Database]
       db_connection_string = postgresql://baseball_app:baseball123@db:5432/baseball_db
 
       [ModelRegistry]
-      model_registry_url = https://my-model-registry-rest.apps.ocpprod.home.glroland.com
-      model_registry_token = none
-      model_registry_author = Baseball Author
+      url = https://my-model-registry-rest.apps.ocpprod.home.glroland.com
+      token = none
+      name = Baseball Author
 
       [PredictPitch]
-      model_dir = ./predict_pitch/
-      model_name = pitch
-      endpoint_url = https://pitch.baseball.svc.cluster.local
+      dir = ./predict_play/
+      name = pitch
+      url = https://pitch.baseball.svc.cluster.local
 
       [PredictPlay]
-      model_dir = ./predict_play/
-      model_name = play
-      endpoint_url = https://play.baseball.svc.cluster.local
+      dir =  ./predict_play/
+      name = play
+      url = https://play.baseball.svc.cluster.local

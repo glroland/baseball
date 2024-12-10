@@ -213,7 +213,8 @@ def get_model_inference_endpoint(namespace, model_name, version_name=None, versi
     matching_model_version = None
     for model_version in model_versions:
         # match version name
-        if do_labels_match(version_dict, model_version["customProperties"]):
+        if model_version["state"] != "ARCHIVED" and \
+                    do_labels_match(version_dict, model_version["customProperties"]):
             logger.debug("Labels Matched...  MN=%s", model_name)
 
             # if version name is provided, it must also match

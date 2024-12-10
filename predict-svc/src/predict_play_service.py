@@ -1,10 +1,10 @@
 """ Attempts to predict what the next play will be. """
 import logging
 import os
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 import numpy as np
 from utils import fail, to_json_string
-from config import get_config_bool, get_config_str, ConfigSections, ConfigKeys
+from config import get_config_str, ConfigSections, ConfigKeys
 from prediction_tools import load_scaler, get_tf_num_for_value, get_tf_num_for_bool
 from prediction_tools import SCALER_SUFFIX, scale_single_value, get_item_float
 from prediction_tools import start_local_model_session, local_infer
@@ -67,7 +67,7 @@ def predict_play(request : PredictPlayRequest) -> PredictPlayResponse:
     logger.info("Predict Play - Request=%s", request)
 
     # get configured model directory
-    model_dir_str = get_config_str(ConfigSections.PREDICT_PLAY, ConfigKeys.MODEL_DIR)
+    model_dir_str = get_config_str(ConfigSections.PREDICT_PLAY, ConfigKeys.DIR)
     model_dir = os.path.abspath(model_dir_str)
     logger.info("Configured Model Directory: %s", model_dir)
 
@@ -96,7 +96,7 @@ def predict_play(request : PredictPlayRequest) -> PredictPlayResponse:
 
     # perform the prediction
     logger.info("Invoking Predict Play w/input array: %s", data)
-    if get_config_bool(ConfigSections.DEFAULT, ConfigKeys.USE_LOCAL_MODELS):
+    if get_config_str(ConfigSections.DEFAULT, ConfigKeys.MODEL_SOURCE) == "local":
         logger.info("Using Local Models")
 
         predict_play_filename = model_dir + "/model.onnx"
@@ -107,8 +107,8 @@ def predict_play(request : PredictPlayRequest) -> PredictPlayResponse:
     else:
         logger.info("Using Remote Inference Services")
 
-        infer_endpoint = get_config_str(ConfigSections.PREDICT_PLAY, ConfigKeys.ENDPOINT_URL)
-        deployed_model_name = get_config_str(ConfigSections.PREDICT_PLAY, ConfigKeys.MODEL_NAME)
+        infer_endpoint = get_config_str(ConfigSections.PREDICT_PLAY, ConfigKeys.URL)
+        deployed_model_name = get_config_str(ConfigSections.PREDICT_PLAY, ConfigKeys.NAME)
     
         infer_result = predict_via_rest(infer_endpoint, deployed_model_name, data)
     logger.info("Prediction Response: Value=%s   Type=%s", infer_result, type(infer_result))

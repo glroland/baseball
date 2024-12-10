@@ -14,14 +14,16 @@ class ConfigSections:
     DEFAULT = "DEFAULT"
     PREDICT_PITCH = "PredictPitch"
     PREDICT_PLAY = "PredictPlay"
+    REGISTRY = "ModelRegistry"
 
 # pylint: disable=too-few-public-methods
 class ConfigKeys:
     """ Constants for valid config keys """
-    USE_LOCAL_MODELS = "use_local_models"
-    MODEL_DIR = "model_dir"
-    MODEL_NAME = "model_name"
-    ENDPOINT_URL = "endpoint_url"
+    MODEL_SOURCE = "model_source"
+    DIR = "dir"
+    NAME = "name"
+    URL = "url"
+    TOKEN = "token"
 
 def init(filename):
     """ Initializes configuration from INI file.
