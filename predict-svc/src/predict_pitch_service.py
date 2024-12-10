@@ -1,14 +1,12 @@
 """ Attempts to predict whether a baseball pitch will be a ball or a strike. """
 import logging
 import os
-import numpy as np
 from pydantic import BaseModel, Field
 from utils import fail, to_json_string
 from config import get_config_str, ConfigSections, ConfigKeys
 from prediction_tools import load_scaler, get_tf_num_for_value, get_tf_num_for_bool
 from prediction_tools import SCALER_SUFFIX, scale_single_value, get_item_float
-from prediction_tools import start_local_model_session, local_infer
-from inference_gateway import predict_via_rest
+from inference_gateway import predict
 
 logger = logging.getLogger(__name__)
 
@@ -62,24 +60,9 @@ def predict_pitch(request : PredictPitchRequest) -> PredictPitchResponse:
     data.append(scale_single_value(score_deficit_scaler, request.score_deficit))
 
     # perform the prediction
-    logger.info("Invoking Predict Pitch w/input array: %s", data)
-    if get_config_str(ConfigSections.DEFAULT, ConfigKeys.MODEL_SOURCE) == "local":
-        logger.info("Using Local Models")
+    infer_result = predict(ConfigSections.PREDICT_PITCH, data)
 
-        predict_pitch_filename = model_dir + "/model.onnx"
-        onnx_runtime_session = start_local_model_session(predict_pitch_filename)
-        torch_input = np.array(data, dtype='float32')
-        
-        infer_result = local_infer(onnx_runtime_session, torch_input)[0]
-    else:
-        logger.info("Using Remote Inference Services")
-
-        infer_endpoint = get_config_str(ConfigSections.PREDICT_PITCH, ConfigKeys.URL)
-        deployed_model_name = get_config_str(ConfigSections.PREDICT_PITCH, ConfigKeys.NAME)
-    
-        infer_result = predict_via_rest(infer_endpoint, deployed_model_name, data)
-    logger.info("Prediction Response: Value=%s   Type=%s", infer_result, type(infer_result))
-
+    # build response
     response = PredictPitchResponse()
     response.probability_of_strike = get_item_float(infer_result[0])
 

@@ -1,11 +1,10 @@
 """ API provider for baseball game/event predictions. """
 import logging
-from typing import List
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from predict_pitch_service import PredictPitchRequest, predict_pitch
-from predict_play_service import PredictPlayRequest, PredictPlayResponse, predict_play
+from predict_play_service import PredictPlayRequest, predict_play
 from utils import get_env_value
 from health import health_api_handler
 from config import init
@@ -54,10 +53,10 @@ async def get_model_endpoint(namespace : str, model_name : str):
         namespace - namespace expected to be hosting the models
         model_name - name of model
     """
-    result = get_model_inference_endpoint(namespace=namespace,
-                                           model_name=model_name)
+    result, name = get_model_inference_endpoint(namespace=namespace,
+                                                model_name=model_name)
 
-    return { "url":result }
+    return { "url": result, "model_name": name }
 
 @app.get("/predict_pitch")
 async def predict_pitch_api(request : PredictPitchRequest):

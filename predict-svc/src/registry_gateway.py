@@ -263,7 +263,7 @@ def get_model_inference_endpoint(namespace, model_name, version_name=None, versi
              f"M={model_id} MV={model_version_id}")
 
     logger.info("Matching Inference URL:  %s", urls[0])
-    return urls[0]
+    return urls[0], inference_services[0]["metadata"]["name"]
 
 
 def main():

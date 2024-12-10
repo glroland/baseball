@@ -24,6 +24,8 @@ class ConfigKeys:
     NAME = "name"
     URL = "url"
     TOKEN = "token"
+    NAMESPACE = "namespace"
+    LABELS = "labels"
 
 def init(filename):
     """ Initializes configuration from INI file.
@@ -58,7 +60,11 @@ def get_config_str(section, key):
 
     # get config value
     if section is None:
+        if key not in config:
+            return None
         return config[key]
+    if key not in config[section]:
+        return None
     return config[section][key]
 
 def get_config_bool(section, key):

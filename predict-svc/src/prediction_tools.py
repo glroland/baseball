@@ -123,7 +123,7 @@ def get_item_float(item):
     
         item - item
     """
-    if isinstance(item, np.float32) or isinstance(item, np.float64):
+    if isinstance(item, (np.float32, np.float64)):
         if np.isnan(item):
             return None
         return item.item()
@@ -133,3 +133,4 @@ def get_item_float(item):
         return None
 
     fail(f"Could not process item: {item}")
+    return None

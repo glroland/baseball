@@ -7,8 +7,7 @@ from utils import fail, to_json_string
 from config import get_config_str, ConfigSections, ConfigKeys
 from prediction_tools import load_scaler, get_tf_num_for_value, get_tf_num_for_bool
 from prediction_tools import SCALER_SUFFIX, scale_single_value, get_item_float
-from prediction_tools import start_local_model_session, local_infer
-from inference_gateway import predict_via_rest
+from inference_gateway import predict
 
 logger = logging.getLogger(__name__)
 
@@ -95,24 +94,9 @@ def predict_play(request : PredictPlayRequest) -> PredictPlayResponse:
     data.append(get_tf_num_for_bool(request.outs == 3))
 
     # perform the prediction
-    logger.info("Invoking Predict Play w/input array: %s", data)
-    if get_config_str(ConfigSections.DEFAULT, ConfigKeys.MODEL_SOURCE) == "local":
-        logger.info("Using Local Models")
+    infer_result = predict(ConfigSections.PREDICT_PLAY, data)
 
-        predict_play_filename = model_dir + "/model.onnx"
-        onnx_runtime_session = start_local_model_session(predict_play_filename)
-        torch_input = np.array(data, dtype='float32')
-        
-        infer_result = local_infer(onnx_runtime_session, torch_input)[0]
-    else:
-        logger.info("Using Remote Inference Services")
-
-        infer_endpoint = get_config_str(ConfigSections.PREDICT_PLAY, ConfigKeys.URL)
-        deployed_model_name = get_config_str(ConfigSections.PREDICT_PLAY, ConfigKeys.NAME)
-    
-        infer_result = predict_via_rest(infer_endpoint, deployed_model_name, data)
-    logger.info("Prediction Response: Value=%s   Type=%s", infer_result, type(infer_result))
-
+    # build response
     response = PredictPlayResponse()
     response.primary_play_type_cd_0 = get_item_float(infer_result[0])
     response.primary_play_type_cd_1 = get_item_float(infer_result[1])
@@ -181,6 +165,7 @@ def predict_play(request : PredictPlayRequest) -> PredictPlayResponse:
         logger.warning("Index with maximum index is out of the bounds of the array!  %s", index)
 
     logger.info("API Response: Value=%s", response)
-    logger.info("Root Prediction.  Play=%s   Probability=%s", response.predicted_play, response.probability)
+    logger.info("Root Prediction.  Play=%s   Probability=%s",
+                response.predicted_play, response.probability)
 
     return response
