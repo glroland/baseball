@@ -1,5 +1,6 @@
 """ Attempts to predict whether a baseball pitch will be a ball or a strike. """
 import logging
+import os
 import numpy as np
 from pydantic import BaseModel, Field
 from utils import fail, to_json_string
@@ -40,13 +41,14 @@ def predict_pitch(request : PredictPitchRequest) -> PredictPitchResponse:
     logger.info("Predict Pitch - Request=%s", request)
 
     # get configured model directory
-    model_dir = get_config_str(ConfigSections.PREDICT_PITCH, ConfigKeys.MODEL_DIR)
+    model_dir_str = get_config_str(ConfigSections.PREDICT_PITCH, ConfigKeys.MODEL_DIR)
+    model_dir = os.path.abspath(model_dir_str)
     logger.info("Configured Model Directory: %s", model_dir)
 
     # load scalers
-    score_deficit_scaler = load_scaler(model_dir + "score_deficit" + SCALER_SUFFIX)
-    pitch_count_scaler = load_scaler(model_dir + "pitch_count" + SCALER_SUFFIX)
-    pitch_index_scaler = load_scaler(model_dir + "pitch_index" + SCALER_SUFFIX)
+    score_deficit_scaler = load_scaler(model_dir + "/" + "score_deficit" + SCALER_SUFFIX)
+    pitch_count_scaler = load_scaler(model_dir + "/" + "pitch_count" + SCALER_SUFFIX)
+    pitch_index_scaler = load_scaler(model_dir + "/" + "pitch_index" + SCALER_SUFFIX)
 
     # create input data structure
     data = []
@@ -62,12 +64,16 @@ def predict_pitch(request : PredictPitchRequest) -> PredictPitchResponse:
     # perform the prediction
     logger.info("Invoking Predict Pitch w/input array: %s", data)
     if get_config_bool(ConfigSections.DEFAULT, ConfigKeys.USE_LOCAL_MODELS):
+        logger.info("Using Local Models")
+
         predict_pitch_filename = model_dir + "/model.onnx"
         onnx_runtime_session = start_local_model_session(predict_pitch_filename)
         torch_input = np.array(data, dtype='float32')
         
         infer_result = local_infer(onnx_runtime_session, torch_input)[0]
     else:
+        logger.info("Using Remote Inference Services")
+
         infer_endpoint = get_config_str(ConfigSections.PREDICT_PITCH, ConfigKeys.ENDPOINT_URL)
         deployed_model_name = get_config_str(ConfigSections.PREDICT_PITCH, ConfigKeys.MODEL_NAME)
     

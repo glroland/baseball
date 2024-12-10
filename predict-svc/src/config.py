@@ -32,13 +32,16 @@ def init(filename):
     if filename is None or len(filename) == 0:
         fail("Config Management provided an empty filename.")
 
+    # get absolute path to config
+    filename_abs = os.path.abspath(filename)
+
     # verify config file exists
-    logger.info("Loading Configuration: %s", filename)
-    if not os.path.isfile(filename):
-        fail (f"Config file does not exist!  {filename}")
+    logger.info("Loading Configuration: %s", filename_abs)
+    if not os.path.isfile(filename_abs):
+        fail (f"Config file does not exist!  {filename_abs}")
 
     # initialize config
-    results = config.read(filename)
+    results = config.read(filename_abs)
     logger.info("Configuration Loaded. %s", results)
 
 def get_config_str(section, key):
@@ -64,7 +67,11 @@ def get_config_bool(section, key):
     """
     # get config value
     val_str = get_config_str(section, key)
+    logger.warning("VALUE == %s", val_str)
     if val_str is None or len(val_str) == 0:
         return None
 
-    return bool(val_str)
+    # convert to bool
+    if val_str.lower().strip() in ['true', 1]:
+        return True
+    return False

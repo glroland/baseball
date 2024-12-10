@@ -1,5 +1,6 @@
 """ Attempts to predict what the next play will be. """
 import logging
+import os
 from pydantic import BaseModel, Field
 import numpy as np
 from utils import fail, to_json_string
@@ -66,13 +67,14 @@ def predict_play(request : PredictPlayRequest) -> PredictPlayResponse:
     logger.info("Predict Play - Request=%s", request)
 
     # get configured model directory
-    model_dir = get_config_str(ConfigSections.PREDICT_PLAY, ConfigKeys.MODEL_DIR)
+    model_dir_str = get_config_str(ConfigSections.PREDICT_PLAY, ConfigKeys.MODEL_DIR)
+    model_dir = os.path.abspath(model_dir_str)
     logger.info("Configured Model Directory: %s", model_dir)
 
     # load scalers
-    score_deficit_scaler = load_scaler(model_dir + "score_deficit" + SCALER_SUFFIX)
-    pitch_count_scaler = load_scaler(model_dir + "pitch_count" + SCALER_SUFFIX)
-    pitch_index_scaler = load_scaler(model_dir + "pitch_index" + SCALER_SUFFIX)
+    score_deficit_scaler = load_scaler(model_dir + "/" + "score_deficit" + SCALER_SUFFIX)
+    pitch_count_scaler = load_scaler(model_dir + "/" + "pitch_count" + SCALER_SUFFIX)
+    pitch_index_scaler = load_scaler(model_dir + "/" + "pitch_index" + SCALER_SUFFIX)
 
     # create input data structure
     data = []
@@ -95,12 +97,16 @@ def predict_play(request : PredictPlayRequest) -> PredictPlayResponse:
     # perform the prediction
     logger.info("Invoking Predict Play w/input array: %s", data)
     if get_config_bool(ConfigSections.DEFAULT, ConfigKeys.USE_LOCAL_MODELS):
+        logger.info("Using Local Models")
+
         predict_play_filename = model_dir + "/model.onnx"
         onnx_runtime_session = start_local_model_session(predict_play_filename)
         torch_input = np.array(data, dtype='float32')
         
         infer_result = local_infer(onnx_runtime_session, torch_input)[0]
     else:
+        logger.info("Using Remote Inference Services")
+
         infer_endpoint = get_config_str(ConfigSections.PREDICT_PLAY, ConfigKeys.ENDPOINT_URL)
         deployed_model_name = get_config_str(ConfigSections.PREDICT_PLAY, ConfigKeys.MODEL_NAME)
     

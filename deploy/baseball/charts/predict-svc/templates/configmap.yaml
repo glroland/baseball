@@ -21,10 +21,10 @@ data:
 
       [PredictPitch]
       model_dir = ./predict_pitch/
-      model_name = predict_pitch
-      endpoint_url = http://modelmesh-serving.baseball:8008/v2/models/predictpitch/infer
+      model_name = predictpitch
+      endpoint_url = http://modelmesh-serving.baseball:8008
 
       [PredictPlay]
       model_dir = ./predict_play/
-      model_name = predict_play
-      endpoint_url = http://modelmesh-serving.baseball:8008/v2/models/predictplay/infer
+      model_name = predictplay
+      endpoint_url = http://modelmesh-serving.baseball:8008
