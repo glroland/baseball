@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from utils import fail, to_json_string
 from config import get_config_bool, get_config_str, ConfigSections, ConfigKeys
 from prediction_tools import load_scaler, get_tf_num_for_value, get_tf_num_for_bool
-from prediction_tools import SCALER_SUFFIX, scale_single_value
+from prediction_tools import SCALER_SUFFIX, scale_single_value, get_item_float
 from prediction_tools import start_local_model_session, local_infer
 from inference_gateway import predict_via_rest
 
@@ -81,6 +81,6 @@ def predict_pitch(request : PredictPitchRequest) -> PredictPitchResponse:
     logger.info("Prediction Response: Value=%s   Type=%s", infer_result, type(infer_result))
 
     response = PredictPitchResponse()
-    response.probability_of_strike = infer_result[0].item()
+    response.probability_of_strike = get_item_float(infer_result[0])
 
     return response

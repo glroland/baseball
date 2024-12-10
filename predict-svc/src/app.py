@@ -53,23 +53,19 @@ async def predict_pitch_api(request : PredictPitchRequest):
     """
     # perform operation
     result = predict_pitch(request)
-    logger.info("predict_play response: %s", result)
-    response = { "result": result }
-    logger.info("predict_play_api response: %s", response)
-    return response
+    logger.info("predict_pitch_api response: %s", result)
+    return result
 
 @app.get("/predict_play")
-async def predict_play_api(request : PredictPlayRequest) -> PredictPlayResponse:
+async def predict_play_api(request : PredictPlayRequest):
     """ Fulfills a Predict Play API request
     
         request - request data structure
     """
     # perform operation
     result = predict_play(request)
-    logger.info("predict_play response: %s", result)
-    response = { "result": result }
-    logger.info("predict_play_api response: %s", response)
-    return response
+    logger.info("predict_play_api response: %s", result)
+    return result
 
 @app.get("/health", response_model=str)
 def health():

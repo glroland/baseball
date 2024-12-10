@@ -117,3 +117,19 @@ def local_infer(onnx_runtime_session, torch_input):
     logger.info("ONNX Runtime Outputs: %s", onnx_runtime_session_outputs)
 
     return onnx_runtime_session_outputs
+
+def get_item_float(item):
+    """ Gets the float from the item, whether directly or via the numpy api.
+    
+        item - item
+    """
+    if isinstance(item, np.float32) or isinstance(item, np.float64):
+        if np.isnan(item):
+            return None
+        return item.item()
+    if isinstance(item, float):
+        return item
+    if item is None:
+        return None
+
+    fail(f"Could not process item: {item}")

@@ -42,8 +42,8 @@ def predict_via_rest(infer_endpoint, deployed_model_name, data):
     json_data = {
         "inputs": [
             {
-                "name": "dense_input",
-                "shape": [1, num_features],
+                "name": "input",
+                "shape": [num_features],
                 "datatype": datatype_str,
                 "data": data
             }
