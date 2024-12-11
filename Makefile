@@ -102,5 +102,5 @@ test:
 
 stress:
 	rm -rf target/stress_reports
-	rm -f stress_results.log
-	jmeter -n -t deploy/Prediction\ API\ Test\ Plan.jmx -l stress_results.log -e -o target/stress_reports
+	rm -f target/stress_results.log
+	jmeter -n -t deploy/Prediction\ API\ Test\ Plan.jmx -l target/stress_results.log -e -o target/stress_reports
