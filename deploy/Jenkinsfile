@@ -54,7 +54,7 @@ pipeline
          steps 
          {
             sh '''#!/usr/bin/env bash
-                  mc cp --recursive target/models baseball_data/baseball/builds/$BUILD_NUMBER
+                  mc cp --recursive target/models baseball_bucket/baseball/builds/$BUILD_NUMBER
                 '''
          }
       }
