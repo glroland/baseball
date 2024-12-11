@@ -3,19 +3,9 @@
 #
 db_host ?= db
 db_port ?= 5432
-db_user ?= baseball_app
-db_password ?= baseball123
-db_name ?= baseball_db
-db_connection_string ?= postgresql://$(db_user):$(db_password)@$(db_host):$(db_port)/$(db_name)
-db_dba_user ?= postgres
+db_connection_string ?= postgresql://baseball_app:baseball123@$(db_host):$(db_port)/baseball_db
 db_dba_password ?= d8nnyr0cks
-db_dba_connection_string ?= postgresql://$(db_dba_user):$(db_dba_password)@$(db_host):$(db_port)
-model_registry_url ?= https://my-model-registry-rest.apps.ocpprod.home.glroland.com
-model_registry_token ?= $(shell oc whoami -t)
-model_registry_author ?= Baseball Author
-model_dir ?= ../../target/models/predict_play/
-model_name ?= predictplay
-endpoint_url ?= https://predictplay-baseball.apps.ocpprod.home.glroland.com
+db_dba_connection_string ?= postgresql://postgres:$(db_dba_password)@$(db_host):$(db_port)
 
 install:
 	pip install -r data/requirements.txt
@@ -85,17 +75,14 @@ events: init
 #	cd src && python import_events_app.py ../data/raw/  --save "$(db_connection_string)" --truncate --debug ../import_events_apps.log --skip-errors --move ../data/done
 	cd import-app/src && python import_events_app.py ../../target/raw/  --save "$(db_connection_string)" --debug ../../target/import_events_apps.log --skip-errors --move ../../target/done
 
-model_server.test:
-	cd predict-svc/src && MODEL_REGISTRY_URL="$(model_registry_url)" MODEL_REGISTRY_AUTHOR="$(model_registry_author)" MODEL_REGISTRY_TOKEN="$(model_registry_token)" python model_server_client.py
-
 api.build:
 	podman build -f predict-svc/Dockerfile --tag=predict-svc:latest .
 
 api.dev:
-	cd predict-svc/src && MODEL_REGISTRY_URL="$(model_registry_url)" MODEL_REGISTRY_AUTHOR="$(model_registry_author)" MODEL_REGISTRY_TOKEN="$(model_registry_token)" MODEL_DIR="$(model_dir)" ENDPOINT_URL="$(endpoint_url)" MODEL_NAME="$(model_name)" CONFIG_FILE="../config.ini" fastapi dev app.py
+	cd predict-svc/src && CONFIG_FILE="../config.ini" fastapi dev app.py
 
 api.run:
-	cd predict-svc/src && MODEL_REGISTRY_URL="$(model_registry_url)" MODEL_REGISTRY_AUTHOR="$(model_registry_author)" MODEL_REGISTRY_TOKEN="$(model_registry_token)" MODEL_DIR="$(model_dir)" ENDPOINT_URL="$(endpoint_url)" MODEL_NAME="$(model_name)" CONFIG_FILE="../config.ini" fastapi run app.py
+	cd predict-svc/src && CONFIG_FILE="../config.ini" fastapi run app.py
 
 api.test.pitch:
 	curl -X 'GET' 'http://localhost:8000/predict_pitch' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{ "pitch_index": 2, "pitch_count": 43, "runner_1b": "John", "runner_2b": "",  "runner_3b": "Jane", "is_home": true, "is_night": true, "score_deficit": -4}'

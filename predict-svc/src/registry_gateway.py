@@ -5,13 +5,10 @@ from urllib.parse import quote_plus
 import urllib3
 import requests
 from kubernetes import client, config
-from utils import get_env_value, fail
+from utils import fail
+from config import get_config_str, ConfigSections, ConfigKeys
 
 logger = logging.getLogger(__name__)
-
-ENV_MODEL_REGISTRY_URL = "MODEL_REGISTRY_URL"
-ENV_MODEL_REGISTRY_TOKEN = "MODEL_REGISTRY_TOKEN"
-ENV_MODEL_REGISTRY_AUTHOR = "MODEL_REGISTRY_AUTHOR"
 
 BASE_MODEL_REGISTRY_API = "/api/model_registry/v1alpha3/"
 
@@ -24,9 +21,20 @@ def invoke_model_registry_api(api, query_params = None, data = None):
         query_params - optional query string parameters
         data - optional post parameters
     """
-    url = get_env_value(ENV_MODEL_REGISTRY_URL)
-    token = get_env_value(ENV_MODEL_REGISTRY_TOKEN)
-    author = get_env_value(ENV_MODEL_REGISTRY_AUTHOR)
+    # get config values
+    url = get_config_str(ConfigSections.REGISTRY, ConfigKeys.URL)
+    token = get_config_str(ConfigSections.REGISTRY, ConfigKeys.TOKEN)
+    author = get_config_str(ConfigSections.REGISTRY, ConfigKeys.NAME)
+
+    # validate config
+    if url is None or len(url) == 0 or token is None or len(token) == 0 or \
+        author is None or len(author) == 0:
+        fail("Registry config not set.  URL, Token, and Author must all be set.")
+
+    # trim config values
+    url = url.strip()
+    token = token.strip()
+    author = author.strip()
 
     # set parameter defaults in a more safe way according to pylint
     if query_params is None:
