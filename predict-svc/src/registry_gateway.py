@@ -133,9 +133,12 @@ def get_inference_services(namespace, model_id, model_version_id, inference_labe
         model_version_id - model version id
         inference_label_selector - additional inference label selectors
     """
-
-    # Configs can be set in Configuration class directly or using helper utility
-    config.load_kube_config()
+    # setup kubernetes connection
+    config_file = get_config_str(ConfigSections.REGISTRY, ConfigKeys.KUBECONFIG)
+    if config_file is None or len(config_file) == 0:
+        logger.warning("KubeConfig is required for registry queries and has not been set.  Using local")
+        config_file = None
+    config.load_kube_config(config_file=config_file)
 
     # build label selector string
     label_selector = f"modelregistry.opendatahub.io/model-version-id = {model_version_id}, " + \

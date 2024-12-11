@@ -26,6 +26,7 @@ class ConfigKeys:
     TOKEN = "token"
     NAMESPACE = "namespace"
     LABELS = "labels"
+    KUBECONFIG = "kubeconfig"
 
 def init(filename):
     """ Initializes configuration from INI file.
