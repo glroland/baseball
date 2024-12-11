@@ -49,6 +49,16 @@ pipeline
          }
       }
 
+      stage('Publish AI Models') 
+      {
+         steps 
+         {
+            sh '''#!/usr/bin/env bash
+                  mc cp --recursive target/models baseball_data/baseball/builds/$BUILD_NUMBER
+                '''
+         }
+      }
+
       stage('Create Docker Image for predict-svc') 
       {
          steps 
