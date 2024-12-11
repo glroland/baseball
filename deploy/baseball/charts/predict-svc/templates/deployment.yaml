@@ -56,6 +56,9 @@ spec:
           - mountPath: /projects/config
             name: config-ini
             readOnly: true
+          - mountPath: /projects/kube
+            name: config
+            readOnly: true
           readinessProbe:
             httpGet:
               path: /health
@@ -93,6 +96,13 @@ spec:
             path: config.ini
           name: {{ include "baseball.fullname" . }}
         name: config-ini
+      - secret:
+          defaultMode: 511
+          items:
+          - key: config
+            path: config
+          secretName: kubeconfig-secret
+        name: kubecontext
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

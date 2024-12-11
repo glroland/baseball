@@ -6,6 +6,7 @@ db_port ?= 5432
 db_connection_string ?= postgresql://baseball_app:baseball123@$(db_host):$(db_port)/baseball_db
 db_dba_password ?= d8nnyr0cks
 db_dba_connection_string ?= postgresql://postgres:$(db_dba_password)@$(db_host):$(db_port)
+k8s_namespace ?= baseball-prod
 
 install:
 	pip install -r data/requirements.txt
@@ -104,3 +105,7 @@ stress:
 	rm -rf target/stress_reports
 	rm -f target/stress_results.log
 	jmeter -n -t deploy/Prediction\ API\ Test\ Plan.jmx -l target/stress_results.log -e -o target/stress_reports
+
+install.kubeconfig:
+	oc delete secret kubeconfig-secret -n $(k8s_namespace)
+	oc create secret generic kubeconfig-secret --from-file=$(HOME)/.kube/config -n $(k8s_namespace)

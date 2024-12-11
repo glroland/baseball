@@ -19,7 +19,7 @@ data:
       url = https://my-model-registry-rest.apps.ocpprod.home.glroland.com
       token = none
       name = Baseball Author
-      kubeconfig = kubeconfig/kubeconfig
+      kubeconfig = kube/config
 
       [PredictPitch]
       dir = ./predict_play/
