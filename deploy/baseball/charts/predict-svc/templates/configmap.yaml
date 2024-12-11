@@ -10,7 +10,7 @@ data:
   config.ini: |-
       [DEFAULT]
       # local, api, registry
-      model_source = registry
+      model_source = api
 
       [Database]
       db_connection_string = postgresql://baseball_app:baseball123@db:5432/baseball_db
@@ -22,14 +22,14 @@ data:
 
       [PredictPitch]
       dir = ./predict_play/
-      # name = pitch
-      # url = https://pitch.baseball.svc.cluster.local
-      name = Baseball Predict Pitch
-      namespace = baseball
+      name = pitch
+      url = https://pitch.baseball.svc.cluster.local
+      # name = Baseball Predict Pitch
+      # namespace = baseball
 
       [PredictPlay]
       dir =  ./predict_play/
-      # name = play
-      # url = https://play.baseball.svc.cluster.local
-      name = Baseball Predict Play
-      namespace = baseball
+      name = play
+      url = https://play.baseball.svc.cluster.local
+      # name = Baseball Predict Play
+      # namespace = baseball
