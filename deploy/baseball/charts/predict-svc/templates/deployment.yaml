@@ -57,7 +57,7 @@ spec:
             name: config-ini
             readOnly: true
           - mountPath: /projects/kube
-            name: config
+            name: kubecontext
             readOnly: true
           readinessProbe:
             httpGet:
