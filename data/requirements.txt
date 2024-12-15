@@ -15,3 +15,5 @@ kubernetes
 joblib
 tqdm
 matplotlib
+unsloth
+datasets

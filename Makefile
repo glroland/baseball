@@ -109,3 +109,16 @@ stress:
 install.kubeconfig:
 	oc delete secret kubeconfig-secret -n $(k8s_namespace)
 	oc create secret generic kubeconfig-secret --from-file=$(HOME)/.kube/config -n $(k8s_namespace)
+
+data.gentrainingdata:
+	mkdir -p target
+	rm -rf target/augmentoolkit
+	cd target && git clone https://github.com/e-p-armstrong/augmentoolkit.git
+	cd target/augmentoolkit && pip install -r requirements.txt
+	rm -f target/augmentoolkit/original/input/*
+	cp data/knowledge/all.md target/augmentoolkit/original/input
+	cp data/knowledge/config.yaml target/augmentoolkit/original
+	cd target/augmentoolkit && python run_augmentoolkit.py
+
+data.trainlm:
+	cd data/src/train && python train_baseball_lm.py
