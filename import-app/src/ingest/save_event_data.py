@@ -178,6 +178,7 @@ def save_game_play(sql_connection, game_id_in_db, index):
         (
             %s, %s
         )
+        returning game_play_id
            """
     with sql_connection.cursor() as sql_cursor:
         sql_cursor.execute(sql,
@@ -186,33 +187,29 @@ def save_game_play(sql_connection, game_id_in_db, index):
                 index
             ]
         )
+        game_play_id_in_db = sql_cursor.fetchone()[0]
+        return game_play_id_in_db
 
 
-# pylint: disable=too-many-arguments
-def save_batter_event(sql_cursor, game_id_in_db, play_index):
+def save_batter_event(sql_cursor, game_play_id):
     """ Save the provided batter event.
     
         sql_cursor - cursor to use for tx
-        game_id_in_db - baseball game id
-        play_index - game play index
-        basic_play - core play details
-        modifiers - list of modifiers attached to the basic play
-        advance - runner advancement details
+        game_play_id - baseball game play id
     """
-    logger.debug("Saving Batter Fielding Events!  ID=%s, PlayIndex=%s", game_id_in_db, play_index)
+    logger.debug("Saving Batter Fielding Events!  ID=%s", game_play_id)
     sql = """
-            insert into game_play_atbat_field_event (game_id, play_index)
-            values(%s, %s)
+            insert into game_play_atbat_field_event (game_play_id)
+            values(%s)
           """
     sql_cursor.execute(sql,
         [
-            game_id_in_db,
-            play_index
+            game_play_id
         ]
     )
 
 
-def save_pitches(sql_cursor, game_id_in_db, play_index, pitches):
+def save_pitches(sql_cursor, game_play_id, pitches):
     """ Save the pitch strings.  
     
         sql_cursor - sql cursor to use for tx
@@ -220,37 +217,34 @@ def save_pitches(sql_cursor, game_id_in_db, play_index, pitches):
         play_index - game play index
         pitches - pitches string
     """
-    logger.debug("Saving At Bat Pitch Events!  ID=%s, PlayIndex=%s, Pitches=%s",
-                     game_id_in_db, play_index, pitches)
+    logger.debug("Saving At Bat Pitch Events!  ID=%s, Pitches=%s", game_play_id, pitches)
     sql = """
-            insert into game_play_atbat_pitch (game_id, play_index, pitch_index, pitch_type_cd)
-            values(%s, %s, %s, %s)
+            insert into game_play_atbat_pitch (game_play_id, pitch_index, pitch_type_cd)
+            values(%s, %s, %s)
           """
 
     pitch_index = 0
     for pitch_type_cd in pitches:
         pitch_index += 1
-        logger.debug("Saving At Bat Pitch!  ID=%s, PlayIndex=%s, Pitches=%s, Pitch=%s",
-                     game_id_in_db, play_index, pitches, pitch_type_cd)
+        logger.debug("Saving At Bat Pitch!  ID=%s, Pitches=%s, Pitch=%s",
+                     game_play_id, pitches, pitch_type_cd)
         sql_cursor.execute(sql,
             [
-                game_id_in_db,
-                play_index,
+                game_play_id,
                 pitch_index,
                 pitch_type_cd
             ]
         )
 
 # pylint: disable=protected-access
-def save_game_play_atbat(sql_connection, game_id_in_db, index, atbat):
+def save_game_play_atbat(sql_connection, game_play_id, atbat):
     """ Save the Game Play record.
     
         sql_connection - sql connection to use for transaction
-        game_id_in_db - associated game id
-        index - game play index
+        game_play_id - associated game play id
         atbat - at bat record
     """
-    logger.debug("Saving At Bat!  ID=%s, Index=%s, AtBat=%s", game_id_in_db, index, atbat)
+    logger.debug("Saving At Bat!  ID=%s, AtBat=%s", game_play_id, atbat)
 
     # retrieve runners
     runner_1b = None
@@ -270,20 +264,19 @@ def save_game_play_atbat(sql_connection, game_id_in_db, index, atbat):
     sql = """
         insert into game_play_atbat
         (
-            game_id, play_index, inning, home_team_flag, player_code, count,
+            game_play_id, inning, home_team_flag, player_code, count,
             outs, runner_1b, runner_2b, runner_3b, score_home, score_visitor,
             pitcher, primary_play_type_cd
         )
         values 
         (
-            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
         )
            """
     with sql_connection.cursor() as sql_cursor:
         sql_cursor.execute(sql,
             [
-                game_id_in_db,
-                index,
+                game_play_id,
                 atbat.game_state._inning,
                 atbat.game_state._top_of_inning_flag,
                 atbat.player_code,
@@ -298,31 +291,30 @@ def save_game_play_atbat(sql_connection, game_id_in_db, index, atbat):
                 atbat.primary_play_type_cd
             ]
         )
-        save_pitches(sql_cursor, game_id_in_db, index, atbat.pitches)
-        save_batter_event(sql_cursor, game_id_in_db, index)
+        save_pitches(sql_cursor, game_play_id, atbat.pitches)
+        save_batter_event(sql_cursor, game_play_id)
 
 
-def save_game_play_sub(sql_connection, game_id_in_db, index, sub):
+def save_game_play_sub(sql_connection, game_play_id, sub):
     """ Save the Game Play record.
     
         sql_connection - sql connection to use for transaction
-        game_id_in_db - associated game id
-        index - game play index
+        game_play_id - associated game play id
         sub - substitution record
     """
-    logger.debug("Saving Substitution!  ID=%s, Index=%s, Sub=%s", game_id_in_db, index, sub)
+    logger.debug("Saving Substitution!  ID=%s, Sub=%s", game_play_id, sub)
 
     # TODO Fix issue causing empty player to values
     player_to = sub.player_to
     if player_to is None:
         player_to = "UNKNOWN"
+        #logger.warning("Player_To is None!  GamePlayID=%s, Sub=%s", game_play_id, sub)
 
     # Save Game Play
     sql = """
         insert into game_play_sub
         (
-            game_id,
-            play_index,
+            game_play_id,
             player_from,
             player_to,
             players_team_home_flag,
@@ -331,16 +323,15 @@ def save_game_play_sub(sql_connection, game_id_in_db, index, sub):
         )
         values 
         (
-            %s, %s, %s, %s, %s, %s, %s
+            %s, %s, %s, %s, %s, %s
         )
            """
     with sql_connection.cursor() as sql_cursor:
         sql_cursor.execute(sql,
             [
-                game_id_in_db,
-                index,
+                game_play_id,
                 sub.player_from,
-                player_to, #TODO sub.player_to,
+                player_to,
                 sub.players_team_home_flag,
                 sub.batting_order,
                 sub.fielding_position
@@ -365,11 +356,11 @@ def save_game(sql_connection, game):
         game_play_index = 0
         for game_play in game.game_plays:
             game_play_index += 1
-            save_game_play(sql_connection, game_id_in_db, game_play_index)
+            game_play_id = save_game_play(sql_connection, game_id_in_db, game_play_index)
             if isinstance(game_play, GameAtBat):
-                save_game_play_atbat(sql_connection, game_id_in_db, game_play_index, game_play)
+                save_game_play_atbat(sql_connection, game_play_id, game_play)
             elif isinstance(game_play, GameSubstitution):
-                save_game_play_sub(sql_connection, game_id_in_db, game_play_index, game_play)
+                save_game_play_sub(sql_connection, game_play_id, game_play)
             else:
                 logger.error("Unknown game play type.  Type=%s", type(game_play))
                 raise ValueError("Unknown game play record type.")
