@@ -1,4 +1,5 @@
 """ CLI Utility for training a baseball small language model."""
+import sys
 import logging
 from unsloth import FastLanguageModel
 from unsloth.chat_templates import get_chat_template
@@ -7,8 +8,9 @@ from datasets import load_dataset
 from trl import SFTTrainer
 from transformers import TrainingArguments
 from unsloth import is_bfloat16_supported
-from unsloth.chat_templates import get_chat_template
-from transformers import TextStreamer
+#from unsloth.chat_templates import get_chat_template
+#from transformers import TextStreamer
+#from transformers import TextStreamer
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +19,9 @@ TRAIN_MAX_SEQ_LENGTH = 2048 # Choose any! We auto support RoPE Scaling internall
 TRAIN_DTYPE = None # None for auto detection. Float16 for Tesla T4, V100, Bfloat16 for Ampere+
 TRAIN_LOAD_IN_4BIT = True # Use 4bit quantization to reduce memory usage. Can be False.
 TRAIN_FOUNDATIONAL_MODEL = "unsloth/Phi-3.5-mini-instruct"
+OUTPUT_DIR = "../"
+TRAINING_DATA = OUTPUT_DIR + "augmentoolkit/original/output/plain_qa_list.jsonl"
+MODEL_DIR = OUTPUT_DIR + "lora_model"
 
 class ColorOutputFormatter(logging.Formatter):
     """ Add colors to stdout logging output to simplify text.  Thank you to:
@@ -63,7 +68,6 @@ def main():
     file_handler.setFormatter(formatter)
     logging.getLogger().addHandler(file_handler)
 
-
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name = TRAIN_FOUNDATIONAL_MODEL,
         max_seq_length = TRAIN_MAX_SEQ_LENGTH,
@@ -97,9 +101,8 @@ def main():
         convos = examples["conversations"]
         texts = [tokenizer.apply_chat_template(convo, tokenize = False, add_generation_prompt = False) for convo in convos]
         return { "text" : texts, }
-    pass
 
-    dataset = load_dataset("../../target/augmentoolkit/original/output/plain_qa_list.jsonl", split = "train")
+    dataset = load_dataset("json", data_files=TRAINING_DATA, split = "train")
     dataset = dataset.map(formatting_prompts_func, batched = True,)
 
     unsloth_template = \
@@ -117,20 +120,20 @@ def main():
         "{% endif %}"
     unsloth_eos_token = "eos_token"
 
-    if False:
-        tokenizer = get_chat_template(
-            tokenizer,
-            chat_template = (unsloth_template, unsloth_eos_token,), # You must provide a template and EOS token
-            mapping = {"role" : "from", "content" : "value", "user" : "human", "assistant" : "gpt"}, # ShareGPT style
-            map_eos_token = True, # Maps <|im_end|> to </s> instead
-        )
+#    if False:
+#        tokenizer = get_chat_template(
+#            tokenizer,
+#            chat_template = (unsloth_template, unsloth_eos_token,), # You must provide a template and EOS token
+#            mapping = {"role" : "from", "content" : "value", "user" : "human", "assistant" : "gpt"}, # ShareGPT style
+#            map_eos_token = True, # Maps <|im_end|> to </s> instead
+#        )
 
     trainer = SFTTrainer(
         model = model,
         tokenizer = tokenizer,
         train_dataset = dataset,
         dataset_text_field = "text",
-        max_seq_length = max_seq_length,
+        max_seq_length = TRAIN_MAX_SEQ_LENGTH,
         dataset_num_proc = 2,
         packing = False, # Can make training 5x faster for short sequences.
         args = TrainingArguments(
@@ -172,115 +175,114 @@ def main():
     print(f"Peak reserved memory % of max memory = {used_percentage} %.")
     print(f"Peak reserved memory for training % of max memory = {lora_percentage} %.")
 
-    tokenizer = get_chat_template(
-        tokenizer,
-        chat_template = "phi-3", # Supports zephyr, chatml, mistral, llama, alpaca, vicuna, vicuna_old, unsloth
-        mapping = {"role" : "from", "content" : "value", "user" : "human", "assistant" : "gpt"}, # ShareGPT style
-    )
+#    tokenizer = get_chat_template(
+#        tokenizer,
+#        chat_template = "phi-3", # Supports zephyr, chatml, mistral, llama, alpaca, vicuna, vicuna_old, unsloth
+#        mapping = {"role" : "from", "content" : "value", "user" : "human", "assistant" : "gpt"}, # ShareGPT style
+#    )
 
-    FastLanguageModel.for_inference(model) # Enable native 2x faster inference
+#    FastLanguageModel.for_inference(model) # Enable native 2x faster inference
 
-    messages = [
-        {"from": "human", "value": "Continue the fibonnaci sequence: 1, 1, 2, 3, 5, 8,"},
-    ]
-    inputs = tokenizer.apply_chat_template(
-        messages,
-        tokenize = True,
-        add_generation_prompt = True, # Must add for generation
-        return_tensors = "pt",
-    ).to("cuda")
+#    messages = [
+#        {"from": "human", "value": "Continue the fibonnaci sequence: 1, 1, 2, 3, 5, 8,"},
+#    ]
+#    inputs = tokenizer.apply_chat_template(
+#        messages,
+#        tokenize = True,
+#        add_generation_prompt = True, # Must add for generation
+#        return_tensors = "pt",
+#    ).to("cuda")
 
-    outputs = model.generate(input_ids = inputs, max_new_tokens = 64, use_cache = True)
-    tokenizer.batch_decode(outputs)
+#    outputs = model.generate(input_ids = inputs, max_new_tokens = 64, use_cache = True)
+#    tokenizer.batch_decode(outputs)
 
-    FastLanguageModel.for_inference(model) # Enable native 2x faster inference
+#    FastLanguageModel.for_inference(model) # Enable native 2x faster inference
 
-    messages = [
-        {"from": "human", "value": "Continue the fibonnaci sequence: 1, 1, 2, 3, 5, 8,"},
-    ]
-    inputs = tokenizer.apply_chat_template(
-        messages,
-        tokenize = True,
-        add_generation_prompt = True, # Must add for generation
-        return_tensors = "pt",
-    ).to("cuda")
+#    messages = [
+#        {"from": "human", "value": "Continue the fibonnaci sequence: 1, 1, 2, 3, 5, 8,"},
+#    ]
+#    inputs = tokenizer.apply_chat_template(
+#        messages,
+#        tokenize = True,
+#        add_generation_prompt = True, # Must add for generation
+#        return_tensors = "pt",
+#    ).to("cuda")
 
-    from transformers import TextStreamer
-    text_streamer = TextStreamer(tokenizer, skip_prompt = True)
-    _ = model.generate(input_ids = inputs, streamer = text_streamer, max_new_tokens = 128, use_cache = True)
+#    text_streamer = TextStreamer(tokenizer, skip_prompt = True)
+#    _ = model.generate(input_ids = inputs, streamer = text_streamer, max_new_tokens = 128, use_cache = True)
 
-    model.save_pretrained("lora_model") # Local saving
-    tokenizer.save_pretrained("lora_model")
-    # model.push_to_hub("your_name/lora_model", token = "...") # Online saving
-    # tokenizer.push_to_hub("your_name/lora_model", token = "...") # Online saving
+    model.save_pretrained(MODEL_DIR) # Local saving
+    tokenizer.save_pretrained(MODEL_DIR)
+#    # model.push_to_hub("your_name/lora_model", token = "...") # Online saving
+#    # tokenizer.push_to_hub("your_name/lora_model", token = "...") # Online saving
 
-    if False:
-        from unsloth import FastLanguageModel
-        model, tokenizer = FastLanguageModel.from_pretrained(
-            model_name = "lora_model", # YOUR MODEL YOU USED FOR TRAINING
-            max_seq_length = max_seq_length,
-            dtype = dtype,
-            load_in_4bit = load_in_4bit,
-        )
-        FastLanguageModel.for_inference(model) # Enable native 2x faster inference
+#    if False:
+#        from unsloth import FastLanguageModel
+#        model, tokenizer = FastLanguageModel.from_pretrained(
+#            model_name = "lora_model", # YOUR MODEL YOU USED FOR TRAINING
+#            max_seq_length = max_seq_length,
+#            dtype = dtype,
+#            load_in_4bit = load_in_4bit,
+#        )
+#        FastLanguageModel.for_inference(model) # Enable native 2x faster inference
 
-        messages = [
-            {"from": "human", "value": "What is a famous tall tower in Paris?"},
-        ]
-        inputs = tokenizer.apply_chat_template(
-            messages,
-            tokenize = True,
-            add_generation_prompt = True, # Must add for generation
-            return_tensors = "pt",
-        ).to("cuda")
+#        messages = [
+#            {"from": "human", "value": "What is a famous tall tower in Paris?"},
+#        ]
+#        inputs = tokenizer.apply_chat_template(
+#            messages,
+#            tokenize = True,
+#            add_generation_prompt = True, # Must add for generation
+#            return_tensors = "pt",
+#        ).to("cuda")
 
-        text_streamer = TextStreamer(tokenizer, skip_prompt = True)
-        _ = model.generate(input_ids = inputs, streamer = text_streamer, max_new_tokens = 128, use_cache = True)
+#        text_streamer = TextStreamer(tokenizer, skip_prompt = True)
+#        _ = model.generate(input_ids = inputs, streamer = text_streamer, max_new_tokens = 128, use_cache = True)
 
-    if False:
-        # I highly do NOT suggest - use Unsloth if possible
-        from peft import AutoPeftModelForCausalLM
-        from transformers import AutoTokenizer
-        model = AutoPeftModelForCausalLM.from_pretrained(
-            "lora_model", # YOUR MODEL YOU USED FOR TRAINING
-            load_in_4bit = load_in_4bit,
-        )
-        tokenizer = AutoTokenizer.from_pretrained("lora_model")
+#    if False:
+#        # I highly do NOT suggest - use Unsloth if possible
+#        from peft import AutoPeftModelForCausalLM
+#        from transformers import AutoTokenizer
+#        model = AutoPeftModelForCausalLM.from_pretrained(
+#            "lora_model", # YOUR MODEL YOU USED FOR TRAINING
+#            load_in_4bit = load_in_4bit,
+#        )
+#        tokenizer = AutoTokenizer.from_pretrained("lora_model")
 
-    # Merge to 16bit
-    if False: model.save_pretrained_merged("model", tokenizer, save_method = "merged_16bit",)
-    if False: model.push_to_hub_merged("hf/model", tokenizer, save_method = "merged_16bit", token = "")
+#    # Merge to 16bit
+#    if False: model.save_pretrained_merged("model", tokenizer, save_method = "merged_16bit",)
+#    if False: model.push_to_hub_merged("hf/model", tokenizer, save_method = "merged_16bit", token = "")
 
-    # Merge to 4bit
-    if False: model.save_pretrained_merged("model", tokenizer, save_method = "merged_4bit",)
-    if False: model.push_to_hub_merged("hf/model", tokenizer, save_method = "merged_4bit", token = "")
+#    # Merge to 4bit
+#    if False: model.save_pretrained_merged("model", tokenizer, save_method = "merged_4bit",)
+#    if False: model.push_to_hub_merged("hf/model", tokenizer, save_method = "merged_4bit", token = "")
 
-    # Just LoRA adapters
-    if False: model.save_pretrained_merged("model", tokenizer, save_method = "lora",)
-    if False: model.push_to_hub_merged("hf/model", tokenizer, save_method = "lora", token = "")
+#    # Just LoRA adapters
+#    if False: model.save_pretrained_merged("model", tokenizer, save_method = "lora",)
+#    if False: model.push_to_hub_merged("hf/model", tokenizer, save_method = "lora", token = "")
 
-    # Save to 8bit Q8_0
-    if False: model.save_pretrained_gguf("model", tokenizer,)
-    # Remember to go to https://huggingface.co/settings/tokens for a token!
-    # And change hf to your username!
-    if False: model.push_to_hub_gguf("hf/model", tokenizer, token = "")
+#    # Save to 8bit Q8_0
+#    if False: model.save_pretrained_gguf("model", tokenizer,)
+#    # Remember to go to https://huggingface.co/settings/tokens for a token!
+#    # And change hf to your username!
+#    if False: model.push_to_hub_gguf("hf/model", tokenizer, token = "")
 
-    # Save to 16bit GGUF
-    if False: model.save_pretrained_gguf("model", tokenizer, quantization_method = "f16")
-    if False: model.push_to_hub_gguf("hf/model", tokenizer, quantization_method = "f16", token = "")
+#    # Save to 16bit GGUF
+#    if False: model.save_pretrained_gguf("model", tokenizer, quantization_method = "f16")
+#    if False: model.push_to_hub_gguf("hf/model", tokenizer, quantization_method = "f16", token = "")
 
-    # Save to q4_k_m GGUF
-    if False: model.save_pretrained_gguf("model", tokenizer, quantization_method = "q4_k_m")
-    if False: model.push_to_hub_gguf("hf/model", tokenizer, quantization_method = "q4_k_m", token = "")
+#    # Save to q4_k_m GGUF
+#CRASHINGWSL    model.save_pretrained_gguf("model", tokenizer, quantization_method = "q4_k_m")
+#    if False: model.push_to_hub_gguf("hf/model", tokenizer, quantization_method = "q4_k_m", token = "")
 
-    # Save to multiple GGUF options - much faster if you want multiple!
-    if False:
-        model.push_to_hub_gguf(
-            "hf/model", # Change hf to your username!
-            tokenizer,
-            quantization_method = ["q4_k_m", "q8_0", "q5_k_m",],
-            token = "", # Get a token at https://huggingface.co/settings/tokens
-        )
+#    # Save to multiple GGUF options - much faster if you want multiple!
+#    if False:
+#        model.push_to_hub_gguf(
+#            "hf/model", # Change hf to your username!
+#            tokenizer,
+#            quantization_method = ["q4_k_m", "q8_0", "q5_k_m",],
+#            token = "", # Get a token at https://huggingface.co/settings/tokens
+#        )
 
 
 if __name__ == '__main__':
