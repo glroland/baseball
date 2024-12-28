@@ -121,4 +121,5 @@ data.gentrainingdata:
 	cd target/augmentoolkit && python run_augmentoolkit.py
 
 data.trainlm:
-	cd data/src/train && python train_baseball_lm.py
+	mkdir -p target/lmtrain
+	cd target/lmtrain && python ../../data/src/train/train_baseball_lm.py
