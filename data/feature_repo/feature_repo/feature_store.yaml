@@ -1,12 +1,22 @@
-project: feature_repo
-# By default, the registry is a file (but can be turned into a more scalable SQL-backed registry)
-registry: data/registry.db
-# The provider primarily specifies default offline / online stores & storing the registry in a given cloud
+project: baseball
+registry: data/metadata.db
 provider: local
-online_store:
-    type: sqlite
-    path: data/online_store.db
-entity_key_serialization_version: 2
-# By default, no_auth for authentication and authorization, other possible values kubernetes and oidc. Refer the documentation for more details.
 auth:
     type: no_auth
+entity_key_serialization_version: 2
+offline_store:
+  type: postgres
+  host: db
+  port: 5432
+  database: baseball_db
+  user: baseball_app
+  password: baseball123
+online_store:
+  type: postgres
+  host: localhost
+  port: 5432
+  database: baseball_features_db
+  user: baseball_ml
+  password: baseball123
+  vector_enabled: false
+  vector_len: 512

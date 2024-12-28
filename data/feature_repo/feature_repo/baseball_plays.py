@@ -1,5 +1,6 @@
-# This is an example feature definition file
-
+from feast.infra.offline_stores.contrib.postgres_offline_store.postgres_source import (
+    PostgreSQLSource,
+)
 from datetime import timedelta
 
 import pandas as pd
@@ -9,7 +10,6 @@ from feast import (
     FeatureService,
     FeatureView,
     Field,
-    FileSource,
     Project,
     PushSource,
     RequestSource,
@@ -17,48 +17,63 @@ from feast import (
 from feast.feature_logging import LoggingConfig
 from feast.infra.offline_stores.file_source import FileLoggingDestination
 from feast.on_demand_feature_view import on_demand_feature_view
-from feast.types import Float32, Float64, Int64
+from feast.types import Float32, Float64, Int64, Int32, Bool, String
 
-# Define a project for the feature repo
-project = Project(name="feature_repo", description="A project for driver statistics")
+project = Project(name="baseball", description="A project for driver statistics")
+baseball_play_entity = Entity(name="baseball_play", join_keys=["game_play_id"])
 
-# Define an entity for the driver. You can think of an entity as a primary key used to
-# fetch features.
-driver = Entity(name="driver", join_keys=["driver_id"])
+baseball_plays_source = PostgreSQLSource(
+    name="baseball_plays",
+    query="""
+        select random() as r_id, game_play.game_play_id as game_play_id, game_play_atbat.player_code as player_code, pitch_index, home_team_flag, game_play_atbat.score_home as score_home, game_play_atbat.score_visitor as score_visitor, sky, night_flag, temperature, wind_direction, wind_speed, precipitation, field_condition, roster_batter.batting_hand as batting_hand, roster_pitcher.throw_hand as pitching_hand, runner_1b, runner_2b, runner_3b, primary_play_type_cd, outs,
+        (select count(*)
+         from game_play_atbat pc_atbat, game_play_atbat_pitch pc_pitch, pitch_type pc_pitch_type
+         where pc_pitch.game_play_id = pc_atbat.game_play_id
+         and pc_atbat.game_play_id = game_play.game_play_id
+         and pc_atbat.pitcher = game_play_atbat.pitcher  
+         and pc_pitch_type.pitch_type_cd = pc_pitch.pitch_type_cd
+         and pc_pitch_type.ball_or_strike is not null
+         and pc_pitch.pitch_index < game_play_atbat_pitch.pitch_index
+        ) as pitch_count, now() as event_timestamp, now() as create_timestamp
+        from game, game_play, game_play_atbat, game_play_atbat_pitch, roster as roster_batter, roster as roster_pitcher
+        where game.game_id = game_play.game_id
+        and game_play_atbat.game_play_id = game_play.game_play_id
+        and game_play_atbat_pitch.game_play_id = game_play.game_play_id     
+        and roster_batter.player_code = game_play_atbat.player_code
+        and roster_batter.season_year = date_part('year', game.game_date)
+        and roster_pitcher.player_code = game_play_atbat.pitcher
+        and roster_pitcher.season_year = roster_batter.season_year
+        order by r_id 
 
-# Read data from parquet files. Parquet is convenient for local development mode. For
-# production, you can use your favorite DWH, such as BigQuery. See Feast documentation
-# for more info.
-driver_stats_source = FileSource(
-    name="driver_hourly_stats_source",
-    path="data/driver_stats.parquet",
+limit 100
+    """,
     timestamp_field="event_timestamp",
-    created_timestamp_column="created",
+    created_timestamp_column="create_timestamp",
 )
 
-# Our parquet files contain sample data that includes a driver_id column, timestamps and
-# three feature column. Here we define a Feature View that will allow us to serve this
-# data to our model online.
-driver_stats_fv = FeatureView(
-    # The unique name of this feature view. Two feature views in a single
-    # project cannot have the same name
-    name="driver_hourly_stats",
-    entities=[driver],
-    ttl=timedelta(days=1),
-    # The list of features defined below act as a schema to both define features
-    # for both materialization of features into a store, and are used as references
-    # during retrieval for building a training dataset or serving features
+baseball_plays_fv = FeatureView(
+    name="baseball_plays_fv",
+    entities=[baseball_play_entity],
+#    ttl=timedelta(days=1),
     schema=[
-        Field(name="conv_rate", dtype=Float32),
-        Field(name="acc_rate", dtype=Float32),
-        Field(name="avg_daily_trips", dtype=Int64, description="Average daily trips"),
+        Field(name="pitch_index", dtype=Int32),
+        Field(name="pitch_count", dtype=Int32, description="Average daily trips"),
+        Field(name="batting_hand", dtype=String, description="Average daily trips"),
+        Field(name="pitching_hand", dtype=String, description="Average daily trips"),
+        Field(name="runner_1b", dtype=String),
+        Field(name="runner_2b", dtype=String, description="Average daily trips"),
+        Field(name="runner_3b", dtype=String),
+        Field(name="outs", dtype=Int32),
+        Field(name="home_team_flag", dtype=Bool),
+        Field(name="score_home", dtype=Int32, description="Average daily trips"),
+        Field(name="score_visitor", dtype=Int32),
+        Field(name="primary_play_type_cd", dtype=String),
     ],
     online=True,
-    source=driver_stats_source,
-    # Tags are user defined key/value pairs that are attached to each
-    # feature view
-    tags={"team": "driver_performance"},
+    source=baseball_plays_source
 )
+
+"""
 
 # Define a request data source which encodes features / information only
 # available at request time (e.g. part of the user initiated HTTP request)
@@ -105,7 +120,7 @@ driver_activity_v2 = FeatureService(
 # Defines a way to push data (to be available offline, online or both) into Feast.
 driver_stats_push_source = PushSource(
     name="driver_stats_push_source",
-    batch_source=driver_stats_source,
+    batch_source=baseball_plays_source,
 )
 
 # Defines a slightly modified version of the feature view from above, where the source
@@ -121,7 +136,7 @@ driver_stats_fresh_fv = FeatureView(
         Field(name="avg_daily_trips", dtype=Int64),
     ],
     online=True,
-    source=driver_stats_push_source,  # Changed from above
+    source=baseball_plays_source,  # Changed from above
     tags={"team": "driver_performance"},
 )
 
@@ -146,3 +161,4 @@ driver_activity_v3 = FeatureService(
     name="driver_activity_v3",
     features=[driver_stats_fresh_fv, transformed_conv_rate_fresh],
 )
+ """
