@@ -76,20 +76,7 @@ baseball_plays_fv = FeatureView(
 # This groups features into a model version
 baseball_plays_v1 = FeatureService(
     name="baseball_plays_v1",
-    features=[
-        baseball_plays_fv[["pitch_index"]],
-        baseball_plays_fv[["pitch_count"]],
-        baseball_plays_fv[["batting_hand"]],
-        baseball_plays_fv[["pitching_hand"]],
-        baseball_plays_fv[["runner_1b"]],
-        baseball_plays_fv[["runner_2b"]],
-        baseball_plays_fv[["runner_3b"]],
-        baseball_plays_fv[["outs"]],
-        baseball_plays_fv[["home_team_flag"]],
-        baseball_plays_fv[["score_home"]],
-        baseball_plays_fv[["score_visitor"]],
-        baseball_plays_fv[["primary_play_type_cd"]],
-    ],
+    features=[baseball_plays_fv],
     logging_config=LoggingConfig(
         destination=FileLoggingDestination(path="data")
     ),
