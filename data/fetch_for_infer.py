@@ -10,7 +10,7 @@ entity_sql = f"""
         game_play_id,
         event_timestamp
     FROM {feature_store.get_data_source("baseball_plays").get_table_query_string()} as tmp
-    WHERE event_timestamp BETWEEN '2021-01-01' and '2021-12-31'
+    WHERE event_timestamp BETWEEN '2021-01-01' and '2025-12-31'
 """
 
 training_df = feature_store.get_historical_features(
