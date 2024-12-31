@@ -14,7 +14,7 @@ This process is choreographed using Make.
 4. **Import Game Event Data**
     - This is a complicated, long running process that involves interpretting and replaying detailed game event files that contain Retrosheet event codes.
     - import-app/src (entry point is import_events_app.py)
-5. *(Pending integration into training process) Hydrate Feature Store Repository*
+5. *(Pending integration into training process)* **Hydrate Feature Store Repository**
     - data/feature_repo (Feast with Postgres as the online and offline source)
 6. **Train the models**
     - data/src/train (one notebook per model)
