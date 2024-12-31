@@ -18,6 +18,8 @@ training_df = feature_store.get_historical_features(
                         entity_df=entity_sql
                 ).to_df()
 
+print(training_df.info())
+
 print(training_df.head())
 
 pprint(training_df)
