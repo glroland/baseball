@@ -31,6 +31,7 @@ This process is choreographed using Make.
 - deploy/Prediction API Test Plan.jmx (Stress test script using JMeter)
 
 ## Database ERD
+This diagram was created using pgAdmin 4 (data/sql/erd.pgadmin4).
 ![ER Diagram for Baseball DB](data/sql/erd.png)
 
 ## Installation Instructions
