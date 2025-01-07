@@ -16,7 +16,7 @@ data:
       db_connection_string = postgresql://baseball_app:baseball123@db:5432/baseball_db
 
       [ModelRegistry]
-      url = http://my-model-registry-rest-odh-model-registries.apps.ocpprod.home.glroland.com
+      url = http://my-model-registry.odh-model-registries.svc.cluster.local:8080
       token = none
       name = Baseball Author
       kubeconfig = kube/config
