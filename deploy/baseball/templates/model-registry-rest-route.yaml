@@ -1,0 +1,14 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: my-model-registry-rest
+  namespace: odh-model-registries
+spec:
+  path: /
+  to:
+    kind: Service
+    name: my-model-registry
+    weight: 100
+  port:
+    targetPort: http-api
+  wildcardPolicy: None
