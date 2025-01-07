@@ -113,13 +113,11 @@ install.kubeconfig:
 data.gentrainingdata:
 	mkdir -p target
 	rm -rf target/augmentoolkit
-	cd target && git clone https://github.com/e-p-armstrong/augmentoolkit.git
+	cd target && git clone --depth 1 https://github.com/e-p-armstrong/augmentoolkit.git
 	cd target/augmentoolkit && pip install -r requirements.txt
-	rm -f target/augmentoolkit/original/input/*
-	cp data/knowledge/all.md target/augmentoolkit/original/input
-	cp data/knowledge/config.yaml target/augmentoolkit/original
+	cp -f data/knowledge/super_config.yaml target/augmentoolkit/
+	cp -r data/knowledge/rulebook target/augmentoolkit
 	cd target/augmentoolkit && python run_augmentoolkit.py
 
 data.trainlm:
-	mkdir -p target/lmtrain
-	cd target/lmtrain && python ../../data/src/train/train_baseball_lm.py
+	cd data/src/train && python train_baseball_lm.py

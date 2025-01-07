@@ -22,12 +22,15 @@ This process is choreographed using Make.
     - Predict Play (train_predict_play_model.ipynb)
 7. **Deploy the models to VLLM (on OpenShift AI)**
     - TODO
-8. **Deploy the prediction REST API**
+8. **Setup K8S namespace for prediction service**
+    - oc new-project baseball-prod
+    - oc create secret generic kubeconfig-secret --from-file ~/.kube/config
+9. **Deploy the prediction REST API**
     - predict-svc (source code)
     - deploy/Jenkinsfile (CI process)
     - deploy/baseball (Helm charts)
     - deploy/argo-app.yaml (Backstage catalog entry)
-9. **Test the API**
+10. **Test the API**
     - deploy/Prediction API Test Plan.jmx (Stress test script using JMeter)
 
 ## Database ERD

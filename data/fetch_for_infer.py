@@ -1,5 +1,14 @@
+import logging
 from pprint import pprint
 from feast import FeatureStore
+
+logger = logging.getLogger(__name__)
+
+# Setup Logging
+logging.basicConfig(level=logging.DEBUG,
+    handlers=[
+        logging.StreamHandler()
+    ])
 
 feature_store = FeatureStore(repo_path="feature_repo")
 
