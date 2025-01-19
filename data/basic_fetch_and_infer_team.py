@@ -12,14 +12,14 @@ logging.basicConfig(level=logging.DEBUG,
 
 feature_store = FeatureStore(repo_path="feature_repo")
 
-feature_service = feature_store.get_feature_service("baseball_plays_v1")
+feature_service = feature_store.get_feature_service("baseball_teams_v1")
 
 entity_sql = f"""
     SELECT
-        game_play_id,
+        team_code,
         event_timestamp
-    FROM ({feature_store.get_data_source("baseball_plays").get_table_query_string()}) as tmp
---    WHERE event_timestamp BETWEEN '2024-09-01' and '2025-12-31'
+    FROM ({feature_store.get_data_source("baseball_teams").get_table_query_string()}) as tmp
+--    WHERE event_timestamp BETWEEN '2021-01-01' and '2025-12-31'
 """
 
 training_df = feature_store.get_historical_features(

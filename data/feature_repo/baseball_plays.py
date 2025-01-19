@@ -10,7 +10,6 @@ from feast import (
     FeatureService,
     FeatureView,
     Field,
-    Project,
     PushSource,
     RequestSource,
 )
@@ -19,13 +18,13 @@ from feast.infra.offline_stores.file_source import FileLoggingDestination
 from feast.on_demand_feature_view import on_demand_feature_view
 from feast.types import Float32, Float64, Int64, Int32, Bool, String
 
-project = Project(name="baseball", description="A project for driver statistics")
 baseball_play_entity = Entity(name="baseball_play", join_keys=["game_play_id"])
 
 baseball_plays_source = PostgreSQLSource(
     name="baseball_plays",
     query="""
-        select random() as r_id, game_play.game_play_id as game_play_id, game_play_atbat.player_code as player_code, pitch_index, home_team_flag, game_play_atbat.score_home as score_home, game_play_atbat.score_visitor as score_visitor, sky, night_flag, temperature, wind_direction, wind_speed, precipitation, field_condition, roster_batter.batting_hand as batting_hand, roster_pitcher.throw_hand as pitching_hand, runner_1b, runner_2b, runner_3b, primary_play_type_cd, outs,
+
+        select game_play.game_play_id as game_play_id, game_play_atbat.player_code as player_code, pitch_index, home_team_flag, game_play_atbat.score_home as score_home, game_play_atbat.score_visitor as score_visitor, sky, night_flag, temperature, wind_direction, wind_speed, precipitation, field_condition, roster_batter.batting_hand as batting_hand, roster_pitcher.throw_hand as pitching_hand, runner_1b, runner_2b, runner_3b, primary_play_type_cd, outs,
         (select count(*)
          from game_play_atbat pc_atbat, game_play_atbat_pitch pc_pitch, pitch_type pc_pitch_type
          where pc_pitch.game_play_id = pc_atbat.game_play_id
@@ -34,7 +33,9 @@ baseball_plays_source = PostgreSQLSource(
          and pc_pitch_type.pitch_type_cd = pc_pitch.pitch_type_cd
          and pc_pitch_type.ball_or_strike is not null
          and pc_pitch.pitch_index < game_play_atbat_pitch.pitch_index
-        ) as pitch_count, now() as event_timestamp, now() as create_timestamp
+        ) as pitch_count, 
+        game_date + game_time as event_timestamp,
+        now() as create_timestamp
         from game, game_play, game_play_atbat, game_play_atbat_pitch, roster as roster_batter, roster as roster_pitcher
         where game.game_id = game_play.game_id
         and game_play_atbat.game_play_id = game_play.game_play_id
@@ -43,9 +44,7 @@ baseball_plays_source = PostgreSQLSource(
         and roster_batter.season_year = date_part('year', game.game_date)
         and roster_pitcher.player_code = game_play_atbat.pitcher
         and roster_pitcher.season_year = roster_batter.season_year
-        order by r_id 
 
-limit 100
     """,
     timestamp_field="event_timestamp",
     created_timestamp_column="create_timestamp",
@@ -56,6 +55,7 @@ baseball_plays_fv = FeatureView(
     entities=[baseball_play_entity],
 #    ttl=timedelta(days=1),
     schema=[
+        Field(name="game_play_id", dtype=Int32),
         Field(name="pitch_index", dtype=Int32),
         Field(name="pitch_count", dtype=Int32, description="Average daily trips"),
         Field(name="batting_hand", dtype=String, description="Average daily trips"),
