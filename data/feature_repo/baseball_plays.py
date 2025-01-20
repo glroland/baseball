@@ -34,7 +34,7 @@ baseball_plays_source = PostgreSQLSource(
          and pc_pitch_type.ball_or_strike is not null
          and pc_pitch.pitch_index < game_play_atbat_pitch.pitch_index
         ) as pitch_count, 
-        game_date + game_time as event_timestamp,
+	    cast(game_date as timestamp) as event_timestamp,
         now() as create_timestamp
         from game, game_play, game_play_atbat, game_play_atbat_pitch, roster as roster_batter, roster as roster_pitcher
         where game.game_id = game_play.game_id
