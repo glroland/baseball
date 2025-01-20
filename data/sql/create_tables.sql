@@ -163,6 +163,7 @@ create table game_play
     game_play_id serial not null,
     game_id int not null,
     play_index int not null,
+    pitch_count int,
 
     check (play_index >= 1),
 
