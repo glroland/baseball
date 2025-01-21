@@ -1,14 +1,18 @@
 project: baseball
-registry: data/metadata.db
 provider: local
-auth:
-    type: no_auth
-entity_key_serialization_version: 2
+registry:
+  registry_type: sql
+  path: postgresql+psycopg://baseball_ml:baseball123@db:5432/baseball_features_db
+  cache_ttl_seconds: 60
+  sqlalchemy_config_kwargs:
+    echo: false
+    pool_pre_ping: true
 offline_store:
   type: postgres
   host: db
   port: 5432
   database: baseball_db
+  db_schema: public
   user: baseball_app
   password: baseball123
 online_store:
@@ -16,7 +20,9 @@ online_store:
   host: localhost
   port: 5432
   database: baseball_features_db
+  db_schema: public
   user: baseball_ml
   password: baseball123
   vector_enabled: false
   vector_len: 512
+entity_key_serialization_version: 2
