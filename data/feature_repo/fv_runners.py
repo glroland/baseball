@@ -26,7 +26,7 @@ source_runners = PostgreSQLSource(
                     else FALSE
             end is_runner_3b,
             game_play.game_play_id game_play_id,
-            to_timestamp(game_date || '-01-01 00:00:00', 'YYYY-MM-DD HH24:MI:SS') as event_timestamp,
+            to_timestamp(game_date || ' ' || COALESCE(game_time, '00:00:00'), 'YYYY-MM-DD HH24:MI:SS') as event_timestamp,
             now() as create_timestamp
         from game_play, game, game_play_atbat
         where game_play.game_id = game.game_id
