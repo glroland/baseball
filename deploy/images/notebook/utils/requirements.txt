@@ -1,8 +1,0 @@
-# These are additional packages layered onto the base image for this project
-
-pytest
-psycopg[binary]
-sqlalchemy
-onnxscript
-onnxruntime
-
