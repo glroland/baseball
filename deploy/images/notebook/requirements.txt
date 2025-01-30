@@ -1,0 +1,6 @@
+pytest
+psycopg[binary]
+sqlalchemy
+onnxscript
+onnxruntime
+
