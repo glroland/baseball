@@ -190,7 +190,7 @@ def get_tf_num_for_value(x):
         
         x - value to test
     """
-    if not isinstance(x, NAType) and len(x) > 0:
+    if x is not None and not isinstance(x, NAType) and len(x) > 0:
         return PredictionConstants.VALUE_TRUE
     return PredictionConstants.VALUE_FALSE
 
