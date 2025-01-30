@@ -43,14 +43,14 @@
               "mounted_volumes": [],
               "filename": "src/train/train_predict_pitch_model.ipynb",
               "cpu": 6,
-              "cpu_limit": 10,
+              "cpu_limit": 6,
               "memory": 2,
-              "memory_limit": 4
+              "memory_limit": 2
             },
             "label": "train-pitch-model",
             "ui_data": {
               "label": "train-pitch-model",
-              "image": "/notebook/baseball/my-workbench/static/elyra/notebook.svg",
+              "image": "/notebook/baseball/workbench/static/elyra/notebook.svg",
               "x_pos": 39,
               "y_pos": 86,
               "description": "Run notebook file"
@@ -121,13 +121,13 @@
               "filename": "src/train/train_predict_play_model.ipynb",
               "cpu": 6,
               "memory": 2,
-              "cpu_limit": 10,
-              "memory_limit": 4
+              "cpu_limit": 6,
+              "memory_limit": 2
             },
             "label": "train-play-model",
             "ui_data": {
               "label": "train-play-model",
-              "image": "/notebook/baseball/my-workbench/static/elyra/notebook.svg",
+              "image": "/notebook/baseball/workbench/static/elyra/notebook.svg",
               "x_pos": 35,
               "y_pos": 240,
               "description": "Run notebook file"
@@ -203,7 +203,7 @@
             "label": "store-assets",
             "ui_data": {
               "label": "store-assets",
-              "image": "/notebook/baseball/my-workbench/static/elyra/python.svg",
+              "image": "/notebook/baseball/workbench/static/elyra/python.svg",
               "x_pos": 283,
               "y_pos": 166,
               "description": "Run Python script"
@@ -285,7 +285,7 @@
             "label": "register-models",
             "ui_data": {
               "label": "register-models",
-              "image": "/notebook/baseball/my-workbench/static/elyra/python.svg",
+              "image": "/notebook/baseball/workbench/static/elyra/python.svg",
               "x_pos": 500,
               "y_pos": 165,
               "description": "Run Python script"
@@ -340,12 +340,12 @@
           "pipeline_defaults": {
             "kubernetes_tolerations": [],
             "kubernetes_pod_annotations": [],
+            "mounted_volumes": [],
             "kubernetes_shared_mem_size": {},
             "kubernetes_pod_labels": [],
-            "mounted_volumes": [],
-            "env_vars": [],
             "kubernetes_secrets": [],
-            "runtime_image": "registry.home.glroland.com/paas/notebook-3.11:20250122-1"
+            "env_vars": [],
+            "runtime_image": "registry.home.glroland.com/paas/ai-runtime-3.11:20250130-104034"
           }
         }
       },

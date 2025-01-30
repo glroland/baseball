@@ -21,91 +21,91 @@ from kfp.kubernetes import kubernetes_executor_config_pb2 as pb
 from kfp.kubernetes import add_toleration, add_pod_label, add_pod_annotation
 
 
-component_def_3e9b36254f07cbc50b3e5e1bd5f1bd7b8ecc1cccda5fc5624febe8c3d89e5c75 = """
+component_def_ec4165e2076bf8c55386a507df41a6967465931ff0f44fff17797da27cc7309d = """
 name: Run a file
 description: Run a Jupyter notebook or Python/R script
 
 implementation:
   container:
-    image: registry.home.glroland.com/paas/notebook-3.11:20250122-1
+    image: registry.home.glroland.com/paas/ai-runtime-3.11:20250130-104034
     command: [sh, -c]
     args:
     - |
       sh -c "mkdir -p ./jupyter-work-dir && cd ./jupyter-work-dir"
-      sh -c "[[ -e '/opt/app-root/bin/utils/bootstrapper.py' ]] && (echo 'bootstrapper.py file already exists'; cp '/opt/app-root/bin/utils/bootstrapper.py' .) || (echo 'Downloading file:///opt/app-root/bin/utils/bootstrapper.py'; curl --fail -H 'Cache-Control: no-cache' -L 'file:///opt/app-root/bin/utils/bootstrapper.py' --output bootstrapper.py)"
-      sh -c "[[ -e '/opt/app-root/bin/utils/requirements-elyra.txt' ]] && (echo 'requirements-elyra.txt file already exists'; cp '/opt/app-root/bin/utils/requirements-elyra.txt' .) || (echo 'Downloading file:///opt/app-root/bin/utils/requirements-elyra.txt'; curl --fail -H 'Cache-Control: no-cache' -L 'file:///opt/app-root/bin/utils/requirements-elyra.txt' --output requirements-elyra.txt)"
-      sh -c "python3 -m pip install  packaging && python3 -m pip freeze > requirements-current.txt && python3 bootstrapper.py --pipeline-name 'Train and Deploy Models' --cos-endpoint 'https://eclipse.home.glroland.com:9000' --cos-bucket 'baseball' --cos-directory 'Train and Deploy Models-0130133016' --cos-dependencies-archive 'train_predict_pitch_model-433f9291-a22f-4e81-a347-d18a0def5d77.tar.gz' --file 'baseball/data/src/train/train_predict_pitch_model.ipynb' --outputs 'target/pitch' "
+      sh -c "[[ -e '/opt/app-root/bin/utils/bootstrapper.py' ]] && (echo 'bootstrapper.py file already exists'; cp '/opt/app-root/bin/utils/bootstrapper.py' .) || (echo 'Downloading https://raw.githubusercontent.com/opendatahub-io/elyra/v4.2.0/elyra/kfp/bootstrapper.py'; curl --fail -H 'Cache-Control: no-cache' -L 'https://raw.githubusercontent.com/opendatahub-io/elyra/v4.2.0/elyra/kfp/bootstrapper.py' --output bootstrapper.py)"
+      sh -c "[[ -e '/opt/app-root/bin/utils/requirements-elyra.txt' ]] && (echo 'requirements-elyra.txt file already exists'; cp '/opt/app-root/bin/utils/requirements-elyra.txt' .) || (echo 'Downloading https://raw.githubusercontent.com/opendatahub-io/elyra/v4.2.0/etc/generic/requirements-elyra.txt'; curl --fail -H 'Cache-Control: no-cache' -L 'https://raw.githubusercontent.com/opendatahub-io/elyra/v4.2.0/etc/generic/requirements-elyra.txt' --output requirements-elyra.txt)"
+      sh -c "python3 -m pip install  packaging && python3 -m pip freeze > requirements-current.txt && python3 bootstrapper.py --pipeline-name 'Train and Deploy Models' --cos-endpoint 'https://eclipse.home.glroland.com:9000' --cos-bucket 'baseball' --cos-directory 'Train and Deploy Models-0130163949' --cos-dependencies-archive 'train_predict_pitch_model-433f9291-a22f-4e81-a347-d18a0def5d77.tar.gz' --file 'baseball/data/src/train/train_predict_pitch_model.ipynb' --outputs 'target/pitch' "
 """
 
-factory_3e9b36254f07cbc50b3e5e1bd5f1bd7b8ecc1cccda5fc5624febe8c3d89e5c75 = (
+factory_ec4165e2076bf8c55386a507df41a6967465931ff0f44fff17797da27cc7309d = (
     kfp.components.load_component_from_text(
-        component_def_3e9b36254f07cbc50b3e5e1bd5f1bd7b8ecc1cccda5fc5624febe8c3d89e5c75
+        component_def_ec4165e2076bf8c55386a507df41a6967465931ff0f44fff17797da27cc7309d
     )
 )
 
-component_def_09997c06264da26af6c37c0a18c8eda45d0767749e4a12c1bdf4deeca0d113b0 = """
+component_def_91248f55dfbc2d076e1d1523af41dd84bc6b69666abb6a0f354c8d05ca3ba7fe = """
 name: Run a file
 description: Run a Jupyter notebook or Python/R script
 
 implementation:
   container:
-    image: registry.home.glroland.com/paas/notebook-3.11:20250122-1
+    image: registry.home.glroland.com/paas/ai-runtime-3.11:20250130-104034
     command: [sh, -c]
     args:
     - |
       sh -c "mkdir -p ./jupyter-work-dir && cd ./jupyter-work-dir"
-      sh -c "[[ -e '/opt/app-root/bin/utils/bootstrapper.py' ]] && (echo 'bootstrapper.py file already exists'; cp '/opt/app-root/bin/utils/bootstrapper.py' .) || (echo 'Downloading file:///opt/app-root/bin/utils/bootstrapper.py'; curl --fail -H 'Cache-Control: no-cache' -L 'file:///opt/app-root/bin/utils/bootstrapper.py' --output bootstrapper.py)"
-      sh -c "[[ -e '/opt/app-root/bin/utils/requirements-elyra.txt' ]] && (echo 'requirements-elyra.txt file already exists'; cp '/opt/app-root/bin/utils/requirements-elyra.txt' .) || (echo 'Downloading file:///opt/app-root/bin/utils/requirements-elyra.txt'; curl --fail -H 'Cache-Control: no-cache' -L 'file:///opt/app-root/bin/utils/requirements-elyra.txt' --output requirements-elyra.txt)"
-      sh -c "python3 -m pip install  packaging && python3 -m pip freeze > requirements-current.txt && python3 bootstrapper.py --pipeline-name 'Train and Deploy Models' --cos-endpoint 'https://eclipse.home.glroland.com:9000' --cos-bucket 'baseball' --cos-directory 'Train and Deploy Models-0130133016' --cos-dependencies-archive 'train_predict_play_model-f180850c-0736-4cf0-9532-636100845feb.tar.gz' --file 'baseball/data/src/train/train_predict_play_model.ipynb' --outputs 'target/play' "
+      sh -c "[[ -e '/opt/app-root/bin/utils/bootstrapper.py' ]] && (echo 'bootstrapper.py file already exists'; cp '/opt/app-root/bin/utils/bootstrapper.py' .) || (echo 'Downloading https://raw.githubusercontent.com/opendatahub-io/elyra/v4.2.0/elyra/kfp/bootstrapper.py'; curl --fail -H 'Cache-Control: no-cache' -L 'https://raw.githubusercontent.com/opendatahub-io/elyra/v4.2.0/elyra/kfp/bootstrapper.py' --output bootstrapper.py)"
+      sh -c "[[ -e '/opt/app-root/bin/utils/requirements-elyra.txt' ]] && (echo 'requirements-elyra.txt file already exists'; cp '/opt/app-root/bin/utils/requirements-elyra.txt' .) || (echo 'Downloading https://raw.githubusercontent.com/opendatahub-io/elyra/v4.2.0/etc/generic/requirements-elyra.txt'; curl --fail -H 'Cache-Control: no-cache' -L 'https://raw.githubusercontent.com/opendatahub-io/elyra/v4.2.0/etc/generic/requirements-elyra.txt' --output requirements-elyra.txt)"
+      sh -c "python3 -m pip install  packaging && python3 -m pip freeze > requirements-current.txt && python3 bootstrapper.py --pipeline-name 'Train and Deploy Models' --cos-endpoint 'https://eclipse.home.glroland.com:9000' --cos-bucket 'baseball' --cos-directory 'Train and Deploy Models-0130163949' --cos-dependencies-archive 'train_predict_play_model-f180850c-0736-4cf0-9532-636100845feb.tar.gz' --file 'baseball/data/src/train/train_predict_play_model.ipynb' --outputs 'target/play' "
 """
 
-factory_09997c06264da26af6c37c0a18c8eda45d0767749e4a12c1bdf4deeca0d113b0 = (
+factory_91248f55dfbc2d076e1d1523af41dd84bc6b69666abb6a0f354c8d05ca3ba7fe = (
     kfp.components.load_component_from_text(
-        component_def_09997c06264da26af6c37c0a18c8eda45d0767749e4a12c1bdf4deeca0d113b0
+        component_def_91248f55dfbc2d076e1d1523af41dd84bc6b69666abb6a0f354c8d05ca3ba7fe
     )
 )
 
-component_def_471a7798effa7f17b955a5108580877646cc5557e23bee560e6550f22bbd9a32 = """
+component_def_ab960bd6aba0ad40ee25915f2d4629d3e5addc3a4ab48e7d20efd17a6dd869e0 = """
 name: Run a file
 description: Run a Jupyter notebook or Python/R script
 
 implementation:
   container:
-    image: registry.home.glroland.com/paas/notebook-3.11:20250122-1
+    image: registry.home.glroland.com/paas/ai-runtime-3.11:20250130-104034
     command: [sh, -c]
     args:
     - |
       sh -c "mkdir -p ./jupyter-work-dir && cd ./jupyter-work-dir"
-      sh -c "[[ -e '/opt/app-root/bin/utils/bootstrapper.py' ]] && (echo 'bootstrapper.py file already exists'; cp '/opt/app-root/bin/utils/bootstrapper.py' .) || (echo 'Downloading file:///opt/app-root/bin/utils/bootstrapper.py'; curl --fail -H 'Cache-Control: no-cache' -L 'file:///opt/app-root/bin/utils/bootstrapper.py' --output bootstrapper.py)"
-      sh -c "[[ -e '/opt/app-root/bin/utils/requirements-elyra.txt' ]] && (echo 'requirements-elyra.txt file already exists'; cp '/opt/app-root/bin/utils/requirements-elyra.txt' .) || (echo 'Downloading file:///opt/app-root/bin/utils/requirements-elyra.txt'; curl --fail -H 'Cache-Control: no-cache' -L 'file:///opt/app-root/bin/utils/requirements-elyra.txt' --output requirements-elyra.txt)"
-      sh -c "python3 -m pip install  packaging && python3 -m pip freeze > requirements-current.txt && python3 bootstrapper.py --pipeline-name 'Train and Deploy Models' --cos-endpoint 'https://eclipse.home.glroland.com:9000' --cos-bucket 'baseball' --cos-directory 'Train and Deploy Models-0130133016' --cos-dependencies-archive 'store_assets-58acfdbe-7e0c-4d7e-acc0-88d0c0789879.tar.gz' --file 'baseball/data/src/train/store_assets.py' --inputs 'target/play;target/pitch' "
+      sh -c "[[ -e '/opt/app-root/bin/utils/bootstrapper.py' ]] && (echo 'bootstrapper.py file already exists'; cp '/opt/app-root/bin/utils/bootstrapper.py' .) || (echo 'Downloading https://raw.githubusercontent.com/opendatahub-io/elyra/v4.2.0/elyra/kfp/bootstrapper.py'; curl --fail -H 'Cache-Control: no-cache' -L 'https://raw.githubusercontent.com/opendatahub-io/elyra/v4.2.0/elyra/kfp/bootstrapper.py' --output bootstrapper.py)"
+      sh -c "[[ -e '/opt/app-root/bin/utils/requirements-elyra.txt' ]] && (echo 'requirements-elyra.txt file already exists'; cp '/opt/app-root/bin/utils/requirements-elyra.txt' .) || (echo 'Downloading https://raw.githubusercontent.com/opendatahub-io/elyra/v4.2.0/etc/generic/requirements-elyra.txt'; curl --fail -H 'Cache-Control: no-cache' -L 'https://raw.githubusercontent.com/opendatahub-io/elyra/v4.2.0/etc/generic/requirements-elyra.txt' --output requirements-elyra.txt)"
+      sh -c "python3 -m pip install  packaging && python3 -m pip freeze > requirements-current.txt && python3 bootstrapper.py --pipeline-name 'Train and Deploy Models' --cos-endpoint 'https://eclipse.home.glroland.com:9000' --cos-bucket 'baseball' --cos-directory 'Train and Deploy Models-0130163949' --cos-dependencies-archive 'store_assets-58acfdbe-7e0c-4d7e-acc0-88d0c0789879.tar.gz' --file 'baseball/data/src/train/store_assets.py' --inputs 'target/play;target/pitch' "
 """
 
-factory_471a7798effa7f17b955a5108580877646cc5557e23bee560e6550f22bbd9a32 = (
+factory_ab960bd6aba0ad40ee25915f2d4629d3e5addc3a4ab48e7d20efd17a6dd869e0 = (
     kfp.components.load_component_from_text(
-        component_def_471a7798effa7f17b955a5108580877646cc5557e23bee560e6550f22bbd9a32
+        component_def_ab960bd6aba0ad40ee25915f2d4629d3e5addc3a4ab48e7d20efd17a6dd869e0
     )
 )
 
-component_def_c47cb95232288b7ccdeb63ee529a1b55c4a9f365df18d51768caefdbe17e3f2a = """
+component_def_7f739c7dab20dcc44370aab10340bcd0284b982d8bf8044bb4b5c73bedbd7921 = """
 name: Run a file
 description: Run a Jupyter notebook or Python/R script
 
 implementation:
   container:
-    image: registry.home.glroland.com/paas/notebook-3.11:20250122-1
+    image: registry.home.glroland.com/paas/ai-runtime-3.11:20250130-104034
     command: [sh, -c]
     args:
     - |
       sh -c "mkdir -p ./jupyter-work-dir && cd ./jupyter-work-dir"
-      sh -c "[[ -e '/opt/app-root/bin/utils/bootstrapper.py' ]] && (echo 'bootstrapper.py file already exists'; cp '/opt/app-root/bin/utils/bootstrapper.py' .) || (echo 'Downloading file:///opt/app-root/bin/utils/bootstrapper.py'; curl --fail -H 'Cache-Control: no-cache' -L 'file:///opt/app-root/bin/utils/bootstrapper.py' --output bootstrapper.py)"
-      sh -c "[[ -e '/opt/app-root/bin/utils/requirements-elyra.txt' ]] && (echo 'requirements-elyra.txt file already exists'; cp '/opt/app-root/bin/utils/requirements-elyra.txt' .) || (echo 'Downloading file:///opt/app-root/bin/utils/requirements-elyra.txt'; curl --fail -H 'Cache-Control: no-cache' -L 'file:///opt/app-root/bin/utils/requirements-elyra.txt' --output requirements-elyra.txt)"
-      sh -c "python3 -m pip install  packaging && python3 -m pip freeze > requirements-current.txt && python3 bootstrapper.py --pipeline-name 'Train and Deploy Models' --cos-endpoint 'https://eclipse.home.glroland.com:9000' --cos-bucket 'baseball' --cos-directory 'Train and Deploy Models-0130133016' --cos-dependencies-archive 'register_models-21dd30bf-689c-4732-83b1-30452017f236.tar.gz' --file 'baseball/data/src/train/register_models.py' --inputs 'target/play;target/pitch' "
+      sh -c "[[ -e '/opt/app-root/bin/utils/bootstrapper.py' ]] && (echo 'bootstrapper.py file already exists'; cp '/opt/app-root/bin/utils/bootstrapper.py' .) || (echo 'Downloading https://raw.githubusercontent.com/opendatahub-io/elyra/v4.2.0/elyra/kfp/bootstrapper.py'; curl --fail -H 'Cache-Control: no-cache' -L 'https://raw.githubusercontent.com/opendatahub-io/elyra/v4.2.0/elyra/kfp/bootstrapper.py' --output bootstrapper.py)"
+      sh -c "[[ -e '/opt/app-root/bin/utils/requirements-elyra.txt' ]] && (echo 'requirements-elyra.txt file already exists'; cp '/opt/app-root/bin/utils/requirements-elyra.txt' .) || (echo 'Downloading https://raw.githubusercontent.com/opendatahub-io/elyra/v4.2.0/etc/generic/requirements-elyra.txt'; curl --fail -H 'Cache-Control: no-cache' -L 'https://raw.githubusercontent.com/opendatahub-io/elyra/v4.2.0/etc/generic/requirements-elyra.txt' --output requirements-elyra.txt)"
+      sh -c "python3 -m pip install  packaging && python3 -m pip freeze > requirements-current.txt && python3 bootstrapper.py --pipeline-name 'Train and Deploy Models' --cos-endpoint 'https://eclipse.home.glroland.com:9000' --cos-bucket 'baseball' --cos-directory 'Train and Deploy Models-0130163949' --cos-dependencies-archive 'register_models-21dd30bf-689c-4732-83b1-30452017f236.tar.gz' --file 'baseball/data/src/train/register_models.py' --inputs 'target/play;target/pitch' "
 """
 
-factory_c47cb95232288b7ccdeb63ee529a1b55c4a9f365df18d51768caefdbe17e3f2a = (
+factory_7f739c7dab20dcc44370aab10340bcd0284b982d8bf8044bb4b5c73bedbd7921 = (
     kfp.components.load_component_from_text(
-        component_def_c47cb95232288b7ccdeb63ee529a1b55c4a9f365df18d51768caefdbe17e3f2a
+        component_def_7f739c7dab20dcc44370aab10340bcd0284b982d8bf8044bb4b5c73bedbd7921
     )
 )
 
@@ -115,7 +115,7 @@ def generated_pipeline():
 
     # Task for node 'train-pitch-model'
     task_433f9291_a22f_4e81_a347_d18a0def5d77 = (
-        factory_3e9b36254f07cbc50b3e5e1bd5f1bd7b8ecc1cccda5fc5624febe8c3d89e5c75()
+        factory_ec4165e2076bf8c55386a507df41a6967465931ff0f44fff17797da27cc7309d()
     )
 
     secret.use_secret_as_env(
@@ -133,9 +133,9 @@ def generated_pipeline():
 
     task_433f9291_a22f_4e81_a347_d18a0def5d77.set_memory_request(memory="2G")
 
-    task_433f9291_a22f_4e81_a347_d18a0def5d77.set_cpu_limit(cpu="10")
+    task_433f9291_a22f_4e81_a347_d18a0def5d77.set_cpu_limit(cpu="6")
 
-    task_433f9291_a22f_4e81_a347_d18a0def5d77.set_memory_limit(memory="4G")
+    task_433f9291_a22f_4e81_a347_d18a0def5d77.set_memory_limit(memory="2G")
 
     task_433f9291_a22f_4e81_a347_d18a0def5d77.set_env_variable(
         name="OUTPUT_DIR", value="target/pitch"
@@ -204,7 +204,7 @@ def generated_pipeline():
 
     # Task for node 'train-play-model'
     task_f180850c_0736_4cf0_9532_636100845feb = (
-        factory_09997c06264da26af6c37c0a18c8eda45d0767749e4a12c1bdf4deeca0d113b0()
+        factory_91248f55dfbc2d076e1d1523af41dd84bc6b69666abb6a0f354c8d05ca3ba7fe()
     )
 
     secret.use_secret_as_env(
@@ -222,9 +222,9 @@ def generated_pipeline():
 
     task_f180850c_0736_4cf0_9532_636100845feb.set_memory_request(memory="2G")
 
-    task_f180850c_0736_4cf0_9532_636100845feb.set_cpu_limit(cpu="10")
+    task_f180850c_0736_4cf0_9532_636100845feb.set_cpu_limit(cpu="6")
 
-    task_f180850c_0736_4cf0_9532_636100845feb.set_memory_limit(memory="4G")
+    task_f180850c_0736_4cf0_9532_636100845feb.set_memory_limit(memory="2G")
 
     task_f180850c_0736_4cf0_9532_636100845feb.set_env_variable(
         name="OUTPUT_DIR", value="target/play"
@@ -291,7 +291,7 @@ def generated_pipeline():
 
     # Task for node 'store-assets'
     task_58acfdbe_7e0c_4d7e_acc0_88d0c0789879 = (
-        factory_471a7798effa7f17b955a5108580877646cc5557e23bee560e6550f22bbd9a32()
+        factory_ab960bd6aba0ad40ee25915f2d4629d3e5addc3a4ab48e7d20efd17a6dd869e0()
     )
 
     secret.use_secret_as_env(
@@ -369,7 +369,7 @@ def generated_pipeline():
 
     # Task for node 'register-models'
     task_21dd30bf_689c_4732_83b1_30452017f236 = (
-        factory_c47cb95232288b7ccdeb63ee529a1b55c4a9f365df18d51768caefdbe17e3f2a()
+        factory_7f739c7dab20dcc44370aab10340bcd0284b982d8bf8044bb4b5c73bedbd7921()
     )
 
     secret.use_secret_as_env(
