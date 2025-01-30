@@ -1,5 +1,0 @@
-psycopg[binary]
-onnxscript
-onnxruntime
-sqlalchemy
-

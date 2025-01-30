@@ -1,6 +1,6 @@
 FROM quay.io/modh/odh-generic-data-science-notebook:v3-20250130
 
-ADD requirements.txt ./requirements.txt
+ADD utils ./utils
 
-RUN pip install -r ./requirements.txt
+RUN pip install -r ./utils/requirements.txt
 
