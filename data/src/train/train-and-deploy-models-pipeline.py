@@ -57,26 +57,47 @@ def run_notebook(git_url: str,
         kernel_name=""
     )
 
+@dsl.component
+def store_assets():
+    pass
 
-@dsl.pipeline(name="Test Pipeline")
+@dsl.component
+def register_models():
+    pass
+
+@dsl.pipeline(name="Train and Deploy Baseball Models Pipeline")
 def train_model_pipeline(git_url: str, db_conn_str: str):
-    test_task = print_env_variables()
+    diag_task = print_env_variables()
 
     # Train Pitch Prediction Model
-    run_notebook_task = run_notebook(git_url=git_url,
+    train_pitch_task = run_notebook(git_url=git_url,
                                      run_from_dir="data/src/train",
                                      notebook_name="train_predict_pitch_model.ipynb",
                                      db_conn_str=db_conn_str,
                                      parameters = {
                                      })
-    run_notebook_task.set_display_name("train-pitch-model")
+    train_pitch_task.set_display_name("train-pitch-model")
 
     # Train Play Prediction Model
-#    run_notebook_task = run_notebook(git_url=git_url,
-#                                     run_from_dir="data/src/train",
-#                                     notebook_name="train_predict_pitch_model.ipynb",
-#                                     parameters = dict(db_conn_str=db_conn_str))
-#    run_notebook_task.set_display_name("train-pitch-model")
+    train_play_task = run_notebook(git_url=git_url,
+                                   run_from_dir="data/src/train",
+                                   notebook_name="train_predict_play_model.ipynb",
+                                   db_conn_str=db_conn_str,
+                                   parameters = {
+                                })
+    train_play_task.set_display_name("train-play-model")
+
+    # Store Assets
+    store_assets_task = store_assets()
+    store_assets_task.set_display_name("store-assets")
+    store_assets_task.after(train_pitch_task)
+    store_assets_task.after(train_play_task)
+
+    # Register Models
+    register_models_task = register_models()
+    register_models_task.set_display_name("register-models")
+    register_models_task.after(store_assets_task)
+
 
 # Get OpenShift Token
 token = subprocess.check_output("oc whoami -t", shell=True, text=True).strip()
@@ -98,6 +119,6 @@ kfp_client.create_run_from_pipeline_func(
     }
 )
 
-# Compile Pipeline
-print ("Compiling Pipeline")
-compiler.Compiler().compile(train_model_pipeline, 'pipeline.yaml')
+## Compile Pipeline
+#print ("Compiling Pipeline")
+#compiler.Compiler().compile(train_model_pipeline, 'pipeline.yaml')

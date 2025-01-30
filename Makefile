@@ -50,8 +50,8 @@ else
 endif
 
 train:
-	cd data/src/train && jupyter nbconvert --to python train_predict_pitch_model.ipynb --stdout  | DB_CONNECTION_STRING="$(db_connection_string)" OUTPUT_DIR="../../../target/models/predict_pitch/" python
-	cd data/src/train && jupyter nbconvert --to python train_predict_play_model.ipynb --stdout  | DB_CONNECTION_STRING="$(db_connection_string)" OUTPUT_DIR="../../../target/models/predict_play/" python
+	cd data/src/train && papermill train_predict_pitch_model.ipynb - -p output_dir "../../../target/models/predict_pitch/" -p db_conn_str "$(db_connection_string)"
+	cd data/src/train && papermill train_predict_play_model.ipynb - -p output_dir "../../../target/models/predict_play/" -p db_conn_str "$(db_connection_string)"
 
 run:
 	cd import-app/src && python import_events_app.py
@@ -92,7 +92,7 @@ api.test.play:
 	curl -X 'GET' 'http://localhost:8000/predict_play' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{ "pitch_index": 3, "pitch_count": 45, "score_deficit": 4, "runner_1b": "", "runner_2b": "John", "runner_3b": "Jane", "batting_hand": "L", "pitching_hand": "R", "outs": 2 }'
 
 api.test.ocpprod:
-	curl -X 'GET' 'https://baseball-predict-svc-baseball-prod.apps.ocpprod.home.glroland.com/predict_play' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{ "pitch_index": 3, "pitch_count": 45, "score_deficit": 4, "runner_1b": "", "runner_2b": "John", "runner_3b": "Jane", "batting_hand": "L", "pitching_hand": "R", "outs": 2 }'
+	curl --insecure  -X 'GET' 'https://play3-baseball.apps.ocpprod.home.glroland.com/play' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{ "pitch_index": 3, "pitch_count": 45, "score_deficit": 4, "runner_1b": "", "runner_2b": "John", "runner_3b": "Jane", "batting_hand": "L", "pitching_hand": "R", "outs": 2 }'
 	curl -X 'GET' 'https://baseball-predict-svc-baseball-prod.apps.ocpprod.home.glroland.com/predict_pitch' -H 'accept: application/json' -H 'Content-Type: application/json' -d '{ "pitch_index": 2, "pitch_count": 43, "runner_1b": "John", "runner_2b": "",  "runner_3b": "Jane", "is_home": true, "is_night": true, "score_deficit": -4}'
 
 api.test.get_endpoint:
