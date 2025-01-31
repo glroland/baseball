@@ -2,7 +2,7 @@ import subprocess
 import kfp
 import kfp.client
 from kfp import dsl
-from kfp.dsl import InputPath, Output, Artifact
+from kfp.dsl import InputPath, Output, Artifact, Model
 from kfp import compiler
 
 @dsl.component
@@ -20,7 +20,7 @@ def run_notebook(git_url: str,
                  db_conn_str: str,
                  parameters: dict,
                  jupyter_nb_output: Output[Artifact],
-                 model: Output[Artifact]):
+                 model: Output[Model]):
     # setup output directories
     import os
     temp_path = "/tmp"
@@ -104,7 +104,7 @@ token = subprocess.check_output("oc whoami -t", shell=True, text=True).strip()
 
 # Connect to the pipeline server
 print ("Connecting to pipeline server")
-kfp_client = kfp.Client(host="https://ds-pipeline-dspa-pipeline-sandbox.apps.ocpprod.home.glroland.com",
+kfp_client = kfp.Client(host="https://ds-pipeline-dspa-baseball.apps.ocpprod.home.glroland.com/",
                         existing_token=token,
                         verify_ssl=False)
 
