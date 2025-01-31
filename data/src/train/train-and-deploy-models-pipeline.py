@@ -65,7 +65,7 @@ def store_assets():
 def register_models():
     pass
 
-@dsl.pipeline(name="Train and Deploy Baseball Models Pipeline")
+@dsl.pipeline(name="Model Lifecycle Pipeline")
 def train_model_pipeline(git_url: str, db_conn_str: str):
     diag_task = print_env_variables()
 
@@ -112,7 +112,7 @@ kfp_client = kfp.Client(host="https://ds-pipeline-dspa-pipeline-sandbox.apps.ocp
 print ("Running Pipeline")
 kfp_client.create_run_from_pipeline_func(
     train_model_pipeline,
-    experiment_name="Testing",
+    experiment_name="Baseball Model Pipeline v1",
     arguments={
         "git_url": "https://github.com/glroland/baseball.git",
         "db_conn_str": "postgresql://baseball_app:baseball123@db/baseball_db"
