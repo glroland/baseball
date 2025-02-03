@@ -285,6 +285,10 @@ def evaluate_model(model, test_x, test_y, roc_filename=None, label_descs=None):
         roc_filename - if provided, save the roc curve to an image file
         label_descs - array of the label descriptions
     """
+    out_fpr = []
+    out_tpr = []
+    out_threshold = []
+
     model.eval()
     with torch.no_grad():
         # Test out inference with 5 samples
@@ -301,9 +305,6 @@ def evaluate_model(model, test_x, test_y, roc_filename=None, label_descs=None):
         size_y = y_pred.shape[1]
         y_pred = model(test_x)
         i = 0
-        out_fpr = []
-        out_tpr = []
-        out_threshold = []
         while i < size_y:
             # pylint: disable=unused-variable
             fpr, tpr, thresholds = roc_curve(test_y[:, i : i+1], y_pred[:, i : i+1])
@@ -324,9 +325,11 @@ def evaluate_model(model, test_x, test_y, roc_filename=None, label_descs=None):
         # must be last - after show a new figure is created
         plt.show()
         
-        if 'metrics_output' in globals():
-            print ("Logging Metrics Output to KFP")
-            metrics_output.log_roc_curve(out_fpr, out_tpr, out_threshold)
+    if 'metrics_output' in globals() or 'metrics_output' in locals():
+        print ("Logging Metrics Output to KFP")
+        metrics_output.log_roc_curve(out_fpr, out_tpr, out_threshold)
+    else:
+        print ("KFP not detected.  Skipping metrics logging.")
 
 
 def save_scaler(scaler, filename):
