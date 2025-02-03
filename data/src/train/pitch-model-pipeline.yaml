@@ -1,0 +1,147 @@
+# PIPELINE DEFINITION
+# Name: pitch-prediction-model-lifecycle-pipeline
+# Inputs:
+#    db_conn_str: str
+#    git_url: str
+# Outputs:
+#    run-notebook-in-proc-metrics: system.ClassificationMetrics
+components:
+  comp-run-notebook-in-proc:
+    executorLabel: exec-run-notebook-in-proc
+    inputDefinitions:
+      parameters:
+        db_conn_str:
+          parameterType: STRING
+        git_url:
+          parameterType: STRING
+        notebook_name:
+          parameterType: STRING
+        parameters:
+          parameterType: STRUCT
+        run_from_dir:
+          parameterType: STRING
+    outputDefinitions:
+      artifacts:
+        jupyter_nb_output:
+          artifactType:
+            schemaTitle: system.Artifact
+            schemaVersion: 0.0.1
+        metrics:
+          artifactType:
+            schemaTitle: system.ClassificationMetrics
+            schemaVersion: 0.0.1
+        model:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+        roc_image:
+          artifactType:
+            schemaTitle: system.Artifact
+            schemaVersion: 0.0.1
+deploymentSpec:
+  executors:
+    exec-run-notebook-in-proc:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - run_notebook_in_proc
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.9.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'papermill'\
+          \ 'GitPython' 'ipykernel' 'jupyter' 'nbconvert' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef run_notebook_in_proc(git_url: str,\n                        \
+          \ run_from_dir: str,\n                         notebook_name: str,\n   \
+          \                      db_conn_str: str,\n                         parameters:\
+          \ dict,\n                         jupyter_nb_output: Output[Artifact],\n\
+          \                         model: Output[Model],\n                      \
+          \   roc_image: Output[Artifact],\n                         metrics: Output[ClassificationMetrics]):\n\
+          \    # setup output directories\n    import os\n    temp_path = \"/tmp\"\
+          \n    temp_repo_path = os.path.join(temp_path, \"repo\")\n    temp_nb_output_dir\
+          \ = os.path.join(temp_path, \"nb_output\")\n    temp_nb_py_script = os.path.join(temp_path,\
+          \ \"nb_output_as.py\")\n\n    # clone git repo\n    print (f\"Cloning Git\
+          \ Repo.  URL={git_url} TempRepoPath={temp_repo_path}\")\n    from git import\
+          \ Repo\n    Repo.clone_from(git_url,temp_repo_path)\n\n    # build parameter\
+          \ list\n    primary_parameter_list = dict(onnx_path = model.path,\n    \
+          \                              output_dir = temp_nb_output_dir,\n      \
+          \                            db_conn_str = db_conn_str,\n              \
+          \                    roc_path = roc_image.path, #os.path.join(temp_nb_output_dir,\
+          \ \"roc.jpg\"),\n                                  dataset_size = 50,\n\
+          \                                  neural_network_width = 10)\n    primary_parameter_list.update(parameters)\n\
+          \    print (f\"Parameters: {primary_parameter_list}\")\n\n    # change run\
+          \ directory\n    new_dir = os.path.join(temp_repo_path, run_from_dir)\n\
+          \    print (f\"Changing directory to: {new_dir}\")\n    os.chdir(new_dir)\n\
+          \n    # apply parameters to notebook\n    print (f\"Applying parameters\
+          \ .  Filename={notebook_name}\")\n    import papermill as pm\n    pm.execute_notebook(\n\
+          \        notebook_name,\n        jupyter_nb_output.path,\n        parameters=primary_parameter_list,\n\
+          \        kernel_name=\"\",\n        prepare_only=True\n    )\n\n    # convert\
+          \ notebook to python file\n    import nbconvert\n    exporter = nbconvert.PythonExporter()\n\
+          \    (body, resources) = exporter.from_filename(jupyter_nb_output.path)\n\
+          #    with open(temp_nb_py_script, 'w') as f:\n#        f.write(body)\n\n\
+          \    # execute notebook\n    import sys\n    sys.path.append(new_dir)\n\
+          \    exec(body, dict(metrics_output=metrics))\n\n"
+        image: registry.home.glroland.com/paas/ai-runtime-3.11:20250130-104034
+pipelineInfo:
+  name: pitch-prediction-model-lifecycle-pipeline
+root:
+  dag:
+    outputs:
+      artifacts:
+        run-notebook-in-proc-metrics:
+          artifactSelectors:
+          - outputArtifactKey: metrics
+            producerSubtask: run-notebook-in-proc
+    tasks:
+      run-notebook-in-proc:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-run-notebook-in-proc
+        inputs:
+          parameters:
+            db_conn_str:
+              componentInputParameter: db_conn_str
+            git_url:
+              componentInputParameter: git_url
+            notebook_name:
+              runtimeValue:
+                constant: train_predict_pitch_model.ipynb
+            parameters:
+              runtimeValue:
+                constant: {}
+            run_from_dir:
+              runtimeValue:
+                constant: data/src/train
+        taskInfo:
+          name: train-pitch-model
+  inputDefinitions:
+    parameters:
+      db_conn_str:
+        parameterType: STRING
+      git_url:
+        parameterType: STRING
+  outputDefinitions:
+    artifacts:
+      run-notebook-in-proc-metrics:
+        artifactType:
+          schemaTitle: system.ClassificationMetrics
+          schemaVersion: 0.0.1
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.9.0
