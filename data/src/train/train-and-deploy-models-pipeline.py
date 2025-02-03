@@ -104,7 +104,7 @@ token = subprocess.check_output("oc whoami -t", shell=True, text=True).strip()
 
 # Connect to the pipeline server
 print ("Connecting to pipeline server")
-kfp_client = kfp.Client(host="https://ds-pipeline-dspa-baseball.apps.ocpprod.home.glroland.com/",
+kfp_client = kfp.Client(host="https://ds-pipeline-dspa-baseball.apps.ocp.home.glroland.com/",
                         existing_token=token,
                         verify_ssl=False)
 
@@ -119,6 +119,6 @@ kfp_client.create_run_from_pipeline_func(
     }
 )
 
-## Compile Pipeline
-#print ("Compiling Pipeline")
-#compiler.Compiler().compile(train_model_pipeline, 'pipeline.yaml')
+# Compile Pipeline
+print ("Compiling Pipeline")
+compiler.Compiler().compile(train_model_pipeline, 'pipeline.yaml')
