@@ -27,7 +27,7 @@ class PredictionConstants:
     VALUE_TRUE = 1
     VALUE_FALSE = 0
 
-    NUM_EPOCHS = 300
+    NUM_EPOCHS = 50
     BATCH_SIZE = 10
     LOSS_RATE = 0.0001
 
@@ -101,7 +101,7 @@ def model_train(model, train_x, train_y, val_x, val_y):
     for epoch in range(PredictionConstants.NUM_EPOCHS):
         # train model
         model.train()
-        with tqdm.tqdm(batch_start, unit="batch", mininterval=0, disable=True) as tqdm_bar:
+        with tqdm.tqdm(batch_start, unit="batch", mininterval=0, disable=False) as tqdm_bar:
             tqdm_bar.set_description(f"Epoch {epoch}")
             for start in tqdm_bar:
                 # take a batch
