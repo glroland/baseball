@@ -87,8 +87,7 @@ root:
   dag:
     tasks:
       run-notebook-out-of-proc:
-        cachingOptions:
-          enableCache: true
+        cachingOptions: {}
         componentRef:
           name: comp-run-notebook-out-of-proc
         inputs:
@@ -107,7 +106,7 @@ root:
               runtimeValue:
                 constant: data/src/train
         taskInfo:
-          name: run-notebook-out-of-proc
+          name: train-play-model
   inputDefinitions:
     parameters:
       db_conn_str:

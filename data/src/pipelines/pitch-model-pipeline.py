@@ -9,12 +9,14 @@ run_notebook_in_proc = components.load_component_from_file('run-notebook-in-proc
 @dsl.pipeline(name="Pitch Prediction Model Lifecycle Pipeline")
 def train_model_pipeline(git_url: str, db_conn_str: str):
     # Train Model
-    run_notebook_in_proc(git_url=git_url,
-                        run_from_dir="data/src/train",
-                        notebook_name="train_predict_pitch_model.ipynb",
-                        db_conn_str=db_conn_str,
-                        parameters = {
-                        })
+    run_task = run_notebook_in_proc(git_url=git_url,
+                                    run_from_dir="data/src/train",
+                                    notebook_name="train_predict_pitch_model.ipynb",
+                                    db_conn_str=db_conn_str,
+                                    parameters = {
+                                    })
+    run_task.set_display_name("train-pitch-model")
+    run_task.set_caching_options(enable_caching=False)
 
 # Get OpenShift Token
 token = subprocess.check_output("oc whoami -t", shell=True, text=True).strip()

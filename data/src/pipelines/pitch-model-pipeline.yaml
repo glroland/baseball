@@ -102,8 +102,7 @@ root:
   dag:
     tasks:
       run-notebook-in-proc:
-        cachingOptions:
-          enableCache: true
+        cachingOptions: {}
         componentRef:
           name: comp-run-notebook-in-proc
         inputs:
@@ -122,7 +121,7 @@ root:
               runtimeValue:
                 constant: data/src/train
         taskInfo:
-          name: run-notebook-in-proc
+          name: train-pitch-model
   inputDefinitions:
     parameters:
       db_conn_str:
