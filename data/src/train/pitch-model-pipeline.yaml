@@ -3,8 +3,6 @@
 # Inputs:
 #    db_conn_str: str
 #    git_url: str
-# Outputs:
-#    run-notebook-in-proc-metrics: system.ClassificationMetrics
 components:
   comp-run-notebook-in-proc:
     executorLabel: exec-run-notebook-in-proc
@@ -52,7 +50,7 @@ deploymentSpec:
         - -c
         - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
           \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
-          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.9.0'\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.11.0'\
           \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
           \  python3 -m pip install --quiet --no-warn-script-location 'papermill'\
           \ 'GitPython' 'ipykernel' 'jupyter' 'nbconvert' && \"$0\" \"$@\"\n"
@@ -102,12 +100,6 @@ pipelineInfo:
   name: pitch-prediction-model-lifecycle-pipeline
 root:
   dag:
-    outputs:
-      artifacts:
-        run-notebook-in-proc-metrics:
-          artifactSelectors:
-          - outputArtifactKey: metrics
-            producerSubtask: run-notebook-in-proc
     tasks:
       run-notebook-in-proc:
         cachingOptions: {}
@@ -136,11 +128,5 @@ root:
         parameterType: STRING
       git_url:
         parameterType: STRING
-  outputDefinitions:
-    artifacts:
-      run-notebook-in-proc-metrics:
-        artifactType:
-          schemaTitle: system.ClassificationMetrics
-          schemaVersion: 0.0.1
 schemaVersion: 2.1.0
-sdkVersion: kfp-2.9.0
+sdkVersion: kfp-2.11.0

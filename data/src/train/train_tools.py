@@ -327,7 +327,7 @@ def evaluate_model(model, test_x, test_y, roc_filename=None, label_descs=None, m
 
     # log accuracy score to KFP metrics, if configured
     if metrics_output is not None:
-        print ("KFP metric output was found.  Logging ROC curve to KFP...")
+        print ("Logging ROC curve to KFP...")
         metrics_output.log_roc_curve(out_fpr, out_tpr, out_threshold)
 
 
