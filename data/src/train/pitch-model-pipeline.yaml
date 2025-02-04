@@ -96,7 +96,7 @@ deploymentSpec:
           \    (body, resources) = exporter.from_filename(jupyter_nb_output.path)\n\
           #    with open(temp_nb_py_script, 'w') as f:\n#        f.write(body)\n\n\
           \    # execute notebook\n    import sys\n    sys.path.append(new_dir)\n\
-          \    exec(body, dict(metrics_output=metrics))\n\n"
+          \    exec(body, {\"metrics_output\": metrics})\n\n"
         image: registry.home.glroland.com/paas/ai-runtime-3.11:20250130-104034
 pipelineInfo:
   name: pitch-prediction-model-lifecycle-pipeline
@@ -110,8 +110,7 @@ root:
             producerSubtask: run-notebook-in-proc
     tasks:
       run-notebook-in-proc:
-        cachingOptions:
-          enableCache: true
+        cachingOptions: {}
         componentRef:
           name: comp-run-notebook-in-proc
         inputs:

@@ -64,7 +64,7 @@ def run_notebook_in_proc(git_url: str,
     # execute notebook
     import sys
     sys.path.append(new_dir)
-    exec(body, dict(metrics_output=metrics))
+    exec(body, {"metrics_output": metrics})
 
 @dsl.component
 def store_assets():
@@ -84,6 +84,7 @@ def train_model_pipeline(git_url: str, db_conn_str: str):
                                       parameters = {
                                       })
     train_task.set_display_name("train-pitch-model")
+    train_task.set_caching_options(enable_caching=False)
 
 # Get OpenShift Token
 token = subprocess.check_output("oc whoami -t", shell=True, text=True).strip()
