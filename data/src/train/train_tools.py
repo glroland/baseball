@@ -276,7 +276,7 @@ def drop_column(df, column):
     """
     df.drop(column, axis=1, inplace=True)
 
-def evaluate_model(model, test_x, test_y, roc_filename=None, label_descs=None):
+def evaluate_model(model, test_x, test_y, roc_filename=None, label_descs=None, metrics_output=None):
     """ Evaluate the performance of the provided model.
 
         model - pytorch model
@@ -326,14 +326,9 @@ def evaluate_model(model, test_x, test_y, roc_filename=None, label_descs=None):
         plt.show()
 
     # log accuracy score to KFP metrics, if configured
-    try:
-        if metrics_output is not None:
-            print ("KFP metric output was found.  Logging metrics to KFP...")
-            metrics_output.log_roc_curve(out_fpr, out_tpr, out_threshold)
-        else:
-            print ("KFP metric output NOT found.")
-    except NameError:
-        print ("KFP metric output NOT found.")
+    if metrics_output is not None:
+        print ("KFP metric output was found.  Logging ROC curve to KFP...")
+        metrics_output.log_roc_curve(out_fpr, out_tpr, out_threshold)
 
 
 def save_scaler(scaler, filename):
