@@ -6,22 +6,19 @@ from kfp.dsl import InputPath, Output, Artifact, Model, ClassificationMetrics
 from kfp import compiler
 
 @dsl.component(base_image="registry.home.glroland.com/paas/ai-runtime-3.11:20250130-104034",
-               packages_to_install=["papermill", "GitPython", "ipykernel", "jupyter", "nbconvert"])
-def run_notebook_in_proc(git_url: str,
-                         run_from_dir: str,
-                         notebook_name: str,
-                         db_conn_str: str,
-                         parameters: dict,
-                         jupyter_nb_output: Output[Artifact],
-                         model: Output[Model],
-                         roc_image: Output[Artifact],
-                         metrics: Output[ClassificationMetrics]):
+               packages_to_install=["papermill", "GitPython", "ipykernel", "jupyter"])
+def run_notebook_out_of_proc(git_url: str,
+                             run_from_dir: str,
+                             notebook_name: str,
+                             db_conn_str: str,
+                             parameters: dict,
+                             jupyter_nb_output: Output[Artifact],
+                             model: Output[Model]):
     # setup output directories
     import os
     temp_path = "/tmp"
     temp_repo_path = os.path.join(temp_path, "repo")
     temp_nb_output_dir = os.path.join(temp_path, "nb_output")
-    temp_nb_py_script = os.path.join(temp_path, "nb_output_as.py")
 
     # clone git repo
     print (f"Cloning Git Repo.  URL={git_url} TempRepoPath={temp_repo_path}")
@@ -32,7 +29,7 @@ def run_notebook_in_proc(git_url: str,
     primary_parameter_list = dict(onnx_path = model.path,
                                   output_dir = temp_nb_output_dir,
                                   db_conn_str = db_conn_str,
-                                  roc_path = roc_image.path, #os.path.join(temp_nb_output_dir, "roc.jpg"),
+                                  roc_path = os.path.join(temp_nb_output_dir, "roc.jpg"),
                                   dataset_size = 50,
                                   neural_network_width = 10)
     primary_parameter_list.update(parameters)
@@ -43,39 +40,26 @@ def run_notebook_in_proc(git_url: str,
     print (f"Changing directory to: {new_dir}")
     os.chdir(new_dir)
 
-    # apply parameters to notebook
-    print (f"Applying parameters .  Filename={notebook_name}")
+    # run notebook
+    print (f"Running notebook.  Filename={notebook_name}")
     import papermill as pm
     pm.execute_notebook(
         notebook_name,
         jupyter_nb_output.path,
         parameters=primary_parameter_list,
-        kernel_name="",
-        prepare_only=True
+        kernel_name=""
     )
 
-    # convert notebook to python file
-    import nbconvert
-    exporter = nbconvert.PythonExporter()
-    (body, resources) = exporter.from_filename(jupyter_nb_output.path)
-#    with open(temp_nb_py_script, 'w') as f:
-#        f.write(body)
-
-    # execute notebook
-    import sys
-    sys.path.append(new_dir)
-    exec(body, {"metrics_output": metrics})
-
-@dsl.pipeline(name="Pitch Prediction Model Lifecycle Pipeline")
+@dsl.pipeline(name="Play Prediction Model Lifecycle Pipeline")
 def train_model_pipeline(git_url: str, db_conn_str: str):
     # Train Model
-    train_task = run_notebook_in_proc(git_url=git_url,
-                                      run_from_dir="data/src/train",
-                                      notebook_name="train_predict_pitch_model.ipynb",
-                                      db_conn_str=db_conn_str,
-                                      parameters = {
-                                      })
-    train_task.set_display_name("train-pitch-model")
+    train_task = run_notebook_out_of_proc(git_url=git_url,
+                                          run_from_dir="data/src/train",
+                                          notebook_name="train_predict_play_model.ipynb",
+                                          db_conn_str=db_conn_str,
+                                          parameters = {
+                                          })
+    train_task.set_display_name("train-play-model")
     train_task.set_caching_options(enable_caching=False)
 
 # Get OpenShift Token
@@ -91,7 +75,7 @@ kfp_client = kfp.Client(host="https://ds-pipeline-dspa-baseball.apps.ocp.home.gl
 print ("Running Pipeline")
 kfp_client.create_run_from_pipeline_func(
     train_model_pipeline,
-    experiment_name="Train Pitch Prediction Model Pipeline v1",
+    experiment_name="Train Play Prediction Model Pipeline v1",
     arguments={
         "git_url": "https://github.com/glroland/baseball.git",
         "db_conn_str": "postgresql://baseball_app:baseball123@db/baseball_db"
@@ -100,4 +84,4 @@ kfp_client.create_run_from_pipeline_func(
 
 # Compile Pipeline
 print ("Compiling Pipeline")
-compiler.Compiler().compile(train_model_pipeline, 'pitch-model-pipeline.yaml')
+compiler.Compiler().compile(train_model_pipeline, 'play-model-pipeline.yaml')
