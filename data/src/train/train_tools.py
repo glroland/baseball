@@ -312,9 +312,9 @@ def evaluate_model(model, test_x, test_y, roc_filename=None, label_descs=None, m
             if label_descs is not None and len(label_descs) >= i:
                 label = label_descs[i]
             plt.plot(fpr, tpr, label=label)        # ROC curve = TPR vs FPR    
-            out_fpr.append(fpr.tolist())
-            out_tpr.append(tpr.tolist())
-            out_threshold.append(thresholds.tolist())
+            out_fpr.append(np.nan_to_num(fpr, posinf=0, neginf=0).tolist())
+            out_tpr.append(np.nan_to_num(tpr, posinf=0, neginf=0).tolist())
+            out_threshold.append(np.nan_to_num(thresholds, posinf=0, neginf=0).tolist())
             i += 1
         if i > 0:
             plt.legend(loc=0)
