@@ -307,7 +307,7 @@ def evaluate_model(model, test_x, test_y, roc_filename=None, label_descs=None, m
         i = 0
         while i < size_y:
             # pylint: disable=unused-variable
-            fpr, tpr, thresholds = roc_curve(test_y[:, i : i+1], y_pred[:, i : i+1])
+            fpr, tpr, thresholds = roc_curve(test_y[:, i : i+1], y_pred[:, i : i+1], drop_intermediate=True)
             label = str(i)
             if label_descs is not None and len(label_descs) >= i:
                 label = label_descs[i]
