@@ -1,8 +1,14 @@
 # PIPELINE DEFINITION
-# Name: play-prediction-model-lifecycle-pipeline
+# Name: run-notebook-out-of-proc
 # Inputs:
 #    db_conn_str: str
 #    git_url: str
+#    notebook_name: str
+#    parameters: dict
+#    run_from_dir: str
+# Outputs:
+#    jupyter_nb_output: system.Artifact
+#    model: system.Model
 components:
   comp-run-notebook-out-of-proc:
     executorLabel: exec-run-notebook-out-of-proc
@@ -82,9 +88,19 @@ deploymentSpec:
           \        kernel_name=\"\"\n    )\n\n"
         image: registry.home.glroland.com/paas/ai-runtime-3.11:20250130-104034
 pipelineInfo:
-  name: play-prediction-model-lifecycle-pipeline
+  name: run-notebook-out-of-proc
 root:
   dag:
+    outputs:
+      artifacts:
+        jupyter_nb_output:
+          artifactSelectors:
+          - outputArtifactKey: jupyter_nb_output
+            producerSubtask: run-notebook-out-of-proc
+        model:
+          artifactSelectors:
+          - outputArtifactKey: model
+            producerSubtask: run-notebook-out-of-proc
     tasks:
       run-notebook-out-of-proc:
         cachingOptions:
@@ -98,14 +114,11 @@ root:
             git_url:
               componentInputParameter: git_url
             notebook_name:
-              runtimeValue:
-                constant: train_predict_play_model.ipynb
+              componentInputParameter: notebook_name
             parameters:
-              runtimeValue:
-                constant: {}
+              componentInputParameter: parameters
             run_from_dir:
-              runtimeValue:
-                constant: data/src/train
+              componentInputParameter: run_from_dir
         taskInfo:
           name: run-notebook-out-of-proc
   inputDefinitions:
@@ -114,5 +127,21 @@ root:
         parameterType: STRING
       git_url:
         parameterType: STRING
+      notebook_name:
+        parameterType: STRING
+      parameters:
+        parameterType: STRUCT
+      run_from_dir:
+        parameterType: STRING
+  outputDefinitions:
+    artifacts:
+      jupyter_nb_output:
+        artifactType:
+          schemaTitle: system.Artifact
+          schemaVersion: 0.0.1
+      model:
+        artifactType:
+          schemaTitle: system.Model
+          schemaVersion: 0.0.1
 schemaVersion: 2.1.0
 sdkVersion: kfp-2.11.0

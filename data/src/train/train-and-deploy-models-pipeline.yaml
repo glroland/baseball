@@ -8,7 +8,8 @@ components:
     dag:
       tasks:
         run-notebook-in-proc:
-          cachingOptions: {}
+          cachingOptions:
+            enableCache: true
           componentRef:
             name: comp-run-notebook-in-proc
           inputs:
@@ -27,7 +28,7 @@ components:
                 runtimeValue:
                   constant: data/src/train
           taskInfo:
-            name: train-pitch-model
+            name: run-notebook-in-proc
     inputDefinitions:
       parameters:
         db_conn_str:
@@ -38,7 +39,8 @@ components:
     dag:
       tasks:
         run-notebook-out-of-proc:
-          cachingOptions: {}
+          cachingOptions:
+            enableCache: true
           componentRef:
             name: comp-run-notebook-out-of-proc
           inputs:
@@ -57,7 +59,7 @@ components:
                 runtimeValue:
                   constant: data/src/train
           taskInfo:
-            name: train-play-model
+            name: run-notebook-out-of-proc
     inputDefinitions:
       parameters:
         db_conn_str:

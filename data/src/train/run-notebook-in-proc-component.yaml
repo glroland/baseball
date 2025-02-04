@@ -1,8 +1,16 @@
 # PIPELINE DEFINITION
-# Name: pitch-prediction-model-lifecycle-pipeline
+# Name: run-notebook-in-proc
 # Inputs:
 #    db_conn_str: str
 #    git_url: str
+#    notebook_name: str
+#    parameters: dict
+#    run_from_dir: str
+# Outputs:
+#    jupyter_nb_output: system.Artifact
+#    metrics: system.ClassificationMetrics
+#    model: system.Model
+#    roc_image: system.Artifact
 components:
   comp-run-notebook-in-proc:
     executorLabel: exec-run-notebook-in-proc
@@ -97,9 +105,27 @@ deploymentSpec:
           \    exec(body, {\"metrics_output\": metrics})\n\n"
         image: registry.home.glroland.com/paas/ai-runtime-3.11:20250130-104034
 pipelineInfo:
-  name: pitch-prediction-model-lifecycle-pipeline
+  name: run-notebook-in-proc
 root:
   dag:
+    outputs:
+      artifacts:
+        jupyter_nb_output:
+          artifactSelectors:
+          - outputArtifactKey: jupyter_nb_output
+            producerSubtask: run-notebook-in-proc
+        metrics:
+          artifactSelectors:
+          - outputArtifactKey: metrics
+            producerSubtask: run-notebook-in-proc
+        model:
+          artifactSelectors:
+          - outputArtifactKey: model
+            producerSubtask: run-notebook-in-proc
+        roc_image:
+          artifactSelectors:
+          - outputArtifactKey: roc_image
+            producerSubtask: run-notebook-in-proc
     tasks:
       run-notebook-in-proc:
         cachingOptions:
@@ -113,14 +139,11 @@ root:
             git_url:
               componentInputParameter: git_url
             notebook_name:
-              runtimeValue:
-                constant: train_predict_pitch_model.ipynb
+              componentInputParameter: notebook_name
             parameters:
-              runtimeValue:
-                constant: {}
+              componentInputParameter: parameters
             run_from_dir:
-              runtimeValue:
-                constant: data/src/train
+              componentInputParameter: run_from_dir
         taskInfo:
           name: run-notebook-in-proc
   inputDefinitions:
@@ -129,5 +152,29 @@ root:
         parameterType: STRING
       git_url:
         parameterType: STRING
+      notebook_name:
+        parameterType: STRING
+      parameters:
+        parameterType: STRUCT
+      run_from_dir:
+        parameterType: STRING
+  outputDefinitions:
+    artifacts:
+      jupyter_nb_output:
+        artifactType:
+          schemaTitle: system.Artifact
+          schemaVersion: 0.0.1
+      metrics:
+        artifactType:
+          schemaTitle: system.ClassificationMetrics
+          schemaVersion: 0.0.1
+      model:
+        artifactType:
+          schemaTitle: system.Model
+          schemaVersion: 0.0.1
+      roc_image:
+        artifactType:
+          schemaTitle: system.Artifact
+          schemaVersion: 0.0.1
 schemaVersion: 2.1.0
 sdkVersion: kfp-2.11.0
