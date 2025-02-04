@@ -276,7 +276,7 @@ def drop_column(df, column):
     """
     df.drop(column, axis=1, inplace=True)
 
-def evaluate_model(model, test_x, test_y, roc_filename=None, label_descs=None):
+def evaluate_model(model, test_x, test_y, roc_filename=None, label_descs=None, metrics_output=None):
     """ Evaluate the performance of the provided model.
 
         model - pytorch model
@@ -325,11 +325,13 @@ def evaluate_model(model, test_x, test_y, roc_filename=None, label_descs=None):
         # must be last - after show a new figure is created
         plt.show()
 
-    if 'metrics_output' in globals() or 'metrics_output' in locals():
+    if metrics_output is not None:
         print ("Logging Metrics Output to KFP")
         metrics_output.log_roc_curve(out_fpr, out_tpr, out_threshold)
     else:
         print ("KFP not detected.  Skipping metrics logging.")
+
+    print (globals())
 
 
 def save_scaler(scaler, filename):
