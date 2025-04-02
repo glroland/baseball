@@ -5,52 +5,17 @@ from kfp import dsl, components
 from kfp.dsl import InputPath, Output, Artifact, Model
 from kfp import compiler
 
-@dsl.component
-def step1():
-    print ("STEP 1")
-
-@dsl.component
-def process_item(parameter: int):
-    print (f"PROCESS ITEM WITH PARAMETER ({parameter})")
-
-@dsl.component
-def step2():
-    print ("STEP 2")
-
-    import subprocess
-
-    print ("BEFORE")
-
-    result = subprocess.run(['pip', 'freeze'], capture_output=True, text=True)
-    print(result.stdout)
-
-    print ("AFTER")
-
-
-@dsl.component
-def step3():
-    print ("STEP 3")
+simple_pipeline = components.load_component_from_file('testing-control-flow-simple.yaml')
 
 @dsl.pipeline(name="Testing Control Flow Pipeline")
 def control_flow_pipeline():
 
+    import os
+    files = os.listdir("/Users/lroland/Projects/github.com/sbc-chatbot/samples")
 
-    with dsl.ParallelFor([1, 5, 10, 25]) as item:
-        process_item(parameter=item)
+    with dsl.ParallelFor(files) as item:
+        simple_pipeline(param=item)
 
-    # Step 1
-    step1_task = step1()
-    step1_task.set_display_name("step1")
-
-    # Step 2
-    step2_task = step2()
-    step2_task.set_display_name("step2")
-    step2_task.after(step1_task)
-
-    # Step 3
-    step3_task = step3()
-    step3_task.set_display_name("step3")
-    step3_task.after(step2_task)
 
 
 # Get OpenShift Token

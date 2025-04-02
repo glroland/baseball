@@ -1,24 +1,8 @@
 # PIPELINE DEFINITION
 # Name: testing-control-flow-pipeline
+# Inputs:
+#    param: str
 components:
-  comp-for-loop-2:
-    dag:
-      tasks:
-        testing-control-flow-pipeline:
-          cachingOptions:
-            enableCache: true
-          componentRef:
-            name: comp-testing-control-flow-pipeline
-          inputs:
-            parameters:
-              param:
-                componentInputParameter: pipelinechannel--loop-item-param-1
-          taskInfo:
-            name: testing-control-flow-pipeline
-    inputDefinitions:
-      parameters:
-        pipelinechannel--loop-item-param-1:
-          parameterType: STRING
   comp-step1:
     executorLabel: exec-step1
     inputDefinitions:
@@ -29,42 +13,6 @@ components:
     executorLabel: exec-step2
   comp-step3:
     executorLabel: exec-step3
-  comp-testing-control-flow-pipeline:
-    dag:
-      tasks:
-        step1:
-          cachingOptions:
-            enableCache: true
-          componentRef:
-            name: comp-step1
-          inputs:
-            parameters:
-              param:
-                componentInputParameter: param
-          taskInfo:
-            name: step1
-        step2:
-          cachingOptions:
-            enableCache: true
-          componentRef:
-            name: comp-step2
-          dependentTasks:
-          - step1
-          taskInfo:
-            name: step2
-        step3:
-          cachingOptions:
-            enableCache: true
-          componentRef:
-            name: comp-step3
-          dependentTasks:
-          - step2
-          taskInfo:
-            name: step3
-    inputDefinitions:
-      parameters:
-        param:
-          parameterType: STRING
 deploymentSpec:
   executors:
     exec-step1:
@@ -156,15 +104,38 @@ pipelineInfo:
 root:
   dag:
     tasks:
-      for-loop-2:
+      step1:
+        cachingOptions:
+          enableCache: true
         componentRef:
-          name: comp-for-loop-2
-        parameterIterator:
-          itemInput: pipelinechannel--loop-item-param-1
-          items:
-            raw: '["SBC-Sample-Completed.pdf", "sbc-sample-completed-mm-508-fixed-4-12-16.pdf",
-              "SOURCES.txt", "coresbc2024.pdf"]'
+          name: comp-step1
+        inputs:
+          parameters:
+            param:
+              componentInputParameter: param
         taskInfo:
-          name: for-loop-2
+          name: step1
+      step2:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-step2
+        dependentTasks:
+        - step1
+        taskInfo:
+          name: step2
+      step3:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-step3
+        dependentTasks:
+        - step2
+        taskInfo:
+          name: step3
+  inputDefinitions:
+    parameters:
+      param:
+        parameterType: STRING
 schemaVersion: 2.1.0
 sdkVersion: kfp-2.11.0
