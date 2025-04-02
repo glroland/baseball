@@ -1,6 +1,30 @@
 # PIPELINE DEFINITION
 # Name: testing-control-flow-pipeline
 components:
+  comp-for-loop-2:
+    dag:
+      tasks:
+        process-item:
+          cachingOptions:
+            enableCache: true
+          componentRef:
+            name: comp-process-item
+          inputs:
+            parameters:
+              parameter:
+                componentInputParameter: pipelinechannel--loop-item-param-1
+          taskInfo:
+            name: process-item
+    inputDefinitions:
+      parameters:
+        pipelinechannel--loop-item-param-1:
+          parameterType: NUMBER_INTEGER
+  comp-process-item:
+    executorLabel: exec-process-item
+    inputDefinitions:
+      parameters:
+        parameter:
+          parameterType: NUMBER_INTEGER
   comp-step1:
     executorLabel: exec-step1
   comp-step2:
@@ -9,6 +33,35 @@ components:
     executorLabel: exec-step3
 deploymentSpec:
   executors:
+    exec-process-item:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - process_item
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.11.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef process_item(parameter: int):\n    print (f\"PROCESS ITEM WITH\
+          \ PARAMETER ({parameter})\")\n\n"
+        image: python:3.9
     exec-step1:
       container:
         args:
@@ -63,7 +116,10 @@ deploymentSpec:
 
           '
         - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
-          \ *\n\ndef step2():\n    print (\"STEP 2\")\n\n"
+          \ *\n\ndef step2():\n    print (\"STEP 2\")\n\n    import subprocess\n\n\
+          \    print (\"BEFORE\")\n\n    result = subprocess.run(['pip', 'freeze'],\
+          \ capture_output=True, text=True)\n    print(result.stdout)\n\n    print\
+          \ (\"AFTER\")\n\n"
         image: python:3.9
     exec-step3:
       container:
@@ -98,6 +154,15 @@ pipelineInfo:
 root:
   dag:
     tasks:
+      for-loop-2:
+        componentRef:
+          name: comp-for-loop-2
+        parameterIterator:
+          itemInput: pipelinechannel--loop-item-param-1
+          items:
+            raw: '[1, 5, 10, 25]'
+        taskInfo:
+          name: for-loop-2
       step1:
         cachingOptions:
           enableCache: true

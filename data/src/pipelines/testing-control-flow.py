@@ -10,8 +10,22 @@ def step1():
     print ("STEP 1")
 
 @dsl.component
+def process_item(parameter: int):
+    print (f"PROCESS ITEM WITH PARAMETER ({parameter})")
+
+@dsl.component
 def step2():
     print ("STEP 2")
+
+    import subprocess
+
+    print ("BEFORE")
+
+    result = subprocess.run(['pip', 'freeze'], capture_output=True, text=True)
+    print(result.stdout)
+
+    print ("AFTER")
+
 
 @dsl.component
 def step3():
@@ -19,6 +33,10 @@ def step3():
 
 @dsl.pipeline(name="Testing Control Flow Pipeline")
 def control_flow_pipeline():
+
+
+    with dsl.ParallelFor([1, 5, 10, 25]) as item:
+        process_item(parameter=item)
 
     # Step 1
     step1_task = step1()
