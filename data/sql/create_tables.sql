@@ -163,9 +163,16 @@ create table game_play
     game_play_id serial not null,
     game_id int not null,
     play_index int not null,
-    pitch_count int,
+    pitch_count_start int not null,
+    pitch_count_end int not null,
 
     check (play_index >= 1),
+
+    check (pitch_count_start >= 0),
+
+    check (pitch_count_end >= 0),
+
+    check (pitch_count_start <= pitch_count_end),
 
     constraint pk_game_play
             primary key (game_play_id),
@@ -257,6 +264,20 @@ create table game_play_sub
             references field_pos (field_pos_num)
 );
 
+create table game_play_run_adj
+(
+    game_play_id int not null,
+    runner_code varchar(20) not null,
+    adjusted_base varchar(20) not null,
+
+    constraint pk_game_play_run_adj 
+            primary key (game_play_id),
+
+    constraint fk_game_play 
+            foreign key (game_play_id) 
+            references game_play (game_play_id)
+);
+
 create table pitch_type
 (
     pitch_type_cd char(1) not null,
@@ -301,8 +322,11 @@ create table game_play_atbat_pitch
     game_play_id int not null,
     pitch_index int not null,
     pitch_type_cd char(1) not null,
+    pitch_count int not null,
 
     check (pitch_index >= 1),
+
+    check (pitch_count >= 1),
 
     constraint pk_game_play_atbat_pitch
             primary key (game_play_pitch_id),

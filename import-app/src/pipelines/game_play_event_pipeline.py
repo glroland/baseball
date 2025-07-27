@@ -36,7 +36,10 @@ class GamePlayEventPipeline(BasePipeline):
 
     def __handle_sub(self):
         logger.info("Handling substituion...")
-        self.game_play_model = self.game.new_substitution(player_to=self.game.no_play_sub_player,
+        self.game_play_model = self.game.new_substitution(
+                            #player_to=self.game.no_play_sub_player,
+                            #player_from=self.player_code,
+                            player_to=self.player_code,
                             player_from=self.player_code,
                             home_team_flag=self.players_team_home_flag,
                             batting_order=self.batting_order,

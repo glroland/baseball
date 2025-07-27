@@ -10,6 +10,8 @@ from utils.data import to_json_string
 class GamePlay(BaseModel):
     """ Base Class of Game Play Types """
     game_state : GameState = None
+    pitch_count_start : int = None
+    pitch_count_end : int = None
 
     def __str__(self) -> str:
         """ Create JSON string representation of the object. """

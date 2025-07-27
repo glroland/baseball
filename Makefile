@@ -73,8 +73,10 @@ else
 endif
 
 events: init
-#	cd src && python import_events_app.py ../data/raw/  --save "$(db_connection_string)" --truncate --debug ../import_events_apps.log --skip-errors --move ../data/done
-	cd import-app/src && python import_events_app.py ../../target/raw/  --save "$(db_connection_string)" --debug ../../target/import_events_apps.log --skip-errors --move ../../target/done
+	cd import-app/src && python import_events_app.py ../../target/raw/  --save "$(db_connection_string)" --skip-errors --move ../../target/done
+
+events.dev: init
+	cd import-app/src && python import_events_app.py ../../target/raw/  --save "$(db_connection_string)" --debug ../../target/import_events_apps.log --move ../../target/done
 
 api.build:
 	podman build -f predict-svc/Dockerfile --tag=predict-svc:latest .

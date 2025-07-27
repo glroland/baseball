@@ -34,6 +34,8 @@ class Game(BaseModel):
     no_play_sub_player : str = None
     current_pitcher_visitor : str = None
     current_pitcher_home : str = None
+    last_pitch_count_home : int = 0
+    last_pitch_count_visitor : int = 0
 
     def get_pitcher(self, home_team_flag):
         """ Get the starting pitcher for the specified team:
@@ -125,6 +127,16 @@ class Game(BaseModel):
             game_at_bat.game_state._top_of_inning_flag:
             logger.info("Inning %s / Bottom - Home Team at Bat", inning)
 
+        # update pitch counts
+        if game_at_bat.game_state._top_of_inning_flag:
+            game_at_bat.pitch_count_start = self.last_pitch_count_visitor
+            game_at_bat.pitch_count_end = game_at_bat.pitch_count_start + len(pitches)
+            self.last_pitch_count_visitor += len(pitches)
+        else:
+            game_at_bat.pitch_count_start = self.last_pitch_count_home
+            game_at_bat.pitch_count_end = game_at_bat.pitch_count_start + len(pitches)
+            self.last_pitch_count_home += len(pitches)
+
         # process each action under the play record
         logger.debug("(Before Play) Runners - %s", game_at_bat.game_state._runners)
         EventFactory.create(game_at_bat)
@@ -156,8 +168,11 @@ class Game(BaseModel):
         last_at_bat = self.get_last_at_bat()
         if last_at_bat is None:
             game_subst.game_state = GameState()
+            game_subst.pitch_count_start = 0
         else:
             game_subst.game_state = last_at_bat.game_state.clone()
+            game_subst.pitch_count_start = last_at_bat.pitch_count_end
+        game_subst.pitch_count_end = game_subst.pitch_count_start
 
         game_subst.player_to = player_to
         game_subst.player_from = player_from
@@ -166,15 +181,19 @@ class Game(BaseModel):
         game_subst.fielding_position = fielding_position
         self.game_plays.append(game_subst)
 
-        logger.info("Player <%s> substituted with <%s>", game_subst.player_from,
-                    game_subst.player_to)
+        logger.info("Player <%s> substituted with <%s> at position <%s>",
+                    game_subst.player_from,
+                    game_subst.player_to,
+                    game_subst.fielding_position)
 
-        if home_team_flag and player_from == self.current_pitcher_home:
+        if home_team_flag and game_subst.fielding_position in [1, "1"]:
+            logger.info("New Pitcher for Home Team.  From=%s  To=%s", self.current_pitcher_home, player_to)
             self.current_pitcher_home = player_to
-            logger.info("New Pitcher for Home Team.  From=%s  To=%s", player_from, player_to)
-        elif not home_team_flag and player_from == self.current_pitcher_visitor:
+            self.last_pitch_count_home = 0
+        elif not home_team_flag and game_subst.fielding_position in [1, "1"]:
+            logger.info("New Pitcher for Visiting Team.  From=%s  To=%s", self.current_pitcher_home, player_to)
             self.current_pitcher_visitor = player_to
-            logger.info("New Pitcher for Visiting Team.  From=%s  To=%s", player_from, player_to)
+            self.last_pitch_count_visitor = 0
         elif fielding_position == 1:
             fail("Pitcher was changed but the prior checks did not fire!  From=%s  To=%s",
                  player_from, player_to)
@@ -193,8 +212,11 @@ class Game(BaseModel):
         last_at_bat = self.get_last_at_bat()
         if last_at_bat is None:
             runner_adj.game_state = GameState()
+            runner_adj.pitch_count_start = 0
         else:
             runner_adj.game_state = last_at_bat.game_state.clone()
+            runner_adj.pitch_count_start = last_at_bat.pitch_count_end
+        runner_adj.pitch_count_end = runner_adj.pitch_count_start
 
         runner_adj.runner_code = runner_id
         runner_adj.adjusted_base = base
