@@ -47,7 +47,6 @@ class ColorOutputFormatter(logging.Formatter):
         formatter = logging.Formatter(log_fmt)
         return formatter.format(record)
 
-max_length = 0
 
 def get_char_value(column: str):
     """ Imports a character value from a string column.
@@ -103,19 +102,11 @@ def get_bool_value(column: str):
     raise ValueError(f"Column Value is not suitable for a boolean:  Val={column}")
 
 
-def import_line(line: List[str]):
-    """ Imports a single line.
+def convert_line(line: List[str]):
+    """ Converts a single line into a strongly typed play by play.
     
         line - one play by play entry
     """
-    global max_length
-
-    col = line[138]
-
-    length = len(col)
-    if length > max_length:
-        max_length = length
-
     col_index = 0
 
     play_by_play = PlayByPlay()
@@ -447,13 +438,13 @@ def import_line(line: List[str]):
     play_by_play.pbp = get_char_value(line[col_index])
     col_index += 1
     
-    # save the record
-    insert_record(play_by_play)
+    return play_by_play
 
 
-def insert_record(play_by_play : PlayByPlay):
+def save_record(db_cursor, play_by_play : PlayByPlay):
     """ Insert the record into the database.
     
+        db_curosr - database cursor
         play_by_play - play by play
     """
     sql = f"""
@@ -808,11 +799,14 @@ def insert_record(play_by_play : PlayByPlay):
         play_by_play.pbp,
     )
 
+    # save the record
+    db_cursor.execute(sql, data)
+
 
 @click.command()
+@click.argument('db_connection_string')
 @click.argument('play_by_play_file')
-# pylint: disable=too-many-arguments
-def cli(play_by_play_file: str):
+def cli(db_connection_string: str, play_by_play_file: str):
     """ CLI for importing retrosheet's play by play data file. """
     # Default to not set
     logging.getLogger().setLevel(logging.NOTSET)
@@ -824,13 +818,15 @@ def cli(play_by_play_file: str):
     logging.getLogger().addHandler(console)
     
     # ensure data file exists
+    logger.info("Data File: %s", play_by_play_file)
     if not os.path.exists(play_by_play_file) or not os.path.isfile(play_by_play_file):
         logger.error("%s must exist and be a data file!  ", play_by_play_file)
         sys.exit(ErrorCodes.MISSING_FILE)
 
     # connect to the database
-    #db_connection = psycopg.connect(dbname="your_database_name", user="your_username", password="your_password", host="your_host", port="your_port")
-    #db_cursor = db_connection.cursor()
+    logger.info("Database Connection String: %s", db_connection_string)
+    db_connection = psycopg.connect(db_connection_string)
+    db_cursor = db_connection.cursor()
 
     # load file and process line by line
     try:
@@ -851,7 +847,10 @@ def cli(play_by_play_file: str):
 
                     # process line
                     line_count += 1
-                    import_line(line)
+                    play_by_play = convert_line(line)
+
+                    # save the record
+                    save_record(db_cursor, play_by_play)
 
                     # abort if at max line count
                     if MAX_LINES > 0 and line_count >= MAX_LINES:
@@ -867,7 +866,7 @@ def cli(play_by_play_file: str):
 #        sys.exit(ErrorCodes.GENERIC_ERROR)
 
     # commit the transaction
-    #db_connection.commit()
+    db_connection.commit()
 
     # Successfully loaded data file
     logger.info("%s Successfully Imported!", play_by_play_file)
@@ -875,4 +874,4 @@ def cli(play_by_play_file: str):
 
 
 if __name__ == '__main__':
-    cli(None, None, None, None, None)
+    cli()

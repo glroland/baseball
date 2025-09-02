@@ -130,4 +130,4 @@ data.playbyplay.download:
 	cd target/plays && unzip plays.zip
 
 data.playbyplay.import:
-	cd data/src/ingest && python import_play_by_play.py ../../../target/plays/plays.csv
+	cd data/src/ingest && python import_play_by_play.py $(db_connection_string) ../../../target/plays/plays.csv
