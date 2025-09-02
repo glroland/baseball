@@ -123,3 +123,11 @@ data.gentrainingdata:
 
 data.trainlm:
 	cd data/src/train && python train_baseball_lm.py
+
+data.playbyplay.download:
+	mkdir -p target/plays
+	cd target/plays && wget https://www.retrosheet.org/downloads/plays/plays.zip
+	cd target/plays && unzip plays.zip
+
+data.playbyplay.import:
+	cd data/src/ingest && python import_play_by_play.py ../../../target/plays/plays.csv

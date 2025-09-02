@@ -1,3 +1,0 @@
-pipeline_order:
-  - folder: "rulebook"
-    config: "config.yaml"
