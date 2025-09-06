@@ -1,6 +1,6 @@
-drop database baseball_db;
+drop database baseball_db with (force);
 
-drop database baseball_features_db;
+drop database baseball_features_db with (force);
 
 drop user baseball_app;
 
