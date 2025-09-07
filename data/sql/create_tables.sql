@@ -369,7 +369,7 @@ create table game_play_by_play
     pitching_team varchar(3) not null,
     batter varchar(8) not null,
     pitcher varchar(8) not null,
-    batter_lineup_pos int not null,
+    batter_lineup_pos int,
     batter_fielding_pos varchar(2),
     batting_hand char(1) not null,
     pitching_hand char(1) not null,
