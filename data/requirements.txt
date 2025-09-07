@@ -19,3 +19,4 @@ unsloth
 datasets
 sqlalchemy
 papermill
+pydantic

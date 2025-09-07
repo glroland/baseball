@@ -1,23 +1,27 @@
 from datetime import datetime
+from pydantic import BaseModel, Field, ConfigDict
+from typing import Optional
 
-class PlayByPlay:
-    retrosheet_id : str = None
-    original_event_str : str = None
+class PlayByPlay(BaseModel):
+    model_config = ConfigDict(validate_assignment=True)
+
+    retrosheet_id : Optional[str] = Field(None, max_length=12)
+    original_event_str : Optional[str] = Field(None, max_length=50)
     inning : int = None
     is_top_of_inning : bool = None
     is_home_team : bool = None
-    game_location : str = None
-    batting_team : str = None
-    pitching_team : str = None
-    batter : str = None
-    pitcher : str = None
+    game_location : Optional[str] = Field(None, max_length=5)
+    batting_team : Optional[str] = Field(None, max_length=3)
+    pitching_team : Optional[str] = Field(None, max_length=3)
+    batter : Optional[str] = Field(None, max_length=8)
+    pitcher : Optional[str] = Field(None, max_length=8)
     batter_lineup_pos : int = None
     batter_fielding_pos : int = None
-    batting_hand : str = None
-    pitching_hand : str = None
+    batting_hand : Optional[str] = Field(None, max_length=1)
+    pitching_hand : Optional[str] = Field(None, max_length=1)
     pitch_count_str : str = None
     pitch_count : int = None
-    pitch_sequence : str = None
+    pitch_sequence : Optional[str] = Field(None, max_length=20)
     num_pitches_str : str = None
     num_pitches : int = None
     plate_appearance_flag : bool = None
@@ -70,58 +74,58 @@ class PlayByPlay:
     errors_9 : int = None
     outs_pre : int = None
     outs_post : int = None
-    base_runner_1_pre : str = None
-    base_runner_2_pre : str = None
-    base_runner_3_pre : str = None
-    base_runner_1_post : str = None
-    base_runner_2_post : str = None
-    base_runner_3_post : str = None
-    scorer_from_bat : str = None
-    scorer_from_1 : str = None
-    scorer_from_2 : str = None
-    scorer_from_3 : str = None
-    pitcher_charged_run_batter : str = None
-    pitcher_charged_run_1 : str = None
-    pitcher_charged_run_2 : str = None
-    pitcher_charged_run_3 : str = None
-    unearned_run_by_batter  : str = None
-    unearned_run_by_1 : str = None
-    unearned_run_by_2 : str = None
-    unearned_run_by_3 : str = None
-    rbi_batter : str = None
-    rbi_1 : str = None
-    rbi_2 : str = None
-    rbi_3 : str = None
+    base_runner_1_pre : Optional[str] = Field(None, max_length=8)
+    base_runner_2_pre : Optional[str] = Field(None, max_length=8)
+    base_runner_3_pre : Optional[str] = Field(None, max_length=8)
+    base_runner_1_post : Optional[str] = Field(None, max_length=8)
+    base_runner_2_post : Optional[str] = Field(None, max_length=8)
+    base_runner_3_post : Optional[str] = Field(None, max_length=8)
+    scorer_from_bat : Optional[str] = Field(None, max_length=8)
+    scorer_from_1 : Optional[str] = Field(None, max_length=8)
+    scorer_from_2 : Optional[str] = Field(None, max_length=8)
+    scorer_from_3 : Optional[str] = Field(None, max_length=8)
+    pitcher_charged_run_batter : Optional[str] = Field(None, max_length=8)
+    pitcher_charged_run_1 : Optional[str] = Field(None, max_length=8)
+    pitcher_charged_run_2 : Optional[str] = Field(None, max_length=8)
+    pitcher_charged_run_3 : Optional[str] = Field(None, max_length=8)
+    unearned_run_by_batter : Optional[str] = Field(None, max_length=8)
+    unearned_run_by_1 : Optional[str] = Field(None, max_length=8)
+    unearned_run_by_2 : Optional[str] = Field(None, max_length=8)
+    unearned_run_by_3 : Optional[str] = Field(None, max_length=8)
+    rbi_batter : Optional[str] = Field(None, max_length=8)
+    rbi_1 : Optional[str] = Field(None, max_length=8)
+    rbi_2 : Optional[str] = Field(None, max_length=8)
+    rbi_3 : Optional[str] = Field(None, max_length=8)
     num_runs_scored : int = None
     num_rbi_credited : int = None
     num_earned_runs : int = None
     num_team_unearned_runs : int = None
-    batting_team_lineup_1 : str = None
-    batting_team_lineup_2 : str = None
-    batting_team_lineup_3 : str = None
-    batting_team_lineup_4 : str = None
-    batting_team_lineup_5 : str = None
-    batting_team_lineup_6 : str = None
-    batting_team_lineup_7 : str = None
-    batting_team_lineup_8 : str = None
-    batting_team_lineup_9 : str = None
-    batting_team_field_pos_for_lineup_1 : str = None
-    batting_team_field_pos_for_lineup_2 : str = None
-    batting_team_field_pos_for_lineup_3 : str = None
-    batting_team_field_pos_for_lineup_4 : str = None
-    batting_team_field_pos_for_lineup_5 : str = None
-    batting_team_field_pos_for_lineup_6 : str = None
-    batting_team_field_pos_for_lineup_7 : str = None
-    batting_team_field_pos_for_lineup_8 : str = None
-    batting_team_field_pos_for_lineup_9 : str = None
-    catcher : str = None
-    first_baseman : str = None
-    second_baseman : str = None
-    third_baseman : str = None
-    shortstop : str = None
-    left_fielder : str = None
-    center_fielder : str = None
-    right_fielder : str = None
+    batting_team_lineup_1 : Optional[str] = Field(None, max_length=8)
+    batting_team_lineup_2 : Optional[str] = Field(None, max_length=8)
+    batting_team_lineup_3 : Optional[str] = Field(None, max_length=8)
+    batting_team_lineup_4 : Optional[str] = Field(None, max_length=8)
+    batting_team_lineup_5 : Optional[str] = Field(None, max_length=8)
+    batting_team_lineup_6 : Optional[str] = Field(None, max_length=8)
+    batting_team_lineup_7 : Optional[str] = Field(None, max_length=8)
+    batting_team_lineup_8 : Optional[str] = Field(None, max_length=8)
+    batting_team_lineup_9 : Optional[str] = Field(None, max_length=8)
+    batting_team_field_pos_for_lineup_1 : Optional[str] = Field(None, max_length=8)
+    batting_team_field_pos_for_lineup_2 : Optional[str] = Field(None, max_length=8)
+    batting_team_field_pos_for_lineup_3 : Optional[str] = Field(None, max_length=8)
+    batting_team_field_pos_for_lineup_4 : Optional[str] = Field(None, max_length=8)
+    batting_team_field_pos_for_lineup_5 : Optional[str] = Field(None, max_length=8)
+    batting_team_field_pos_for_lineup_6 : Optional[str] = Field(None, max_length=8)
+    batting_team_field_pos_for_lineup_7 : Optional[str] = Field(None, max_length=8)
+    batting_team_field_pos_for_lineup_8 : Optional[str] = Field(None, max_length=8)
+    batting_team_field_pos_for_lineup_9 : Optional[str] = Field(None, max_length=8)
+    catcher : Optional[str] = Field(None, max_length=8)
+    first_baseman : Optional[str] = Field(None, max_length=8)
+    second_baseman : Optional[str] = Field(None, max_length=8)
+    third_baseman : Optional[str] = Field(None, max_length=8)
+    shortstop : Optional[str] = Field(None, max_length=8)
+    left_fielder : Optional[str] = Field(None, max_length=8)
+    center_fielder : Optional[str] = Field(None, max_length=8)
+    right_fielder : Optional[str] = Field(None, max_length=8)
     putouts_unidentified : int = None
     putouts_by_1 : int = None
     putouts_by_2 : int = None
@@ -141,7 +145,7 @@ class PlayByPlay:
     assists_by_7 : int = None
     assists_by_8 : int = None
     assists_by_9 : int = None
-    fielding_seq_for_out : str = None
+    fielding_seq_for_out : Optional[str] = Field(None, max_length=10)
     batout1 : int = None
     batout2 : int = None
     batout3 : int = None
@@ -150,17 +154,17 @@ class PlayByPlay:
     brout2 : int = None
     brout3 : int = None
     firstf : int = None
-    loc : str = None
-    hittype : str = None
+    loc : Optional[str] = Field(None, max_length=10)
+    hittype : Optional[str] = Field(None, max_length=1)
     dpopp : int = None
-    pivot : str = None
+    pivot : Optional[str] = Field(None, max_length=8)
     play_number : int = None
-    umpire_home : str = None
-    umpire_1b : str = None
-    umpire_2b : str = None
-    umpire_3b : str = None
-    umpire_left_field : str = None
-    umpire_right_field : str = None
+    umpire_home : Optional[str] = Field(None, max_length=8)
+    umpire_1b : Optional[str] = Field(None, max_length=8)
+    umpire_2b : Optional[str] = Field(None, max_length=8)
+    umpire_3b : Optional[str] = Field(None, max_length=8)
+    umpire_left_field : Optional[str] = Field(None, max_length=8)
+    umpire_right_field : Optional[str] = Field(None, max_length=8)
     game_date : datetime = None
-    game_type : str = None
-    pbp : str = None
+    game_type : Optional[str] = Field(None, max_length=1)
+    pbp : Optional[str] = Field(None, max_length=1)
