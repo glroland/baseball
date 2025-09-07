@@ -6,7 +6,7 @@ class PlayByPlay(BaseModel):
     model_config = ConfigDict(validate_assignment=True)
 
     retrosheet_id : Optional[str] = Field(None, max_length=12)
-    original_event_str : Optional[str] = Field(None, max_length=50)
+    original_event_str : Optional[str] = Field(None, max_length=125)
     inning : int = None
     is_top_of_inning : bool = None
     is_home_team : bool = None

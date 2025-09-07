@@ -360,7 +360,7 @@ create table game_play_atbat_field_event
 create table game_play_by_play
 (
     retrosheet_id varchar(12) not null,
-    original_event_str varchar(50) not null,
+    original_event_str varchar(125) not null,
     inning int not null,
     is_top_of_inning boolean not null,
     is_home_team boolean not null,
