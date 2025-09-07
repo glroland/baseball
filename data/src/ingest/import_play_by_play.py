@@ -12,7 +12,7 @@ import psycopg
 logger = logging.getLogger(__name__)
 
 NUM_COLUMNS = 161
-MAX_LINES = 100000
+MAX_LINES = -1
 
 class ErrorCodes:
     SUCCESS = 0
