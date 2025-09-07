@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 NUM_COLUMNS = 161
 MAX_LINES = -1
+COMMIT_INTERVAL = 1000
 
 class ErrorCodes:
     SUCCESS = 0
@@ -806,8 +807,14 @@ def save_record(db_cursor, play_by_play : PlayByPlay):
 @click.command()
 @click.argument('db_connection_string')
 @click.argument('play_by_play_file')
-def cli(db_connection_string: str, play_by_play_file: str):
-    """ CLI for importing retrosheet's play by play data file. """
+@click.option('--jump_to_line', default=0, help='Start saving data at a specific line number.')
+def cli(db_connection_string: str, play_by_play_file: str, jump_to_line: int):
+    """ CLI for importing retrosheet's play by play data file.
+    
+        db_connection_string - postgresql database connection string
+        play_by_play_file - csv containing historical play by play data
+        jump_to_line - (optional) skip inserts until this line position
+    """
     # Default to not set
     logging.getLogger().setLevel(logging.NOTSET)
 
@@ -823,10 +830,17 @@ def cli(db_connection_string: str, play_by_play_file: str):
         logger.error("%s must exist and be a data file!  ", play_by_play_file)
         sys.exit(ErrorCodes.MISSING_FILE)
 
+    # log the jump to argument
+    logger.info("Jump To Line: %s", jump_to_line)
+
     # connect to the database
     logger.info("Database Connection String: %s", db_connection_string)
     db_connection = psycopg.connect(db_connection_string)
     db_cursor = db_connection.cursor()
+
+    # metrics
+    total_line_count = 0
+    lines_uncommitted = 0
 
     # load file and process line by line
     try:
@@ -837,7 +851,6 @@ def cli(db_connection_string: str, play_by_play_file: str):
             header = next(csv_reader)
             logger.info(f"CSV Header Row: {header}")
 
-            line_count = 0
             for line in csv_reader:
                 if line is not None and len(line) > 0:
                     # validate line
@@ -845,17 +858,30 @@ def cli(db_connection_string: str, play_by_play_file: str):
                         logger.fatal("Data file contains an invalid row.  Aborting load...  Length=%s Row=%s", len(line), line)
                         sys.exit(ErrorCodes.INVALID_DATA)
 
-                    # process line
-                    line_count += 1
-                    play_by_play = convert_line(line)
+                    # update metrics
+                    total_line_count += 1
+                    lines_uncommitted += 1
 
-                    # save the record
-                    save_record(db_cursor, play_by_play)
+                    # skip all precediting lines
+                    if jump_to_line is None or total_line_count >= jump_to_line:
+                        # process line
+                        play_by_play = convert_line(line)
 
-                    # abort if at max line count
-                    if MAX_LINES > 0 and line_count >= MAX_LINES:
-                        logger.warning("Stopping load after max rows reached, even though more data was still available.  Lines Loaded=%s", line_count)
-                        break
+                        # save the record
+                        save_record(db_cursor, play_by_play)
+
+                        # abort if at max line count
+                        if MAX_LINES > 0 and total_line_count >= MAX_LINES:
+                            logger.warning("Stopping load after max rows reached, even though more data was still available.  Lines Loaded=%s", total_line_count)
+                            break
+
+                        # commit if buffer is reached
+                        #logger.info("Line # %s ... Uncommitted Line # %s", total_line_count, lines_uncommitted)
+                        if COMMIT_INTERVAL > 0 and lines_uncommitted >= COMMIT_INTERVAL:
+                            # commit the transaction
+                            logger.info("Commiting buffer size of %s lines.  Line Count=%s", lines_uncommitted, total_line_count)
+                            db_connection.commit()
+                            lines_uncommitted = 0
                 else:
                     logger.debug("Skipping empty row")    
     except FileNotFoundError:
@@ -866,7 +892,10 @@ def cli(db_connection_string: str, play_by_play_file: str):
 #        sys.exit(ErrorCodes.GENERIC_ERROR)
 
     # commit the transaction
-    db_connection.commit()
+    if lines_uncommitted > 0:
+        logger.info("Commiting buffer size of %s lines.  Line Count=%s", lines_uncommitted, total_line_count)
+        db_connection.commit()
+        lines_uncommitted = 0
 
     # Successfully loaded data file
     logger.info("%s Successfully Imported!", play_by_play_file)
