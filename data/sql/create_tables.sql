@@ -497,7 +497,7 @@ create table game_play_by_play
     assists_by_7 int not null,
     assists_by_8 int not null,
     assists_by_9 int not null,
-    fielding_seq_for_out varchar(10),
+    fielding_seq_for_out varchar(15),
     batout1 int,
     batout2 int,
     batout3 int,
