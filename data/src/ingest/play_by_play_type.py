@@ -145,7 +145,7 @@ class PlayByPlay(BaseModel):
     assists_by_7 : Optional[int] = None
     assists_by_8 : Optional[int] = None
     assists_by_9 : Optional[int] = None
-    fielding_seq_for_out : Optional[str] = Field(None, max_length=10)
+    fielding_seq_for_out : Optional[str] = Field(None, max_length=15)
     batout1 : Optional[int] = None
     batout2 : Optional[int] = None
     batout3 : Optional[int] = None
