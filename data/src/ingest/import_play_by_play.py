@@ -142,7 +142,7 @@ def convert_line(line: List[str]):
     col_index += 1
     pitch_count_str = get_str_value(line[col_index])
     col_index += 1
-    if pitch_count_str is not None and pitch_count_str != "??":
+    if pitch_count_str is not None and pitch_count_str != "??" and pitch_count_str != "00.":
         play_by_play.pitch_count = get_int_value(pitch_count_str)
     play_by_play.pitch_sequence = get_str_value(line[col_index])
     col_index += 1
