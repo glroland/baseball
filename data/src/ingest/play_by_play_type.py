@@ -21,7 +21,7 @@ class PlayByPlay(BaseModel):
     pitching_hand : Optional[str] = Field(None, max_length=1)
     pitch_count_str : str = None
     pitch_count : Optional[int] = None
-    pitch_sequence : Optional[str] = Field(None, max_length=20)
+    pitch_sequence : Optional[str] = Field(None, max_length=30)
     num_pitches_str : str = None
     num_pitches : Optional[int] = None
     plate_appearance_flag : Optional[bool] = None

@@ -133,4 +133,4 @@ data.playbyplay.import:
 	cd data/src/ingest && python import_play_by_play.py $(db_connection_string) ../../../target/plays/plays.csv
 
 data.playbyplay.resume:
-	cd data/src/ingest && python import_play_by_play.py $(db_connection_string) ../../../target/plays/plays.csv --jump_to_line 4461003
+	cd data/src/ingest && python import_play_by_play.py $(db_connection_string) ../../../target/plays/plays.csv --jump_to_line 4748004

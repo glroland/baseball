@@ -374,7 +374,7 @@ create table game_play_by_play
     batting_hand char(1),
     pitching_hand char(1),
     pitch_count int,
-    pitch_sequence varchar(20),
+    pitch_sequence varchar(30),
     num_pitches int,
     plate_appearance_flag boolean not null,
     is_at_bat boolean not null,
