@@ -64,7 +64,7 @@ def get_str_value(column: str):
     
         column - string value for column
     """
-    if column is None or len(column.strip()) == 0:
+    if column is None or len(column.strip()) == 0 or column == "(unknown)":
         return None
     return column
 
