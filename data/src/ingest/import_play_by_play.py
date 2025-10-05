@@ -4,16 +4,16 @@ import os
 import sys
 import csv
 import click
+import psycopg
 from typing import List
 from datetime import datetime
-from play_by_play_type import PlayByPlay
-import psycopg
+from ingest_types import PlayByPlay, Game
 
 logger = logging.getLogger(__name__)
 
 NUM_COLUMNS = 161
-MAX_LINES = -1
-COMMIT_INTERVAL = 1000
+MAX_GAMES = -1
+GAME_SAVE_INTERVAL = 1000
 
 class ErrorCodes:
     SUCCESS = 0
@@ -442,6 +442,73 @@ def convert_line(line: List[str]):
     return play_by_play
 
 
+def save_game(db_cursor, game):
+    """ Save the provided game base record to the database.
+    
+        db_cursor - sql cursor to use for the tx
+        game - game record to save 
+    """
+    logger.debug("Saving Game!  ID=%s", game.retrosheet_id)
+
+    # calculate game score
+    score_visitor = 0
+    score_home = 0
+    last_play = None
+    for play in game.game_plays:
+        last_play = play
+
+        if play.is_home_team:
+            score_home += play.num_runs_scored
+        else:
+            score_visitor += play.num_runs_scored
+
+    # Save Game
+    sql = """
+        insert into game
+        (
+            retrosheet_id,
+            game_date,
+            game_time,
+            team_visiting,
+            team_home,
+            game_site,
+            ump_home,
+            ump_1b,
+            ump_2b,
+            ump_3b,
+            score_visitor,
+            score_home,
+            innings_played,
+            game_type
+        )
+        values 
+        (
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+        )
+        returning game_id
+           """
+    db_cursor.execute(sql,
+        [
+            game.retrosheet_id,
+            game.game_date,
+            game.game_time,
+            game.team_visiting,
+            game.team_home,
+            game.game_location,
+            game.umpire_home,
+            game.umpire_1b,
+            game.umpire_2b,
+            game.umpire_3b,
+            score_visitor,
+            score_home,
+            last_play.inning,
+            game.game_type
+        ]
+    )
+    game_id_in_db = db_cursor.fetchone()[0]
+    return game_id_in_db
+
+
 def save_record(db_cursor, play_by_play : PlayByPlay):
     """ Insert the record into the database.
     
@@ -649,10 +716,8 @@ def save_record(db_cursor, play_by_play : PlayByPlay):
         play_by_play.batter_fielding_pos,
         play_by_play.batting_hand,
         play_by_play.pitching_hand,
-        #play_by_play.pitch_count_str,
         play_by_play.pitch_count,
         play_by_play.pitch_sequence,
-        #play_by_play.num_pitches_str,
         play_by_play.num_pitches,
         play_by_play.plate_appearance_flag,
         play_by_play.is_at_bat,
@@ -803,17 +868,38 @@ def save_record(db_cursor, play_by_play : PlayByPlay):
     # save the record
     db_cursor.execute(sql, data)
 
+def save_games(db_connection, games_uncommitted):
+    """ Save all uncommitted games.
+    
+        db_connection - database connection
+        games_uncommitted - list of uncommitted games
+    """
+    logger.info("Saving games....  # Queued=%s", len(games_uncommitted))
+
+    # create cursor
+    with db_connection.cursor() as db_cursor:
+
+        # save all games
+        for game in games_uncommitted:
+            game_id = save_game(db_cursor, game)
+
+    # commit the transaction
+    db_connection.commit()
+
+    # clear uncommitted games list
+    games_uncommitted.clear()
+
 
 @click.command()
 @click.argument('db_connection_string')
 @click.argument('play_by_play_file')
-@click.option('--jump_to_line', default=0, help='Start saving data at a specific line number.')
-def cli(db_connection_string: str, play_by_play_file: str, jump_to_line: int):
+@click.option('--save_after_game', default=None, help='Start saving data after the game with the retrosheet id.')
+def cli(db_connection_string: str, play_by_play_file: str, save_after_game: str):
     """ CLI for importing retrosheet's play by play data file.
     
         db_connection_string - postgresql database connection string
         play_by_play_file - csv containing historical play by play data
-        jump_to_line - (optional) skip inserts until this line position
+        save_after_game - (optional) skip inserts until after the provided game is reached
     """
     # Default to not set
     logging.getLogger().setLevel(logging.NOTSET)
@@ -831,16 +917,23 @@ def cli(db_connection_string: str, play_by_play_file: str, jump_to_line: int):
         sys.exit(ErrorCodes.MISSING_FILE)
 
     # log the jump to argument
-    logger.info("Jump To Line: %s", jump_to_line)
+    waiting_for_first_game = False
+    if save_after_game is None:
+        logger.info("Save After Game is empty, immediately saving all records.")
+    else:
+        logger.info("Save After Game: %s", save_after_game)
+        waiting_for_first_game = True
 
     # connect to the database
     logger.info("Database Connection String: %s", db_connection_string)
     db_connection = psycopg.connect(db_connection_string)
-    db_cursor = db_connection.cursor()
 
     # metrics
     total_line_count = 0
-    lines_uncommitted = 0
+    total_game_count = 0
+
+    # game info
+    queued_games = []
 
     # load file and process line by line
     try:
@@ -851,6 +944,9 @@ def cli(db_connection_string: str, play_by_play_file: str, jump_to_line: int):
             header = next(csv_reader)
             logger.info(f"CSV Header Row: {header}")
 
+            # running queue of plays for the current game
+            current_game = None
+
             for line in csv_reader:
                 if line is not None and len(line) > 0:
                     # validate line
@@ -860,42 +956,75 @@ def cli(db_connection_string: str, play_by_play_file: str, jump_to_line: int):
 
                     # update metrics
                     total_line_count += 1
-                    lines_uncommitted += 1
+
+                    # get retrosheet game id for current row
+                    line_retrosheet_id = line[0]
+
+                    # see if we are waiting for the specified game and if so, have we reached it
+                    if waiting_for_first_game and line_retrosheet_id == save_after_game:
+                        logger.info("Was waiting for first game and that game has been reached.  Saving subsequent games.")
+                        waiting_for_first_game = False
 
                     # skip all precediting lines
-                    if jump_to_line is None or total_line_count >= jump_to_line:
+                    if save_after_game is None or \
+                        (not waiting_for_first_game and line_retrosheet_id != save_after_game):
+
                         # process line
                         play_by_play = convert_line(line)
 
-                        # save the record
-                        save_record(db_cursor, play_by_play)
+                        # create new game when needed
+                        if current_game is None or play_by_play.retrosheet_id != current_game.retrosheet_id:
+                            # save if buffer is reached
+                            if GAME_SAVE_INTERVAL > 0 and len(queued_games) >= GAME_SAVE_INTERVAL:
+                                # commit the transaction
+                                logger.info("Commiting buffer size of %s games.  Total Line Count=%s", len(queued_games), total_line_count)
+                                save_games(db_connection, queued_games)
 
-                        # abort if at max line count
-                        if MAX_LINES > 0 and total_line_count >= MAX_LINES:
-                            logger.warning("Stopping load after max rows reached, even though more data was still available.  Lines Loaded=%s", total_line_count)
-                            break
+                            # abort if at max game count
+                            if MAX_GAMES > 0 and total_game_count >= MAX_GAMES:
+                                logger.warning("Stopping load after max games reached, even though more data was still available.  Games Loaded=%s", total_game_count)
+                                break
 
-                        # commit if buffer is reached
-                        #logger.info("Line # %s ... Uncommitted Line # %s", total_line_count, lines_uncommitted)
-                        if COMMIT_INTERVAL > 0 and lines_uncommitted >= COMMIT_INTERVAL:
-                            # commit the transaction
-                            logger.info("Commiting buffer size of %s lines.  Line Count=%s", lines_uncommitted, total_line_count)
-                            db_connection.commit()
-                            lines_uncommitted = 0
+                            # determine home vs away team
+                            team_home = None
+                            team_visiting = None
+                            if play_by_play.is_home_team:
+                                team_home = play_by_play.batting_team
+                                team_visiting = play_by_play.pitching_team
+                            else:
+                                team_home = play_by_play.pitching_team
+                                team_visiting = play_by_play.batting_team
+
+                            # create new game
+                            current_game = Game()
+                            current_game.retrosheet_id = play_by_play.retrosheet_id
+                            current_game.game_date = play_by_play.game_date.date()
+                            current_game.game_time = play_by_play.game_date.time()
+                            current_game.team_visiting = team_visiting
+                            current_game.team_home = team_home
+                            current_game.game_location = play_by_play.game_location
+                            current_game.umpire_home = play_by_play.umpire_home
+                            current_game.umpire_1b = play_by_play.umpire_1b
+                            current_game.umpire_2b = play_by_play.umpire_2b
+                            current_game.umpire_3b = play_by_play.umpire_3b
+                            current_game.score_visitor = 0
+                            current_game.score_home = 0
+                            current_game.innings_played = 1
+                            current_game.game_type = play_by_play.game_type
+
+                            queued_games.append(current_game)
+                            total_game_count += 1
+
+                        # append play to game
+                        current_game.game_plays.append(play_by_play)
                 else:
                     logger.debug("Skipping empty row")    
     except FileNotFoundError:
         logger.fatal(f"Error: The file '{play_by_play_file}' was not found.")
         sys.exit(ErrorCodes.FILE_NOT_FOUND)
-#    except Exception as e:
-#        logger.fatal(f"An error occurred while processing %s: {e}", play_by_play_file)
-#        sys.exit(ErrorCodes.GENERIC_ERROR)
 
-    # commit the transaction
-    if lines_uncommitted > 0:
-        logger.info("Commiting buffer size of %s lines.  Line Count=%s", lines_uncommitted, total_line_count)
-        db_connection.commit()
-        lines_uncommitted = 0
+    # save any remaining games
+    save_games(db_connection, queued_games)
 
     # Successfully loaded data file
     logger.info("%s Successfully Imported!", play_by_play_file)

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date, time
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional
 
@@ -168,3 +168,24 @@ class PlayByPlay(BaseModel):
     game_date : Optional[datetime] = None
     game_type : Optional[str] = Field(None, max_length=1)
     pbp : Optional[str] = Field(None, max_length=1)
+
+class Game(BaseModel):
+    model_config = ConfigDict(validate_assignment=True)
+
+    game_id : Optional[int] = None
+    retrosheet_id : Optional[str] = Field(None, max_length=12)
+    game_date : Optional[date] = None
+    game_time : Optional[time] = None
+    team_visiting : Optional[str] = Field(None, max_length=3)
+    team_home : Optional[str] = Field(None, max_length=3)
+    game_location : Optional[str] = Field(None, max_length=5)
+    umpire_home : Optional[str] = Field(None, max_length=8)
+    umpire_1b : Optional[str] = Field(None, max_length=8)
+    umpire_2b : Optional[str] = Field(None, max_length=8)
+    umpire_3b : Optional[str] = Field(None, max_length=8)
+    score_visitor : Optional[int] = None
+    score_home : Optional[int] = None
+    innings_played : Optional[int] = None
+    game_type : Optional[str] = Field(None, max_length=1)
+
+    game_plays : list[PlayByPlay] = []

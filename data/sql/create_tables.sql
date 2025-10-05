@@ -87,31 +87,17 @@ create table game
     retrosheet_id varchar(12) not null,
     game_date date not null,
     game_time time not null,
-    game_number_that_day int not null,
     team_visiting varchar(3) not null,
     team_home varchar(3) not null,
     game_site varchar(25) not null,
-    night_flag boolean not null,
-    ump_home varchar(20) not null,
-    ump_1b varchar(20) not null,
-    ump_2b varchar(20) not null,
-    ump_3b varchar(20) not null,
-    official_scorer varchar(20),
-    temperature int not null,
-    wind_direction varchar(10) not null,
-    wind_speed int not null,
-    field_condition varchar(50),
-    precipitation varchar(50),
-    sky varchar(50) not null,
-    game_length int not null,
-    attendance int not null,
-    used_dh_rule_flag boolean,
+    ump_home varchar(20),
+    ump_1b varchar(20),
+    ump_2b varchar(20),
+    ump_3b varchar(20),
     score_visitor int not null,
     score_home int not null,
-
-    wp varchar(20),
-    lp varchar(20),
-    save_code varchar(20),
+    innings_played int not null,
+    game_type char not null,
 
     constraint pk_game 
             primary key (game_id),
@@ -120,20 +106,20 @@ create table game
             unique (retrosheet_id)
 );
 
-create table game_data
-(
-    game_id int not null,
-    data_type varchar(2) not null,
-    pitcher_player_code varchar(20) not null,
-    quantity int not null,
+-- create table game_data
+-- (
+--     game_id int not null,
+--     data_type varchar(2) not null,
+--     pitcher_player_code varchar(20) not null,
+--     quantity int not null,
 
-    constraint pk_game_data 
-            primary key (game_id, data_type, pitcher_player_code),
+--     constraint pk_game_data 
+--             primary key (game_id, data_type, pitcher_player_code),
 
-    constraint fk_game
-            foreign key (game_id) 
-            references game (game_id)
-);
+--     constraint fk_game
+--             foreign key (game_id) 
+--             references game (game_id)
+-- );
 
 create table game_starter
 (
@@ -158,32 +144,6 @@ create table game_starter
             references field_pos (field_pos_num)
 );
 
-create table game_play
-(
-    game_play_id serial not null,
-    game_id int not null,
-    play_index int not null,
-    pitch_count_start int not null,
-    pitch_count_end int not null,
-
-    check (play_index >= 1),
-
-    check (pitch_count_start >= 0),
-
-    check (pitch_count_end >= 0),
-
-    check (pitch_count_start <= pitch_count_end),
-
-    constraint pk_game_play
-            primary key (game_play_id),
-
-    constraint uq_game_play
-            unique (game_id, play_index),
-
-    constraint fk_game
-            foreign key (game_id) 
-            references game (game_id)
-);
 
 create table play_type
 (
@@ -215,68 +175,68 @@ insert into play_type (play_type_cd, play_type_desc) values ('F', 'Fly Ball Erro
 insert into play_type (play_type_cd, play_type_desc) values ('O', 'Passed Ball');
 insert into play_type (play_type_cd, play_type_desc) values ('B', 'Caught Stealing');
 
-create table game_play_atbat
-(
-    game_play_id int not null,
-    inning int not null,
-    home_team_flag boolean not null,
-    player_code varchar(20) not null,
-    pitcher varchar(20),
-    count varchar(2) not null,
-    primary_play_type_cd char(1),
-    outs int not null,
-    runner_1b varchar(20),
-    runner_2b varchar(20),
-    runner_3b varchar(20),
-    score_home int not null,
-    score_visitor int not null,
+-- create table game_play_atbat
+-- (
+--     game_play_id int not null,
+--     inning int not null,
+--     home_team_flag boolean not null,
+--     player_code varchar(20) not null,
+--     pitcher varchar(20),
+--     count varchar(2) not null,
+--     primary_play_type_cd char(1),
+--     outs int not null,
+--     runner_1b varchar(20),
+--     runner_2b varchar(20),
+--     runner_3b varchar(20),
+--     score_home int not null,
+--     score_visitor int not null,
 
-    constraint pk_game_play_atbat 
-            primary key (game_play_id),
+--     constraint pk_game_play_atbat 
+--             primary key (game_play_id),
 
-    constraint fk_game_play
-            foreign key (game_play_id) 
-            references game_play (game_play_id),
+--     constraint fk_game_play
+--             foreign key (game_play_id) 
+--             references game_play (game_play_id),
 
-    constraint fk_play_type
-            foreign key (primary_play_type_cd) 
-            references play_type (play_type_cd)
-);
+--     constraint fk_play_type
+--             foreign key (primary_play_type_cd) 
+--             references play_type (play_type_cd)
+-- );
 
-create table game_play_sub
-(
-    game_play_id int not null,
-    player_from varchar(20) not null,
-    player_to varchar(20) not null,
-    players_team_home_flag boolean not null,
-    batting_order int not null,
-    fielding_position int not null,
+-- create table game_play_sub
+-- (
+--     game_play_id int not null,
+--     player_from varchar(20) not null,
+--     player_to varchar(20) not null,
+--     players_team_home_flag boolean not null,
+--     batting_order int not null,
+--     fielding_position int not null,
 
-    constraint pk_game_play_sub 
-            primary key (game_play_id),
+--     constraint pk_game_play_sub 
+--             primary key (game_play_id),
 
-    constraint fk_game_play 
-            foreign key (game_play_id) 
-            references game_play (game_play_id),
+--     constraint fk_game_play 
+--             foreign key (game_play_id) 
+--             references game_play (game_play_id),
 
-    constraint field_pos
-            foreign key (fielding_position) 
-            references field_pos (field_pos_num)
-);
+--     constraint field_pos
+--             foreign key (fielding_position) 
+--             references field_pos (field_pos_num)
+-- );
 
-create table game_play_run_adj
-(
-    game_play_id int not null,
-    runner_code varchar(20) not null,
-    adjusted_base varchar(20) not null,
+-- create table game_play_run_adj
+-- (
+--     game_play_id int not null,
+--     runner_code varchar(20) not null,
+--     adjusted_base varchar(20) not null,
 
-    constraint pk_game_play_run_adj 
-            primary key (game_play_id),
+--     constraint pk_game_play_run_adj 
+--             primary key (game_play_id),
 
-    constraint fk_game_play 
-            foreign key (game_play_id) 
-            references game_play (game_play_id)
-);
+--     constraint fk_game_play 
+--             foreign key (game_play_id) 
+--             references game_play (game_play_id)
+-- );
 
 create table pitch_type
 (
@@ -316,44 +276,44 @@ insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values (
 insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('X', 'ball put into play by batter', 'S');
 insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values ('Y', 'ball put into play on pitchout', 'S');
 
-create table game_play_atbat_pitch
-(
-    game_play_pitch_id serial not null,
-    game_play_id int not null,
-    pitch_index int not null,
-    pitch_type_cd char(1) not null,
-    pitch_count int not null,
+-- create table game_play_atbat_pitch
+-- (
+--     game_play_pitch_id serial not null,
+--     game_play_id int not null,
+--     pitch_index int not null,
+--     pitch_type_cd char(1) not null,
+--     pitch_count int not null,
 
-    check (pitch_index >= 1),
+--     check (pitch_index >= 1),
 
-    check (pitch_count >= 1),
+--     check (pitch_count >= 1),
 
-    constraint pk_game_play_atbat_pitch
-            primary key (game_play_pitch_id),
+--     constraint pk_game_play_atbat_pitch
+--             primary key (game_play_pitch_id),
 
-    constraint uq_game_play_atbat_pitch
-            unique (game_play_id, pitch_index),
+--     constraint uq_game_play_atbat_pitch
+--             unique (game_play_id, pitch_index),
 
-    constraint fk_game_play_atbat
-            foreign key (game_play_id) 
-            references game_play_atbat (game_play_id),
+--     constraint fk_game_play_atbat
+--             foreign key (game_play_id) 
+--             references game_play_atbat (game_play_id),
 
-    constraint fk_pitch_type
-            foreign key (pitch_type_cd) 
-            references pitch_type (pitch_type_cd)
-);
+--     constraint fk_pitch_type
+--             foreign key (pitch_type_cd) 
+--             references pitch_type (pitch_type_cd)
+-- );
 
-create table game_play_atbat_field_event
-(
-    game_play_id int not null,
+-- create table game_play_atbat_field_event
+-- (
+--     game_play_id int not null,
     
-    constraint pk_game_play_atbat_field_event
-            primary key (game_play_id),
+--     constraint pk_game_play_atbat_field_event
+--             primary key (game_play_id),
 
-    constraint fk_game_play_atbat
-            foreign key (game_play_id) 
-            references game_play_atbat (game_play_id)
-);
+--     constraint fk_game_play_atbat
+--             foreign key (game_play_id) 
+--             references game_play_atbat (game_play_id)
+-- );
 
 
 
