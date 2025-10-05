@@ -490,3 +490,9 @@ create table game_play
         foreign key (game_id) 
         references game (game_id)
 );
+
+create index ix_game_popular_search_1 on game (game_date, team_home, team_visiting);
+create index ix_game_retrosheet on game (retrosheet_id);
+
+create index ix_game_play_game_id on game_play (game_id);
+create index ix_game_play_retrosheet on game_play (retrosheet_id);
