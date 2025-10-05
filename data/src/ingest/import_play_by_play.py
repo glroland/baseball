@@ -892,6 +892,8 @@ def save_games(db_connection, games_uncommitted):
             # save game and get game id
             game_id = save_game(db_cursor, game)
 
+            # save the associated game plays
+            save_game_plays(db_cursor, game_id, game.game_plays)
 
     # commit the transaction
     db_connection.commit()
