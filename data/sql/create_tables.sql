@@ -317,8 +317,10 @@ insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values (
 
 
 
-create table game_play_by_play
+create table game_play
 (
+    game_play_id serial not null,
+    game_id int not null,
     retrosheet_id varchar(12) not null,
     original_event_str varchar(125) not null,
     inning int not null,
@@ -479,5 +481,12 @@ create table game_play_by_play
     umpire_right_field varchar(8),
     game_date date not null,
     game_type char not null,
-    pbp char not null
+    pbp char not null,
+
+    constraint pk_game_play
+    primary key (game_play_id),
+
+    constraint fk_game_play_game_id
+        foreign key (game_id) 
+        references game (game_id)
 );
