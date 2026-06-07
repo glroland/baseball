@@ -13,22 +13,28 @@ class PlayByPlay(BaseModel):
     game_location : Optional[str] = Field(None, max_length=5)
     batting_team : Optional[str] = Field(None, max_length=3)
     pitching_team : Optional[str] = Field(None, max_length=3)
+    score_visitor : Optional[int] = None
+    score_home : Optional[int] = None
     batter : Optional[str] = Field(None, max_length=8)
     pitcher : Optional[str] = Field(None, max_length=8)
     batter_lineup_pos : Optional[int] = None
     batter_fielding_pos : Optional[int] = None
     batting_hand : Optional[str] = Field(None, max_length=1)
     pitching_hand : Optional[str] = Field(None, max_length=1)
+    balls : Optional[int] = None
+    strikes : Optional[int] = None
     pitch_count_str : str = None
     pitch_count : Optional[int] = None
     pitch_sequence : Optional[str] = Field(None, max_length=30)
     num_pitches_str : str = None
     num_pitches : Optional[int] = None
     plate_appearance_flag : Optional[bool] = None
+    is_fielders_choice : Optional[bool] = None
     is_at_bat : Optional[bool] = None
     is_single : Optional[bool] = None
     is_double : Optional[bool] = None
     is_triple : Optional[bool] = None
+    is_dropped_foul_ball : Optional[bool] = None
     is_home_run : Optional[bool] = None
     is_sacrifice_bunt : Optional[bool] = None
     is_sacrifice_fly : Optional[bool] = None

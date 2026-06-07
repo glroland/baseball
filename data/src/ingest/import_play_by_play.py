@@ -11,7 +11,7 @@ from ingest_types import PlayByPlay, Game
 
 logger = logging.getLogger(__name__)
 
-NUM_COLUMNS = 161
+NUM_COLUMNS = 177
 MAX_GAMES = -1
 GAME_SAVE_INTERVAL = 1000
 
@@ -87,6 +87,8 @@ def get_int_value(column: str):
     """
     if column is None or len(column.strip()) == 0:
         return None
+    if column in ["?", "??"]:
+        return None
     return int(column)
 
 def get_bool_value(column: str):
@@ -112,330 +114,728 @@ def convert_line(line: List[str]):
 
     play_by_play = PlayByPlay()
 
+    #'gid', 
     play_by_play.retrosheet_id = get_str_value(line[col_index])
     col_index += 1
+
+    #'event', 
     play_by_play.original_event_str = get_str_value(line[col_index])
     col_index += 1
+
+    #'inning', 
     play_by_play.inning = get_int_value(line[col_index])
     col_index += 1
+   
+    #'top_bot', 
     play_by_play.is_top_of_inning = line[col_index] == "0"
     col_index += 1
+
+    #'vis_home', 
     play_by_play.is_home_team = get_bool_value(line[col_index])
     col_index += 1
+
+    #'site', 
     play_by_play.game_location = get_str_value(line[col_index])
     col_index += 1
+
+    #'batteam', 
     play_by_play.batting_team = get_str_value(line[col_index])
     col_index += 1
+
+    #'pitteam', 
     play_by_play.pitching_team = get_str_value(line[col_index])
     col_index += 1
+
+    #'score_v', 
+    play_by_play.score_visitor = get_int_value(line[col_index])
+    col_index += 1
+
+    #'score_h', 
+    play_by_play.score_home = get_int_value(line[col_index])
+    col_index += 1
+
+    #'batter', 
     play_by_play.batter = get_str_value(line[col_index])
     col_index += 1
+
+    #'pitcher', 
     play_by_play.pitcher = get_str_value(line[col_index])
     col_index += 1
+
+    #'lp', 
     play_by_play.batter_lineup_pos = get_int_value(line[col_index])
     col_index += 1
+
+    #'bat_f', 
     play_by_play.batter_fielding_pos = get_int_value(line[col_index])
     col_index += 1
+
+    #'bathand', 
     play_by_play.batting_hand = get_str_value(line[col_index])
     col_index += 1
+
+    #'pithand', 
     play_by_play.pitching_hand = get_str_value(line[col_index])
     col_index += 1
-    pitch_count_str = get_str_value(line[col_index])
+    
+    #'balls', 
+    # NEW
+    play_by_play.balls = get_int_value(line[col_index])
     col_index += 1
-    if pitch_count_str is not None and pitch_count_str != "??" and pitch_count_str != "00.":
-        play_by_play.pitch_count = get_int_value(pitch_count_str)
+
+    #'strikes', 
+    # NEW
+    play_by_play.strikes = get_int_value(line[col_index])
+    col_index += 1
+
+    #'count', 
+    play_by_play.pitch_count = get_int_value(line[col_index])
+    col_index += 1
+
+    #'pitches',
     play_by_play.pitch_sequence = get_str_value(line[col_index])
     col_index += 1
+
+    #'nump', 
     num_pitches_str = line[col_index]
     col_index += 1
     if num_pitches_str is not None and len(num_pitches_str.strip()) > 0:
         play_by_play.num_pitches = get_int_value(num_pitches_str)
+
+    #'pa', 
     play_by_play.plate_appearance_flag = get_bool_value(line[col_index])
     col_index += 1
+
+    #'ab', 
     play_by_play.is_at_bat = get_bool_value(line[col_index])
     col_index += 1
+
+    #'single', 
     play_by_play.is_single = get_bool_value(line[col_index])
     col_index += 1
+
+    #'double', 
     play_by_play.is_double = get_bool_value(line[col_index])
     col_index += 1
+
+    #'triple', 
     play_by_play.is_triple = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'hr', 
     play_by_play.is_home_run = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'sh', 
     play_by_play.is_sacrifice_bunt = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'sf', 
     play_by_play.is_sacrifice_fly = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'hbp', 
     play_by_play.is_hit_by_pitch = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'walk',
     play_by_play.is_walk = get_bool_value(line[col_index])
     col_index += 1
-    play_by_play.is_intentional_walk = get_bool_value(line[col_index])
-    col_index += 1
+
+    # 'k', 
     play_by_play.is_strikeout = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'xi', 
     play_by_play.is_catchers_interference = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'roe', 
     play_by_play.is_other_play_appearance = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'fc', 
+    # NEW
+    play_by_play.is_fielders_choice = get_bool_value(line[col_index])
+    col_index += 1
+
+    # 'othout', 
     play_by_play.is_other_out = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'noout', 
     play_by_play.is_other_no_out = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'oth', 
+    # NEW
+    play_by_play.is_other_out = get_int_value(line[col_index])
+    col_index += 1
+
+    # 'bip', 
     play_by_play.is_ball_in_play = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'bunt', 
     play_by_play.is_bunt = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'ground', 
     play_by_play.is_ground_ball = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'fly', 
     play_by_play.is_fly_ball = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'line', 
     play_by_play.is_line_drive = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'iw', 
+    # NEW
+    play_by_play.is_intentional_walk = get_bool_value(line[col_index])
+    col_index += 1
+
+    # 'gdp', 
     play_by_play.is_double_play_grounded = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'othdp', 
     play_by_play.is_double_play_other = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'tp', 
     play_by_play.is_triple_play = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'fle', 
+    # NEW
+    play_by_play.is_dropped_foul_ball = get_bool_value(line[col_index])
+    col_index += 1
+
+    # 'wp', 
     play_by_play.is_wild_pitch = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'pb', 
     play_by_play.is_passed_ball = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'bk', 
     play_by_play.is_balk = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'oa', 
     play_by_play.is_other_advance = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'di', 
     play_by_play.is_defensive_indifference = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'sb2', 
     play_by_play.is_stole_2 = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'sb3', 
     play_by_play.is_stole_3 = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'sbh', 
     play_by_play.is_stole_home = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'cs2', 
     play_by_play.is_caught_steeling_2 = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'cs3', 
     play_by_play.is_caught_steeling_3 = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'csh', 
     play_by_play.is_caught_steeling_home = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'pko1',
     play_by_play.is_pickoff_at_1 = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'pko2', 
     play_by_play.is_pickoff_at_2 = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'pko3', 
     play_by_play.is_pickoff_at_3 = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'k_safe', 
     play_by_play.is_strikeout_but_safe = get_bool_value(line[col_index])
     col_index += 1
+
+    # 'e1', 
     play_by_play.errors_1 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'e2', 
     play_by_play.errors_2 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'e3', 
     play_by_play.errors_3 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'e4', 
     play_by_play.errors_4 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'e5', 
     play_by_play.errors_5 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'e6', 
     play_by_play.errors_6 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'e7', 
     play_by_play.errors_7 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'e8', 
     play_by_play.errors_8 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'e9', 
     play_by_play.errors_9 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'outs_pre', 
     play_by_play.outs_pre = get_int_value(line[col_index])
     col_index += 1
+
+    # 'outs_post',
     play_by_play.outs_post = get_int_value(line[col_index])
     col_index += 1
+
+    # 'br1_pre', 
     play_by_play.base_runner_1_pre = get_str_value(line[col_index])
     col_index += 1
+
+    # 'br2_pre', 
     play_by_play.base_runner_2_pre = get_str_value(line[col_index])
     col_index += 1
+
+    # 'br3_pre', 
     play_by_play.base_runner_3_pre = get_str_value(line[col_index])
     col_index += 1
+
+    # 'br1_post', 
     play_by_play.base_runner_1_post = get_str_value(line[col_index])
     col_index += 1
+
+    # 'br2_post', 
     play_by_play.base_runner_2_post = get_str_value(line[col_index])
     col_index += 1
+
+    # 'br3_post', 
     play_by_play.base_runner_3_post = get_str_value(line[col_index])
     col_index += 1
+
+    # 'lob_id1', 
+    # NEW
+    play_by_play.runner_left_on_base_1 = get_str_value(line[col_index])
+    col_index += 1
+
+    # 'lob_id2', 
+    # NEW
+    play_by_play.runner_left_on_base_2 = get_str_value(line[col_index])
+    col_index += 1
+
+    # 'lob_id3', 
+    # NEW
+    play_by_play.runner_left_on_base_3 = get_str_value(line[col_index])
+    col_index += 1
+
+    # 'pr1_pre', 
+    # NEW
+    play_by_play.pitcher_resp_for_runner_1_pre = get_bool_value(line[col_index])
+    col_index += 1
+
+    # 'pr2_pre', 
+    # NEW
+    play_by_play.pitcher_resp_for_runner_2_pre = get_bool_value(line[col_index])
+    col_index += 1
+
+    # 'pr3_pre', 
+    # NEW
+    play_by_play.pitcher_resp_for_runner_3_pre = get_bool_value(line[col_index])
+    col_index += 1
+
+    # 'pr1_post', 
+    # NEW
+    play_by_play.pitcher_resp_for_runner_1_post = get_bool_value(line[col_index])
+    col_index += 1
+
+    # 'pr2_post', 
+    # NEW
+    play_by_play.pitcher_resp_for_runner_2_post = get_bool_value(line[col_index])
+    col_index += 1
+
+    # 'pr3_post', 
+    # NEW
+    play_by_play.pitcher_resp_for_runner_3_post = get_bool_value(line[col_index])
+    col_index += 1
+
+    # 'run_b', 
     play_by_play.scorer_from_bat = get_str_value(line[col_index])
     col_index += 1
+
+    # 'run1', 
     play_by_play.scorer_from_1 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'run2', 
     play_by_play.scorer_from_2 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'run3', 
     play_by_play.scorer_from_3 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'prun_b', 
     play_by_play.pitcher_charged_run_batter = get_str_value(line[col_index])
     col_index += 1
+
+    # 'prun1', 
     play_by_play.pitcher_charged_run_1 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'prun2', 
     play_by_play.pitcher_charged_run_2 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'prun3', 
     play_by_play.pitcher_charged_run_3 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'ur_b', 
     play_by_play.unearned_run_by_batter = get_str_value(line[col_index])
     col_index += 1
+
+    # 'ur1', 
     play_by_play.unearned_run_by_1 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'ur2', 
     play_by_play.unearned_run_by_2 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'ur3', 
     play_by_play.unearned_run_by_3 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'rbi_b', 
     play_by_play.rbi_batter = get_str_value(line[col_index])
     col_index += 1
+
+    # 'rbi1', 
     play_by_play.rbi_1 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'rbi2', 
     play_by_play.rbi_2 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'rbi3', 
     play_by_play.rbi_3 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'runs', 
     play_by_play.num_runs_scored = get_int_value(line[col_index])
     col_index += 1
+
+    # 'rbi', 
     play_by_play.num_rbi_credited = get_int_value(line[col_index])
     col_index += 1
+
+    # 'er', 
     play_by_play.num_earned_runs = get_int_value(line[col_index])
     col_index += 1
+
+    # 'tur', 
     play_by_play.num_team_unearned_runs = get_int_value(line[col_index])
     col_index += 1
+
+    # 'l1', 
     play_by_play.batting_team_lineup_1 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'l2', 
     play_by_play.batting_team_lineup_2 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'l3', 
     play_by_play.batting_team_lineup_3 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'l4', 
     play_by_play.batting_team_lineup_4 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'l5', 
     play_by_play.batting_team_lineup_5 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'l6', 
     play_by_play.batting_team_lineup_6 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'l7', 
     play_by_play.batting_team_lineup_7 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'l8', 
     play_by_play.batting_team_lineup_8 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'l9', 
     play_by_play.batting_team_lineup_9 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'lf1', 
     play_by_play.batting_team_field_pos_for_lineup_1 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'lf2', 
     play_by_play.batting_team_field_pos_for_lineup_2 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'lf3', 
     play_by_play.batting_team_field_pos_for_lineup_3 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'lf4', 
     play_by_play.batting_team_field_pos_for_lineup_4 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'lf5', 
     play_by_play.batting_team_field_pos_for_lineup_5 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'lf6', 
     play_by_play.batting_team_field_pos_for_lineup_6 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'lf7', 
     play_by_play.batting_team_field_pos_for_lineup_7 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'lf8', 
     play_by_play.batting_team_field_pos_for_lineup_8 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'lf9', 
     play_by_play.batting_team_field_pos_for_lineup_9 = get_str_value(line[col_index])
     col_index += 1
+
+    # 'f2', 
     play_by_play.catcher = get_str_value(line[col_index])
     col_index += 1
+
+    # 'f3', 
     play_by_play.first_baseman = get_str_value(line[col_index])
     col_index += 1
+
+    # 'f4', 
     play_by_play.second_baseman = get_str_value(line[col_index])
     col_index += 1
+
+    # 'f5', 
     play_by_play.third_baseman = get_str_value(line[col_index])
     col_index += 1
+
+    # 'f6', 
     play_by_play.shortstop = get_str_value(line[col_index])
     col_index += 1
+
+    # 'f7', 
     play_by_play.left_fielder = get_str_value(line[col_index])
     col_index += 1
+
+    # 'f8', 
     play_by_play.center_fielder = get_str_value(line[col_index])
     col_index += 1
+
+    # 'f9', 
     play_by_play.right_fielder = get_str_value(line[col_index])
     col_index += 1
+
+    # 'po0', 
     play_by_play.putouts_unidentified = get_int_value(line[col_index])
     col_index += 1
+
+    # 'po1', 
     play_by_play.putouts_by_1 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'po2', 
     play_by_play.putouts_by_2 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'po3', 
     play_by_play.putouts_by_3 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'po4', 
     play_by_play.putouts_by_4 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'po5', 
     play_by_play.putouts_by_5 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'po6', 
     play_by_play.putouts_by_6 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'po7', 
     play_by_play.putouts_by_7 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'po8', 
     play_by_play.putouts_by_8 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'po9', 
     play_by_play.putouts_by_9 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'a1', 
     play_by_play.assists_by_1 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'a2', 
     play_by_play.assists_by_2 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'a3', 
     play_by_play.assists_by_3 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'a4', 
     play_by_play.assists_by_4 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'a5', 
     play_by_play.assists_by_5 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'a6', 
     play_by_play.assists_by_6 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'a7', 
     play_by_play.assists_by_7 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'a8', 
     play_by_play.assists_by_8 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'a9', 
     play_by_play.assists_by_9 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'fseq', 
     play_by_play.fielding_seq_for_out = get_str_value(line[col_index])
     col_index += 1
+
+    # 'batout1', 
     play_by_play.batout1 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'batout2', 
     play_by_play.batout2 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'batout3', 
     play_by_play.batout3 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'brout_b', 
     play_by_play.brout_b = get_int_value(line[col_index])
     col_index += 1
+
+    # 'brout1', 
     play_by_play.brout1 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'brout2', 
     play_by_play.brout2 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'brout3', 
     play_by_play.brout3 = get_int_value(line[col_index])
     col_index += 1
+
+    # 'firstf', 
     play_by_play.firstf = get_int_value(line[col_index])
     col_index += 1
+
+    # 'loc', 
     play_by_play.loc = get_str_value(line[col_index])
     col_index += 1
+
+    # 'hittype', 
     play_by_play.hittype = get_char_value(line[col_index])
     col_index += 1
+
+    # 'dpopp', 
     play_by_play.dpopp = get_int_value(line[col_index])
     col_index += 1
+
+    # 'pivot', 
     play_by_play.pivot = get_str_value(line[col_index])
     col_index += 1
+
+    # 'pn', 
     play_by_play.play_number = get_int_value(line[col_index])
     col_index += 1
+
+    # 'umphome', 
     play_by_play.umpire_home = get_str_value(line[col_index])
     col_index += 1
+
+    # 'ump1b', 
     play_by_play.umpire_1b = get_str_value(line[col_index])
     col_index += 1
+
+    # 'ump2b', 
     play_by_play.umpire_2b = get_str_value(line[col_index])
     col_index += 1
+
+    # 'ump3b', 
     play_by_play.umpire_3b = get_str_value(line[col_index])
     col_index += 1
+
+    # 'umplf', 
     play_by_play.umpire_left_field = get_str_value(line[col_index])
     col_index += 1
+
+    # 'umprf', 
     play_by_play.umpire_right_field = get_str_value(line[col_index])
     col_index += 1
+
+    # 'date',
     play_by_play.game_date = get_date_value(line[col_index])
     col_index += 1
+
+    # 'gametype',
     play_by_play.game_type = get_char_value(line[col_index])
     col_index += 1
+
+    # 'pbp'
     play_by_play.pbp = get_char_value(line[col_index])
     col_index += 1
     
