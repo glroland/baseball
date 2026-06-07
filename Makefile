@@ -2,6 +2,7 @@
 # Configuration
 #
 db_host ?= localhost
+#db_host ?= db.home.glroland.com
 db_port ?= 5432
 db_connection_string ?= postgresql://baseball_app:baseball123@$(db_host):$(db_port)/baseball_db
 db_dba_password ?= d8nnyr0cks
@@ -25,24 +26,21 @@ lint:
 	pylint --recursive y --exit-zero import-app/src
 	pylint --recursive y --exit-zero predict-svc/src
 
-init:
-ifeq "$(OS)" "Windows_NT"
-	if not exist target md target
-	if not exist target\zips md target\zips
-	if not exist target\raw md target\raw
-	if not exist target\done md target\done
-else
+clean:
+	rm -rf target
 	mkdir -p target/zips
 	mkdir -p target/raw
 	mkdir -p target/done
-endif
-
-db: init
 ifneq "$(db_dba_password)" "" 
 	psql "$(db_dba_connection_string)" -f data/sql/drop_db.sql
-	psql "$(db_dba_connection_string)" -f data/sql/create_db.sql
 else
 	psql -v ON_ERROR_STOP=1 -h $(db_host) -p $(db_port) -w -f data/sql/drop_db.sql
+endif
+
+db:
+ifneq "$(db_dba_password)" "" 
+	psql "$(db_dba_connection_string)" -f data/sql/create_db.sql
+else
 	psql -v ON_ERROR_STOP=1 -h $(db_host) -p $(db_port) -w -f data/sql/create_db.sql
 endif
 	psql -v ON_ERROR_STOP=1 "$(db_connection_string)" -w -f data/sql/create_tables.sql

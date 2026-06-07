@@ -8,31 +8,35 @@ from zipfile import ZipFile
 
 logger = logging.getLogger(__name__)
 
-
 RETROSHEET_URL = "https://www.retrosheet.org"
 RETROSHEET_EVENTS_URL = RETROSHEET_URL + "/events/"
+RETROSHEET_SEASON_FILE_SUFFIX = ".zip"
 
-RETROSHEET_SEASON_FILE_SUFFIX = "seve.zip"
+RETROSHEET_SEASON_TYPES = [ "eve", "post", "as" ]
 RETROSHEET_SEASON_START_YEAR = 2000     #oldest available - 1910
 
+RETROSHEET_SKIP_LIST = [ "2020as.zip"]
 
-def download_retrosheet_decade_file(decade, location):
+def download_retrosheet_file(year, location, type_code):
     """ Downloads the event file data from retrosheet for an entire decade.
     
         decade - decade for which to download
         location - where to store the zip file
     """
-    logger.info("Downloading Retrosheet Season Data for Decade: %s", decade)
+    logger.info("Downloading Retrosheet Season Data for year (%s) and type (%s)", year, type_code)
 
-    file = str(decade) + RETROSHEET_SEASON_FILE_SUFFIX
-    local_file = location + file
-    if os.path.isfile(local_file):
-        logger.info ("Skipping file (already exists): %s", local_file)
+    file = str(year) + type_code + RETROSHEET_SEASON_FILE_SUFFIX
+    if file in RETROSHEET_SKIP_LIST:
+        logger.warning("Skipping file download: %s", file)
     else:
-        url = RETROSHEET_EVENTS_URL + file
-        logger.info ("Downloading zip file...  URL <%s> local_file<%s>", url, local_file)
-        urllib.request.urlretrieve(url, local_file)
-        logger.debug ("File downloaded: %s", local_file)
+        local_file = location + file
+        if os.path.isfile(local_file):
+            logger.info ("Skipping file (already exists): %s", local_file)
+        else:
+            url = RETROSHEET_EVENTS_URL + file
+            logger.info ("Downloading zip file...  URL <%s> local_file<%s>", url, local_file)
+            urllib.request.urlretrieve(url, local_file)
+            logger.debug ("File downloaded: %s", local_file)
 
 
 def download_all_retrosheet_seasons(location):
@@ -45,8 +49,9 @@ def download_all_retrosheet_seasons(location):
     current_year = datetime.now().year
     year = RETROSHEET_SEASON_START_YEAR
     while year < current_year:
-        download_retrosheet_decade_file(year, location)
-        year += 10
+        for type in RETROSHEET_SEASON_TYPES:
+            download_retrosheet_file(year, location, type)
+        year += 1
 
 
 def extract_zip_file(zip_file, target_dir):

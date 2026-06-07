@@ -107,8 +107,11 @@ def migrate_load_to_table(sql_connection, table_name, sql_columns_str, preval, t
     sql = f"insert into {table_name} ( {sql_columns_str} ) " \
           f"select {preval}, {temp_columns_str} from temp_load"
     logger.debug("Copying data from load to prod.  SQL<%s>", sql)
-    with sql_connection.cursor() as sql_cursor:
-        sql_cursor.execute(sql)
+    try:
+        with sql_connection.cursor() as sql_cursor:
+            sql_cursor.execute(sql)
+    except psycopg.errors.UniqueViolation as e:
+        logger.warning("Insert failed due to to unique violation.  Viewing this as acceptable - %s.  Exception - %s", sql, 3)
     sql_connection.commit()
 
 
