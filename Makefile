@@ -1,17 +1,24 @@
 #
 # Configuration
 #
-db_host ?= db
+db_host ?= localhost
 db_port ?= 5432
 db_connection_string ?= postgresql://baseball_app:baseball123@$(db_host):$(db_port)/baseball_db
 db_dba_password ?= d8nnyr0cks
 db_dba_connection_string ?= postgresql://postgres:$(db_dba_password)@$(db_host):$(db_port)
 k8s_namespace ?= baseball-prod
 
+HAS_UV := $(shell command -v uv >/dev/null 2>&1; if [ $$? -eq 0 ]; then echo "true"; else echo "false"; fi)
+ifeq ($(HAS_UV), true)
+    PIP = uv pip
+else
+    PIP = pip
+endif
+
 install:
-	pip install -r data/requirements.txt
-	pip install -r import-app/requirements.txt
-	pip install -r predict-svc/requirements.txt
+	$(PIP) install -r data/requirements.txt
+	$(PIP) install -r import-app/requirements.txt
+	$(PIP) install -r predict-svc/requirements.txt
 
 lint:
 	pylint --recursive y --exit-zero data/src
