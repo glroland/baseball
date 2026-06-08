@@ -21,7 +21,16 @@ def cli(input_file: str, output_file: str, earliest_year: int):
         input_file - csv containing historical play by play data
         output_file - new file to create with older games removed
         earliest_year - (optional) remove data related to games before the specified year
-    """    
+    """
+    # Default to not set
+    logging.getLogger().setLevel(logging.NOTSET)
+
+    # Log info and higher to the console
+    console = logging.StreamHandler(sys.stdout)
+    console.setLevel(logging.INFO)
+    console.setFormatter(logging.Formatter('%(name)-13s: %(message)s'))
+    logging.getLogger().addHandler(console)
+
     # ensure data file exists
     logger.info("Input Data File: %s", input_file)
     if not os.path.exists(input_file) or not os.path.isfile(input_file):
