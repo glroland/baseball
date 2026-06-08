@@ -1374,79 +1374,96 @@ def cli(db_connection_string: str, play_by_play_file: str, save_after_game: str)
             header = next(csv_reader)
             logger.info(f"CSV Header Row: {header}")
 
+            # line counter
+            line_number = 1
+
             # running queue of plays for the current game
             current_game = None
 
             for line in csv_reader:
+                line_number += 1
+
                 if line is not None and len(line) > 0:
                     # validate line
                     if len(line) != NUM_COLUMNS:
                         logger.fatal("Data file contains an invalid row.  Aborting load...  Length=%s Row=%s", len(line), line)
                         sys.exit(ErrorCodes.INVALID_DATA)
 
-                    # update metrics
-                    total_line_count += 1
+                    # skip known data issues
+                    skip_line = False
+                    # --- 3 for is home team or visitor
+                    if line[4] not in ["0", "1"]:
+                        skip_line = True
+                        logger.warning("Skipping line due to '%s' for Is Home or Visitor.  Line #%s.  Line = %s", line[4], line_number, line)
 
-                    # get retrosheet game id for current row
-                    line_retrosheet_id = line[0]
+                    if not skip_line:
+                        # update metrics
+                        total_line_count += 1
 
-                    # see if we are waiting for the specified game and if so, have we reached it
-                    if waiting_for_first_game and line_retrosheet_id == save_after_game:
-                        logger.info("Was waiting for first game and that game has been reached.  Saving subsequent games.")
-                        waiting_for_first_game = False
+                        # get retrosheet game id for current row
+                        line_retrosheet_id = line[0]
 
-                    # skip all precediting lines
-                    if save_after_game is None or \
-                        (not waiting_for_first_game and line_retrosheet_id != save_after_game):
+                        # see if we are waiting for the specified game and if so, have we reached it
+                        if waiting_for_first_game and line_retrosheet_id == save_after_game:
+                            logger.info("Was waiting for first game and that game has been reached.  Saving subsequent games.")
+                            waiting_for_first_game = False
 
-                        # process line
-                        play_by_play = convert_line(line)
+                        # skip all precediting lines
+                        if save_after_game is None or \
+                            (not waiting_for_first_game and line_retrosheet_id != save_after_game):
 
-                        # create new game when needed
-                        if current_game is None or play_by_play.retrosheet_id != current_game.retrosheet_id:
-                            # save if buffer is reached
-                            if GAME_SAVE_INTERVAL > 0 and len(queued_games) >= GAME_SAVE_INTERVAL:
-                                # commit the transaction
-                                logger.info("Commiting buffer size of %s games.  Total Line Count=%s", len(queued_games), total_line_count)
-                                save_games(db_connection, queued_games)
+                            # process line
+                            try:
+                                play_by_play = convert_line(line)
+                            except ValueError as e:
+                                logger.error("Unable to process line #%s: %s due to error %s", line_number, line, str(e))
+                                raise e
 
-                            # abort if at max game count
-                            if MAX_GAMES > 0 and total_game_count >= MAX_GAMES:
-                                logger.warning("Stopping load after max games reached, even though more data was still available.  Games Loaded=%s", total_game_count)
-                                break
+                            # create new game when needed
+                            if current_game is None or play_by_play.retrosheet_id != current_game.retrosheet_id:
+                                # save if buffer is reached
+                                if GAME_SAVE_INTERVAL > 0 and len(queued_games) >= GAME_SAVE_INTERVAL:
+                                    # commit the transaction
+                                    logger.info("Commiting buffer size of %s games.  Total Line Count=%s", len(queued_games), total_line_count)
+                                    save_games(db_connection, queued_games)
 
-                            # determine home vs away team
-                            team_home = None
-                            team_visiting = None
-                            if play_by_play.is_home_team:
-                                team_home = play_by_play.batting_team
-                                team_visiting = play_by_play.pitching_team
-                            else:
-                                team_home = play_by_play.pitching_team
-                                team_visiting = play_by_play.batting_team
+                                # abort if at max game count
+                                if MAX_GAMES > 0 and total_game_count >= MAX_GAMES:
+                                    logger.warning("Stopping load after max games reached, even though more data was still available.  Games Loaded=%s", total_game_count)
+                                    break
 
-                            # create new game
-                            current_game = Game()
-                            current_game.retrosheet_id = play_by_play.retrosheet_id
-                            current_game.game_date = play_by_play.game_date.date()
-                            current_game.game_time = play_by_play.game_date.time()
-                            current_game.team_visiting = team_visiting
-                            current_game.team_home = team_home
-                            current_game.game_location = play_by_play.game_location
-                            current_game.umpire_home = play_by_play.umpire_home
-                            current_game.umpire_1b = play_by_play.umpire_1b
-                            current_game.umpire_2b = play_by_play.umpire_2b
-                            current_game.umpire_3b = play_by_play.umpire_3b
-                            current_game.score_visitor = 0
-                            current_game.score_home = 0
-                            current_game.innings_played = 1
-                            current_game.game_type = play_by_play.game_type
+                                # determine home vs away team
+                                team_home = None
+                                team_visiting = None
+                                if play_by_play.is_home_team:
+                                    team_home = play_by_play.batting_team
+                                    team_visiting = play_by_play.pitching_team
+                                else:
+                                    team_home = play_by_play.pitching_team
+                                    team_visiting = play_by_play.batting_team
 
-                            queued_games.append(current_game)
-                            total_game_count += 1
+                                # create new game
+                                current_game = Game()
+                                current_game.retrosheet_id = play_by_play.retrosheet_id
+                                current_game.game_date = play_by_play.game_date.date()
+                                current_game.game_time = play_by_play.game_date.time()
+                                current_game.team_visiting = team_visiting
+                                current_game.team_home = team_home
+                                current_game.game_location = play_by_play.game_location
+                                current_game.umpire_home = play_by_play.umpire_home
+                                current_game.umpire_1b = play_by_play.umpire_1b
+                                current_game.umpire_2b = play_by_play.umpire_2b
+                                current_game.umpire_3b = play_by_play.umpire_3b
+                                current_game.score_visitor = 0
+                                current_game.score_home = 0
+                                current_game.innings_played = 1
+                                current_game.game_type = play_by_play.game_type
 
-                        # append play to game
-                        current_game.game_plays.append(play_by_play)
+                                queued_games.append(current_game)
+                                total_game_count += 1
+
+                            # append play to game
+                            current_game.game_plays.append(play_by_play)
                 else:
                     logger.debug("Skipping empty row")    
     except FileNotFoundError:
