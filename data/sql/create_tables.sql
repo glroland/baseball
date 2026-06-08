@@ -320,9 +320,10 @@ insert into pitch_type (pitch_type_cd, pitch_type_desc, ball_or_strike) values (
 create table game_play
 (
     game_play_id serial not null,
+    line_number int not null,
     game_id int not null,
     retrosheet_id varchar(12) not null,
-    original_event_str varchar(125) not null,
+    original_event_str varchar(125),
     inning int not null,
     is_top_of_inning boolean not null,
     is_home_team boolean not null,
@@ -331,7 +332,7 @@ create table game_play
     pitching_team varchar(3) not null,
     score_visitor int not null,
     score_home int not null,
-    batter varchar(8) not null,
+    batter varchar(8),
     pitcher varchar(8) not null,
     batter_lineup_pos int,
     batter_fielding_pos varchar(2),

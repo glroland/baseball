@@ -5,6 +5,8 @@ from typing import Optional
 class PlayByPlay(BaseModel):
     model_config = ConfigDict(validate_assignment=True)
 
+    line_number : int = None
+
     retrosheet_id : Optional[str] = Field(None, max_length=12)
     original_event_str : Optional[str] = Field(None, max_length=125)
     inning : Optional[int] = None

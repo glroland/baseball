@@ -105,14 +105,15 @@ def get_bool_value(column: str):
     raise ValueError(f"Column Value is not suitable for a boolean:  Val={column}")
 
 
-def convert_line(line: List[str]):
+def convert_line(line_number: int, line: List[str]):
     """ Converts a single line into a strongly typed play by play.
     
+        line_number - number of line in file
         line - one play by play entry
     """
     col_index = 0
 
-    play_by_play = PlayByPlay()
+    play_by_play = PlayByPlay(line_number = line_number)
 
     #'gid', 
     play_by_play.retrosheet_id = get_str_value(line[col_index])
@@ -904,6 +905,7 @@ def save_game_plays(db_cursor, game_id : int, plays : list[PlayByPlay]):
     sql = f"""
             insert into game_play (
                 game_id,
+                line_number,
                 retrosheet_id,
                 original_event_str,
                 inning,
@@ -1100,7 +1102,7 @@ def save_game_plays(db_cursor, game_id : int, plays : list[PlayByPlay]):
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                %s, %s, %s, %s, %s, %s, %s, %s
+                %s, %s, %s, %s, %s, %s, %s, %s, %s
             )
         """
 
@@ -1109,6 +1111,7 @@ def save_game_plays(db_cursor, game_id : int, plays : list[PlayByPlay]):
         row = (
 
             game_id,
+            play.line_number,
             play.retrosheet_id,
             play.original_event_str,
             play.inning,
@@ -1414,7 +1417,7 @@ def cli(db_connection_string: str, play_by_play_file: str, save_after_game: str)
 
                             # process line
                             try:
-                                play_by_play = convert_line(line)
+                                play_by_play = convert_line(line_number, line)
                             except ValueError as e:
                                 logger.error("Unable to process line #%s: %s due to error %s", line_number, line, str(e))
                                 raise e
