@@ -179,12 +179,10 @@ def convert_line(line: List[str]):
     col_index += 1
     
     #'balls', 
-    # NEW
     play_by_play.balls = get_int_value(line[col_index])
     col_index += 1
 
     #'strikes', 
-    # NEW
     play_by_play.strikes = get_int_value(line[col_index])
     col_index += 1
 
@@ -246,16 +244,15 @@ def convert_line(line: List[str]):
     play_by_play.is_strikeout = get_bool_value(line[col_index])
     col_index += 1
 
-    # 'xi', 
-    play_by_play.is_catchers_interference = get_bool_value(line[col_index])
+    # 'xi',
+    play_by_play.is_interference_or_obstruction = get_bool_value(line[col_index])
     col_index += 1
 
-    # 'roe', 
-    play_by_play.is_other_play_appearance = get_bool_value(line[col_index])
+    # 'roe',
+    play_by_play.is_reached_on_error = get_bool_value(line[col_index])
     col_index += 1
 
     # 'fc', 
-    # NEW
     play_by_play.is_fielders_choice = get_bool_value(line[col_index])
     col_index += 1
 
@@ -267,9 +264,8 @@ def convert_line(line: List[str]):
     play_by_play.is_other_no_out = get_bool_value(line[col_index])
     col_index += 1
 
-    # 'oth', 
-    # NEW
-    play_by_play.is_other_out = get_int_value(line[col_index])
+    # 'oth',
+    play_by_play.legacy_oth_total = get_int_value(line[col_index])
     col_index += 1
 
     # 'bip', 
@@ -293,7 +289,6 @@ def convert_line(line: List[str]):
     col_index += 1
 
     # 'iw', 
-    # NEW
     play_by_play.is_intentional_walk = get_bool_value(line[col_index])
     col_index += 1
 
@@ -310,7 +305,6 @@ def convert_line(line: List[str]):
     col_index += 1
 
     # 'fle', 
-    # NEW
     play_by_play.is_dropped_foul_ball = get_bool_value(line[col_index])
     col_index += 1
 
@@ -443,48 +437,39 @@ def convert_line(line: List[str]):
     col_index += 1
 
     # 'lob_id1', 
-    # NEW
     play_by_play.runner_left_on_base_1 = get_str_value(line[col_index])
     col_index += 1
 
     # 'lob_id2', 
-    # NEW
     play_by_play.runner_left_on_base_2 = get_str_value(line[col_index])
     col_index += 1
 
     # 'lob_id3', 
-    # NEW
     play_by_play.runner_left_on_base_3 = get_str_value(line[col_index])
     col_index += 1
 
-    # 'pr1_pre', 
-    # NEW
-    play_by_play.pitcher_resp_for_runner_1_pre = get_bool_value(line[col_index])
+    # 'pr1_pre',
+    play_by_play.pitcher_resp_for_runner_1_pre = get_str_value(line[col_index])
     col_index += 1
 
-    # 'pr2_pre', 
-    # NEW
-    play_by_play.pitcher_resp_for_runner_2_pre = get_bool_value(line[col_index])
+    # 'pr2_pre',
+    play_by_play.pitcher_resp_for_runner_2_pre = get_str_value(line[col_index])
     col_index += 1
 
-    # 'pr3_pre', 
-    # NEW
-    play_by_play.pitcher_resp_for_runner_3_pre = get_bool_value(line[col_index])
+    # 'pr3_pre',
+    play_by_play.pitcher_resp_for_runner_3_pre = get_str_value(line[col_index])
     col_index += 1
 
-    # 'pr1_post', 
-    # NEW
-    play_by_play.pitcher_resp_for_runner_1_post = get_bool_value(line[col_index])
+    # 'pr1_post',
+    play_by_play.pitcher_resp_for_runner_1_post = get_str_value(line[col_index])
     col_index += 1
 
-    # 'pr2_post', 
-    # NEW
-    play_by_play.pitcher_resp_for_runner_2_post = get_bool_value(line[col_index])
+    # 'pr2_post',
+    play_by_play.pitcher_resp_for_runner_2_post = get_str_value(line[col_index])
     col_index += 1
 
-    # 'pr3_post', 
-    # NEW
-    play_by_play.pitcher_resp_for_runner_3_post = get_bool_value(line[col_index])
+    # 'pr3_post',
+    play_by_play.pitcher_resp_for_runner_3_post = get_str_value(line[col_index])
     col_index += 1
 
     # 'run_b', 
@@ -927,12 +912,16 @@ def save_game_plays(db_cursor, game_id : int, plays : list[PlayByPlay]):
                 game_location,
                 batting_team,
                 pitching_team,
+                score_visitor,
+                score_home,
                 batter,
                 pitcher,
                 batter_lineup_pos,
                 batter_fielding_pos,
                 batting_hand,
                 pitching_hand,
+                balls,
+                strikes,
                 pitch_count,
                 pitch_sequence,
                 num_pitches,
@@ -948,10 +937,12 @@ def save_game_plays(db_cursor, game_id : int, plays : list[PlayByPlay]):
                 is_walk,
                 is_intentional_walk,
                 is_strikeout,
-                is_catchers_interference,
-                is_other_play_appearance,
+                is_interference_or_obstruction,
+                is_reached_on_error,
+                is_fielders_choice,
                 is_other_out,
                 is_other_no_out,
+                legacy_oth_total,
                 is_ball_in_play,
                 is_bunt,
                 is_ground_ball,
@@ -960,6 +951,7 @@ def save_game_plays(db_cursor, game_id : int, plays : list[PlayByPlay]):
                 is_double_play_grounded,
                 is_double_play_other,
                 is_triple_play,
+                is_dropped_foul_ball,
                 is_wild_pitch,
                 is_passed_ball,
                 is_balk,
@@ -992,6 +984,15 @@ def save_game_plays(db_cursor, game_id : int, plays : list[PlayByPlay]):
                 base_runner_1_post,
                 base_runner_2_post,
                 base_runner_3_post,
+                runner_left_on_base_1,
+                runner_left_on_base_2,
+                runner_left_on_base_3,
+                pitcher_resp_for_runner_1_pre,
+                pitcher_resp_for_runner_2_pre,
+                pitcher_resp_for_runner_3_pre,
+                pitcher_resp_for_runner_1_post,
+                pitcher_resp_for_runner_2_post,
+                pitcher_resp_for_runner_3_post,
                 scorer_from_bat,
                 scorer_from_1,
                 scorer_from_2,
@@ -1098,7 +1099,8 @@ def save_game_plays(db_cursor, game_id : int, plays : list[PlayByPlay]):
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                %s, %s
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s, %s, %s
             )
         """
 
@@ -1115,12 +1117,16 @@ def save_game_plays(db_cursor, game_id : int, plays : list[PlayByPlay]):
             play.game_location,
             play.batting_team,
             play.pitching_team,
+            play.score_visitor,
+            play.score_home,
             play.batter,
             play.pitcher,
             play.batter_lineup_pos,
             play.batter_fielding_pos,
             play.batting_hand,
             play.pitching_hand,
+            play.balls,
+            play.strikes,
             play.pitch_count,
             play.pitch_sequence,
             play.num_pitches,
@@ -1136,10 +1142,12 @@ def save_game_plays(db_cursor, game_id : int, plays : list[PlayByPlay]):
             play.is_walk,
             play.is_intentional_walk,
             play.is_strikeout,
-            play.is_catchers_interference,
-            play.is_other_play_appearance,
+            play.is_interference_or_obstruction,
+            play.is_reached_on_error,
+            play.is_fielders_choice,
             play.is_other_out,
             play.is_other_no_out,
+            play.legacy_oth_total,
             play.is_ball_in_play,
             play.is_bunt,
             play.is_ground_ball,
@@ -1148,6 +1156,7 @@ def save_game_plays(db_cursor, game_id : int, plays : list[PlayByPlay]):
             play.is_double_play_grounded,
             play.is_double_play_other,
             play.is_triple_play,
+            play.is_dropped_foul_ball,
             play.is_wild_pitch,
             play.is_passed_ball,
             play.is_balk,
@@ -1180,6 +1189,15 @@ def save_game_plays(db_cursor, game_id : int, plays : list[PlayByPlay]):
             play.base_runner_1_post,
             play.base_runner_2_post,
             play.base_runner_3_post,
+            play.runner_left_on_base_1,
+            play.runner_left_on_base_2,
+            play.runner_left_on_base_3,
+            play.pitcher_resp_for_runner_1_pre,
+            play.pitcher_resp_for_runner_2_pre,
+            play.pitcher_resp_for_runner_3_pre,
+            play.pitcher_resp_for_runner_1_post,
+            play.pitcher_resp_for_runner_2_post,
+            play.pitcher_resp_for_runner_3_post,
             play.scorer_from_bat,
             play.scorer_from_1,
             play.scorer_from_2,

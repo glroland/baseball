@@ -23,10 +23,8 @@ class PlayByPlay(BaseModel):
     pitching_hand : Optional[str] = Field(None, max_length=1)
     balls : Optional[int] = None
     strikes : Optional[int] = None
-    pitch_count_str : str = None
     pitch_count : Optional[int] = None
     pitch_sequence : Optional[str] = Field(None, max_length=30)
-    num_pitches_str : str = None
     num_pitches : Optional[int] = None
     plate_appearance_flag : Optional[bool] = None
     is_fielders_choice : Optional[bool] = None
@@ -42,10 +40,11 @@ class PlayByPlay(BaseModel):
     is_walk : Optional[bool] = None
     is_intentional_walk : Optional[bool] = None
     is_strikeout : Optional[bool] = None
-    is_catchers_interference : Optional[bool] = None
-    is_other_play_appearance : Optional[bool] = None
+    is_interference_or_obstruction : Optional[bool] = None
+    is_reached_on_error : Optional[bool] = None
     is_other_out : Optional[bool] = None
     is_other_no_out : Optional[bool] = None
+    legacy_oth_total : Optional[int] = None
     is_ball_in_play : Optional[bool] = None
     is_bunt : Optional[bool] = None
     is_ground_ball : Optional[bool] = None
@@ -86,6 +85,15 @@ class PlayByPlay(BaseModel):
     base_runner_1_post : Optional[str] = Field(None, max_length=8)
     base_runner_2_post : Optional[str] = Field(None, max_length=8)
     base_runner_3_post : Optional[str] = Field(None, max_length=8)
+    runner_left_on_base_1 : Optional[str] = Field(None, max_length=8)
+    runner_left_on_base_2 : Optional[str] = Field(None, max_length=8)
+    runner_left_on_base_3 : Optional[str] = Field(None, max_length=8)
+    pitcher_resp_for_runner_1_pre : Optional[str] = Field(None, max_length=8)
+    pitcher_resp_for_runner_2_pre : Optional[str] = Field(None, max_length=8)
+    pitcher_resp_for_runner_3_pre : Optional[str] = Field(None, max_length=8)
+    pitcher_resp_for_runner_1_post : Optional[str] = Field(None, max_length=8)
+    pitcher_resp_for_runner_2_post : Optional[str] = Field(None, max_length=8)
+    pitcher_resp_for_runner_3_post : Optional[str] = Field(None, max_length=8)
     scorer_from_bat : Optional[str] = Field(None, max_length=8)
     scorer_from_1 : Optional[str] = Field(None, max_length=8)
     scorer_from_2 : Optional[str] = Field(None, max_length=8)
