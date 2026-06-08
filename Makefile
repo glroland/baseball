@@ -1,8 +1,8 @@
 #
 # Configuration
 #
-db_host ?= localhost
-#db_host ?= db.home.glroland.com
+#db_host ?= localhost
+db_host ?= db.home.glroland.com
 db_port ?= 5432
 db_connection_string ?= postgresql://baseball_app:baseball123@$(db_host):$(db_port)/baseball_db
 db_dba_password ?= d8nnyr0cks
@@ -26,11 +26,13 @@ lint:
 	pylint --recursive y --exit-zero import-app/src
 	pylint --recursive y --exit-zero predict-svc/src
 
-clean:
+clean: clean.db
 	rm -rf target
 	mkdir -p target/zips
 	mkdir -p target/raw
 	mkdir -p target/done
+
+clean.db:
 ifneq "$(db_dba_password)" "" 
 	psql "$(db_dba_connection_string)" -f data/sql/drop_db.sql
 else
@@ -53,6 +55,24 @@ else
 	mkdir -p target/output
 	cd data/src/ingest && jupyter nbconvert --to python ingest_retrosheet_data.ipynb --stdout  | BASEBALL_DB_CONN_STRING="$(db_connection_string)" python
 endif
+
+data.playbyplay.download:
+	mkdir -p target/plays
+	cd target/plays && wget https://www.retrosheet.org/downloads/plays/plays.zip
+	cd target/plays && unzip plays.zip
+
+data.playbyplay.trim:
+	cd data/src/ingest && python trim_play_by_play.py ../../../target/plays/plays.csv ../../../target/plays/trimmed_plays.csv
+
+data.playbyplay.import:
+	cd data/src/ingest && python import_play_by_play.py $(db_connection_string) ../../../target/plays/trimmed_plays.csv
+
+data.playbyplay.resume:
+	cd data/src/ingest && python import_play_by_play.py $(db_connection_string) ../../../target/plays/plays.csv --jump_to_line 16078343
+
+
+
+
 
 train:
 	cd data/src/train && papermill train_predict_pitch_model.ipynb - -p output_dir "../../../target/models/predict_pitch/" -p db_conn_str "$(db_connection_string)"
@@ -128,14 +148,3 @@ data.gentrainingdata:
 
 data.trainlm:
 	cd data/src/train && python train_baseball_lm.py
-
-data.playbyplay.download:
-	mkdir -p target/plays
-	cd target/plays && wget https://www.retrosheet.org/downloads/plays/plays.zip
-	cd target/plays && unzip plays.zip
-
-data.playbyplay.import:
-	cd data/src/ingest && python import_play_by_play.py $(db_connection_string) ../../../target/plays/plays.csv
-
-data.playbyplay.resume:
-	cd data/src/ingest && python import_play_by_play.py $(db_connection_string) ../../../target/plays/plays.csv --jump_to_line 16078343
